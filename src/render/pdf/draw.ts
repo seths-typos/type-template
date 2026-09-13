@@ -27,10 +27,17 @@ export interface DrawText {
   kind: 'text';
   text: string;
   x: number;
-  /** PDF baseline of this line of text. */
   y: number;
   size: number;
   color: Rgb;
+  /** What `x` is: the text's left edge, or its right edge. */
+  align: 'left' | 'right';
+  /**
+   * What `y` is: the text's own baseline, or the vertical centre of its
+   * capitals. Resolving 'center' needs font metrics, so the renderer does it
+   * — this stays measurement-free.
+   */
+  anchor: 'baseline' | 'center';
 }
 
 export type DrawOp = DrawLine | DrawText;
@@ -79,6 +86,7 @@ export function drawOps(sheet: Sheet, config: SheetConfig, options: DrawOptions 
     }
   }
 
+  ops.push(...labelOps(sheet, config, flip));
   ops.push(...headerOps(sheet, flip, { ...DEFAULT_HEADER_TEXT_STYLE, ...options.header }));
 
   return ops;
@@ -110,5 +118,45 @@ function headerOps(sheet: Sheet, flip: (y: number) => number, style: HeaderTextS
     y: flip(header.y + style.size + index * style.lineHeight),
     size: style.size,
     color,
+    align: 'left' as const,
+    anchor: 'baseline' as const,
   }));
+}
+
+/**
+ * Metric line labels, set in the left margin and centred on their line.
+ *
+ * A line nobody draws gets no label, so switching a guide off takes its
+ * letter with it.
+ */
+function labelOps(sheet: Sheet, config: SheetConfig, flip: (y: number) => number): DrawText[] {
+  const { labels } = config;
+
+  if (!labels.enabled) return [];
+
+  const color = parseHexColor(labels.color);
+  const ops: DrawText[] = [];
+
+  for (const row of sheet.rows) {
+    for (const line of row.lines) {
+      if (line.type === 'slant') continue;
+
+      const text = labels.text[line.type];
+
+      if (!text || !config.lines[line.type].visible) continue;
+
+      ops.push({
+        kind: 'text',
+        text,
+        x: line.start.x - labels.gap,
+        y: flip(line.start.y),
+        size: labels.size,
+        color,
+        align: 'right',
+        anchor: 'center',
+      });
+    }
+  }
+
+  return ops;
 }

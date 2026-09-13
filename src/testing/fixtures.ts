@@ -33,9 +33,16 @@ export function baseConfig(): SheetConfig {
     lines: {
       baseline: solid(1, '#000000'),
       capHeight: solid(0.5, '#888888'),
-      xHeight: solid(0.5, '#888888'),
+      xHeight: { visible: true, weight: 0.5, color: '#888888', dash: [3, 3] },
       ascender: solid(0.5, '#888888'),
       descender: solid(0.5, '#888888'),
+    },
+    labels: {
+      enabled: true,
+      size: 6,
+      color: '#888888',
+      gap: 6,
+      text: { baseline: 'B', capHeight: 'C', xHeight: 'X' },
     },
     slant: {
       enabled: false,

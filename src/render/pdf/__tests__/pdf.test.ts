@@ -80,7 +80,9 @@ describe('renderSheetPdf', () => {
 
   it('shows header text only when there is header text', async () => {
     const plain = baseConfig();
+    plain.labels.enabled = false;
     const titled = baseConfig();
+    titled.labels.enabled = false;
     titled.header.enabled = true;
     titled.header.text = 'Type Cooker brief';
 
@@ -93,6 +95,7 @@ describe('renderSheetPdf', () => {
 
   it('places the header baseline where the flip puts it', async () => {
     const config = baseConfig();
+    config.labels.enabled = false;
     config.header.enabled = true;
     config.header.text = 'brief';
 
@@ -105,12 +108,31 @@ describe('renderSheetPdf', () => {
 
   it('shows each line of a multi-line header', async () => {
     const config = baseConfig();
+    config.labels.enabled = false;
     config.header.enabled = true;
     config.header.text = 'brief\ndate';
 
     const content = await contentStream(await renderSheetPdf(buildSheet(config), config));
 
     expect(textShown(content)).toEqual(['brief', 'date']);
+  });
+});
+
+describe('renderSheetPdf — labels', () => {
+  it('right-aligns each label into the margin using the font metrics', async () => {
+    const config = baseConfig();
+    const content = await contentStream(await renderSheetPdf(buildSheet(config), config));
+
+    expect(textShown(content)).toContain('B');
+    expect(textShown(content)).toContain('C');
+    expect(textShown(content)).toContain('X');
+
+    // Helvetica 'B' at 6 pt is 4 pt wide, so a right edge at x 30 starts at 26.
+    const placements = [...content.matchAll(/1 0 0 1 ([\d.]+) ([\d.]+) Tm/g)];
+    const xs = placements.map(([, x]) => Number(x));
+
+    expect(Math.max(...xs)).toBeLessThan(30);
+    expect(Math.min(...xs)).toBeGreaterThan(0);
   });
 });
 

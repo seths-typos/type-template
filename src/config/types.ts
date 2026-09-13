@@ -64,6 +64,23 @@ export interface LinesConfig {
   descender: LineStyle;
 }
 
+/**
+ * Letters in the left margin naming each metric line, so a row is
+ * self-describing — which matters most for the ascender and cap height
+ * lines, the closest pair on the sheet.
+ */
+export interface LabelsConfig {
+  enabled: boolean;
+  /** pt */
+  size: number;
+  /** hex */
+  color: string;
+  /** pt, between the label's right edge and the left end of its line */
+  gap: number;
+  /** Text per metric line. Omit a line to leave it unlabelled. */
+  text: Partial<Record<keyof LinesConfig, string>>;
+}
+
 export interface SlantConfig {
   enabled: boolean;
   /** degrees from vertical. No default — user must set. */
@@ -80,5 +97,6 @@ export interface SheetConfig {
   header: HeaderConfig;
   metrics: MetricsConfig;
   lines: LinesConfig;
+  labels: LabelsConfig;
   slant: SlantConfig;
 }

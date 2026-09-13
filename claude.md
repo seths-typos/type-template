@@ -42,6 +42,7 @@ Use these terms exactly. Do not invent synonyms.
 | **row gap** | Whitespace between rows, measured from one row's **descender line to the next row's ascender line**. |
 | **row pitch** | total metric height + row gap. Derived. |
 | **slant lines** | Diagonal guides for italic/oblique work. Angle measured **from vertical**. |
+| **label** | A letter set in the left margin naming a metric line — B, C, X by default. |
 | **header** | Optional block at top of page for free text (title, brief, date). |
 
 Not used: "body height", "bounding box", "em box". These mean different things in different contexts. Do not use them.
@@ -59,6 +60,8 @@ Must be fully testable without producing a PDF.
 
 ### 2. `render/pdf/`
 Consumes geometry output, draws it into a PDF. Owns page creation, the y-axis flip, stroke styling, dash patterns, and header text. Returns PDF bytes.
+
+**Labels are the renderer's job.** Their anchor is the left end of the line they name, which geometry already gives; turning that into a placed glyph needs the font's metrics to right-align it into the margin and centre it on the line. Geometry stays measurement-free, and a canvas renderer measures its own the same way. A line that isn't drawn gets no label.
 
 **Visibility is the renderer's job.** Geometry emits every metric line whatever `LineStyle.visible` says; each renderer skips the invisible ones. `visible` sits alongside weight, color and dash — all presentational — so toggling one must not invalidate geometry output and force a relayout in the live preview. The exception is `slant.enabled`, which *is* structural: when slant is off there may be no valid `angle` in the config at all, so geometry cannot do that math even in principle.
 
@@ -115,6 +118,14 @@ interface SheetConfig {
     descender: LineStyle;
   };
 
+  labels: {
+    enabled: boolean;
+    size: number;       // pt
+    color: string;      // hex
+    gap: number;        // pt, between the label and the left end of its line
+    text: Partial<Record<keyof LinesConfig, string>>;  // omit a line to leave it unlabelled
+  };
+
   slant: {
     enabled: boolean;
     angle: number;      // degrees from vertical. No default — user must set.
@@ -151,7 +162,13 @@ Placeholders. Refine after first printed proofs.
 | metrics.rowGap | 36 pt |
 | metrics.verticalAlign | `top` |
 | lines.baseline | visible, 1 pt, `#000000`, solid |
+| lines.xHeight | visible, 0.5 pt, `#888888`, dashed `[3, 3]` |
 | lines.* (others) | visible, 0.5 pt, `#888888`, solid |
+| labels.enabled | `true` |
+| labels.size | 6 pt |
+| labels.color | `#888888` |
+| labels.gap | 6 pt |
+| labels.text | `{ baseline: 'B', capHeight: 'C', xHeight: 'X' }` |
 | slant.enabled | `false` |
 | slant.angle | **none — required if enabled** |
 | slant.spacing | 36 pt |

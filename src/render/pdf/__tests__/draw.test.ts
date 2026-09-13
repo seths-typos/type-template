@@ -113,15 +113,20 @@ describe('drawOps — visibility', () => {
 });
 
 describe('drawOps — header', () => {
+  // Labels are text ops too, so switch them off to isolate the header.
   function withHeader(text: string): SheetConfig {
     const config = baseConfig();
+    config.labels.enabled = false;
     config.header.enabled = true;
     config.header.text = text;
     return config;
   }
 
   it('draws nothing when the header is disabled', () => {
-    expect(texts(baseConfig())).toHaveLength(0);
+    const config = baseConfig();
+    config.labels.enabled = false;
+
+    expect(texts(config)).toHaveLength(0);
   });
 
   it('draws nothing when the header is enabled but empty', () => {
@@ -160,5 +165,67 @@ describe('drawOps — header', () => {
     const firstRowTop = 612 - sheet.rows[0]!.top;
 
     expect(line!.y).toBeGreaterThan(firstRowTop);
+  });
+});
+
+describe('drawOps — metric line labels', () => {
+  const labels = (config: SheetConfig) =>
+    ops(config).filter((op): op is DrawText => op.kind === 'text');
+
+  it('labels the baseline, cap height and x-height of every row', () => {
+    const config = baseConfig();
+    const sheet = buildSheet(config);
+    const drawn = labels(config);
+
+    expect(drawn).toHaveLength(sheet.rows.length * 3);
+    expect(new Set(drawn.map((op) => op.text))).toEqual(new Set(['B', 'C', 'X']));
+  });
+
+  it('leaves the ascender and descender unlabelled by default', () => {
+    expect(labels(baseConfig()).map((op) => op.text)).not.toContain('A');
+  });
+
+  it('sets them in the left margin, clear of the writing area', () => {
+    const config = baseConfig();
+    const [label] = labels(config);
+
+    // Right edge sits the configured gap before the line's left end.
+    expect(label!.x).toBe(36 - 6);
+    expect(label!.align).toBe('right');
+    expect(label!.size).toBe(6);
+  });
+
+  it('centres each label on its own line', () => {
+    const config = baseConfig();
+    const drawn = labels(config);
+    const baseline = drawn.find((op) => op.text === 'B');
+    const capHeight = drawn.find((op) => op.text === 'C');
+
+    expect(baseline!.anchor).toBe('center');
+    // Row 0's baseline is 111.6 from the top of a 612 pt page.
+    expect(baseline!.y).toBeCloseTo(500.4, 10);
+    expect(capHeight!.y).toBeCloseTo(612 - 39.6, 10);
+  });
+
+  it('drops the label when its line is switched off', () => {
+    const config = baseConfig();
+    config.lines.xHeight.visible = false;
+
+    expect(labels(config).map((op) => op.text)).not.toContain('X');
+    expect(labels(config).map((op) => op.text)).toContain('B');
+  });
+
+  it('draws none when labels are disabled', () => {
+    const config = baseConfig();
+    config.labels.enabled = false;
+
+    expect(labels(config)).toHaveLength(0);
+  });
+
+  it('takes custom text per line', () => {
+    const config = baseConfig();
+    config.labels.text = { ascender: 'asc', baseline: 'base' };
+
+    expect(new Set(labels(config).map((op) => op.text))).toEqual(new Set(['asc', 'base']));
   });
 });

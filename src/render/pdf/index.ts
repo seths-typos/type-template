@@ -50,9 +50,14 @@ function draw(page: Page, op: DrawOp, font: Font | undefined): void {
     return;
   }
 
+  // Alignment is resolved here rather than in draw.ts because it needs the
+  // font's metrics. A canvas renderer measures its own the same way.
+  const width = font ? font.widthOfTextAtSize(op.text, op.size) : 0;
+  const capHeight = font ? font.heightAtSize(op.size, { descender: false }) : op.size;
+
   page.drawText(op.text, {
-    x: op.x,
-    y: op.y,
+    x: op.align === 'right' ? op.x - width : op.x,
+    y: op.anchor === 'center' ? op.y - capHeight / 2 : op.y,
     size: op.size,
     font,
     color: rgb(op.color.r, op.color.g, op.color.b),
