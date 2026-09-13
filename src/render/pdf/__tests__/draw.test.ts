@@ -54,7 +54,8 @@ describe('drawOps — styles', () => {
     const [baseline] = bySource(config, 'baseline');
     const [xHeight] = bySource(config, 'xHeight');
 
-    expect(baseline!.thickness).toBe(1);
+    // Every metric line is 0.5 pt — only colour separates the baseline.
+    expect(baseline!.thickness).toBe(0.5);
     expect(baseline!.color).toEqual({ r: 0, g: 0, b: 0 });
 
     expect(xHeight!.thickness).toBe(0.5);

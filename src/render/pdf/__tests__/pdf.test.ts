@@ -61,11 +61,11 @@ describe('renderSheetPdf', () => {
     const config = baseConfig();
     const content = await contentStream(await renderSheetPdf(buildSheet(config), config));
 
-    // Baseline: 1 pt, black. Other metrics: 0.5 pt, #888888.
+    // Baseline is black, the other metrics #888888. All are 0.5 pt.
     expect(content).toContain('0 0 0 RG');
-    expect(content).toContain('1 w');
     expect(content).toContain(`${0x88 / 255} ${0x88 / 255} ${0x88 / 255} RG`);
     expect(content).toContain('0.5 w');
+    expect(content).not.toContain('\n1 w\n');
   });
 
   it('sets a dash pattern for dashed styles and clears it for solid ones', async () => {

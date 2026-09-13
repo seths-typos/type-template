@@ -161,7 +161,7 @@ Placeholders. Refine after first printed proofs.
 | metrics.descender | -35 |
 | metrics.rowGap | 36 pt |
 | metrics.verticalAlign | `top` |
-| lines.baseline | visible, 1 pt, `#000000`, solid |
+| lines.baseline | visible, 0.5 pt, `#000000`, solid |
 | lines.xHeight | visible, 0.5 pt, `#888888`, dashed `[3, 3]` |
 | lines.* (others) | visible, 0.5 pt, `#888888`, solid |
 | labels.enabled | `true` |

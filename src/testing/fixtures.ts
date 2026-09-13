@@ -31,7 +31,7 @@ export function baseConfig(): SheetConfig {
       verticalAlign: 'top',
     },
     lines: {
-      baseline: solid(1, '#000000'),
+      baseline: solid(0.5, '#000000'),
       capHeight: solid(0.5, '#888888'),
       xHeight: { visible: true, weight: 0.5, color: '#888888', dash: [3, 3] },
       ascender: solid(0.5, '#888888'),
