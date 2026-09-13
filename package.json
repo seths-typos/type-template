@@ -1,0 +1,20 @@
+{
+  "name": "type-template",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Printable practice sheet generator for type design and calligraphy",
+  "type": "module",
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "pdf-lib": "^1.17.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "typescript": "^5.7.0",
+    "vitest": "^2.1.0"
+  }
+}
