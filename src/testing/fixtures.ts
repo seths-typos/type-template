@@ -1,5 +1,5 @@
-import { resolvePageSize } from '../../config/presets.js';
-import type { LineStyle, SheetConfig } from '../../config/types.js';
+import { resolvePageSize } from '../config/presets.js';
+import type { LineStyle, SheetConfig } from '../config/types.js';
 
 const solid = (weight: number, color: string): LineStyle => ({
   visible: true,

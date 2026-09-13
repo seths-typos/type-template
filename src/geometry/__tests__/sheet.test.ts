@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { buildSheet } from '../sheet.js';
 import type { LineType } from '../types.js';
-import { baseConfig } from './fixtures.js';
+import { baseConfig } from '../../testing/fixtures.js';
 
 // Defaults are letter / landscape: a 792 x 612 pt page, 36 pt margins,
 // leaving a 720 x 540 pt area.

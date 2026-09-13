@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { buildSheet } from '../sheet.js';
 import type { LineSegment, Row } from '../types.js';
-import { baseConfig } from './fixtures.js';
+import { baseConfig } from '../../testing/fixtures.js';
 
 /** x where a segment's line crosses the row's baseline. */
 function baselineAnchor(row: Row, line: LineSegment): number {
