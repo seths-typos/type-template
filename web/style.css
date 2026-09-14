@@ -1,0 +1,60 @@
+/* Wireframe only. No design decisions here — that comes later. */
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font: 13px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: #111;
+  background: #f4f4f4;
+}
+
+header {
+  display: flex;
+  gap: 12px;
+  align-items: baseline;
+  padding: 10px 16px;
+  border-bottom: 1px solid #ccc;
+  background: #fff;
+}
+
+header h1 { font-size: 13px; font-weight: 600; margin: 0; }
+
+#status { margin-left: auto; color: #555; }
+#status.bad { color: #c00; }
+
+button { font: inherit; padding: 4px 10px; }
+
+main {
+  display: grid;
+  grid-template-columns: 380px 1fr;
+  gap: 16px;
+  padding: 16px;
+  align-items: start;
+}
+
+#form { background: #fff; border: 1px solid #ccc; }
+
+details { border-bottom: 1px solid #eee; }
+summary { padding: 8px 12px; cursor: pointer; background: #fafafa; }
+
+.field {
+  display: grid;
+  grid-template-columns: 120px 1fr 84px;
+  gap: 8px;
+  align-items: center;
+  padding: 3px 12px;
+}
+
+.field .name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.field .unit { color: #888; font-size: 11px; }
+.field .error { grid-column: 2 / -1; color: #c00; font-size: 11px; }
+.field .error:empty { display: none; }
+
+input, select, textarea { font: inherit; width: 100%; min-width: 0; padding: 2px 4px; }
+input[type='checkbox'] { width: auto; }
+input[type='color'] { padding: 0; height: 22px; }
+textarea { height: 40px; resize: vertical; }
+.invalid { outline: 1px solid #c00; }
+
+#sheet { background: #fff; border: 1px solid #ccc; padding: 16px; }
+canvas { display: block; box-shadow: 0 0 0 1px #ddd; }

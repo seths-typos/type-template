@@ -1,4 +1,4 @@
-import { HEX_COLOR } from '../../config/color.js';
+import { HEX_COLOR } from '../config/color.js';
 
 /** A colour in the 0–1 component range both pdf-lib and canvas want. */
 export interface Rgb {

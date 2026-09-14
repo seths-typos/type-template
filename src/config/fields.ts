@@ -1,4 +1,5 @@
 import { DEFAULTS } from './defaults.js';
+import { METRIC_MODES, ORIENTATIONS, VERTICAL_ALIGNMENTS } from './options.js';
 import { PAGE_PRESET_NAMES } from './presets.js';
 import type { LineStyle } from './types.js';
 
@@ -16,6 +17,8 @@ export interface FieldSpec {
   unit?: string;
   /** Printable default, or undefined when the field has none. */
   default?: string;
+  /** Allowed values, for `enum` and `preset` fields. Drives the form's select. */
+  options?: readonly string[];
   notes?: string;
 }
 
@@ -43,8 +46,8 @@ function lineStyle(prefix: string, style: LineStyle, what: string): FieldSpec[] 
 const { page, header, metrics, lines, labels, slant } = DEFAULTS;
 
 export const FIELDS: FieldSpec[] = [
-  { path: 'page.size', type: 'preset', default: show(page.size), notes: PAGE_PRESET_NAMES.join(' | ') },
-  { path: 'page.orientation', type: 'enum', default: show(page.orientation), notes: 'portrait | landscape' },
+  { path: 'page.size', type: 'preset', default: show(page.size), options: PAGE_PRESET_NAMES },
+  { path: 'page.orientation', type: 'enum', default: show(page.orientation), options: ORIENTATIONS },
   { path: 'page.margins.top', type: 'number', unit: 'pt', default: show(page.margins.top), notes: '>= 0' },
   { path: 'page.margins.right', type: 'number', unit: 'pt', default: show(page.margins.right), notes: '>= 0' },
   { path: 'page.margins.bottom', type: 'number', unit: 'pt', default: show(page.margins.bottom), notes: '>= 0' },
@@ -54,14 +57,14 @@ export const FIELDS: FieldSpec[] = [
   { path: 'header.height', type: 'number', unit: 'pt', default: show(header.height), notes: '>= 0; taken below the top margin' },
   { path: 'header.text', type: 'string', default: show(header.text), notes: 'free text; \\n starts a new line' },
 
-  { path: 'metrics.mode', type: 'enum', default: show(metrics.mode), notes: 'capHeight | rowCount — which one is the input' },
+  { path: 'metrics.mode', type: 'enum', default: show(metrics.mode), options: METRIC_MODES, notes: 'which of the two is the input; the other is computed' },
   { path: 'metrics.capHeight', type: 'number', unit: 'pt', default: show(metrics.capHeight), notes: '> 0; the reference metric. Computed in rowCount mode' },
   { path: 'metrics.rowCount', type: 'integer', default: show(metrics.rowCount), notes: '>= 1; computed in capHeight mode' },
   { path: 'metrics.xHeight', type: 'number', unit: '% of cap height', default: show(metrics.xHeight), notes: '> 0' },
   { path: 'metrics.ascender', type: 'number', unit: '% of cap height', default: show(metrics.ascender), notes: '>= 0; sets the top of the row band when above the cap height' },
   { path: 'metrics.descender', type: 'number', unit: '% of cap height', default: show(metrics.descender), notes: '<= 0; sets the bottom of the row band, or the baseline does at 0' },
   { path: 'metrics.rowGap', type: 'number', unit: 'pt', default: show(metrics.rowGap), notes: '>= 0; bottom of one row band to the top of the next' },
-  { path: 'metrics.verticalAlign', type: 'enum', default: show(metrics.verticalAlign), notes: 'top | center | justify' },
+  { path: 'metrics.verticalAlign', type: 'enum', default: show(metrics.verticalAlign), options: VERTICAL_ALIGNMENTS },
 
   ...lineStyle('lines.baseline', lines.baseline, 'baseline'),
   ...lineStyle('lines.capHeight', lines.capHeight, 'cap height line'),

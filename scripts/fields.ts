@@ -31,7 +31,10 @@ for (const [section, fields] of sections) {
   for (const field of fields) {
     const cells = columns.map((get, i) => get(field).padEnd(widths[i]!));
 
-    console.log(`  ${cells.join('  ')}  ${field.notes ?? ''}`.trimEnd());
+    const options = field.options ? field.options.join(' | ') : '';
+    const notes = [options, field.notes].filter(Boolean).join('; ');
+
+    console.log(`  ${cells.join('  ')}  ${notes}`.trimEnd());
   }
 
   console.log('');

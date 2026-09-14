@@ -1,16 +1,18 @@
-import { METRIC_LABELS } from '../../config/labels.js';
-import type { LineStyle, SheetConfig } from '../../config/types.js';
-import type { LineType, Sheet } from '../../geometry/types.js';
+import { METRIC_LABELS } from '../config/labels.js';
+import type { LineStyle, SheetConfig } from '../config/types.js';
+import type { LineType, Sheet } from '../geometry/types.js';
 import { parseHexColor, type Rgb } from './color.js';
 
 /**
- * Geometry output turned into draw operations, in PDF coordinates.
+ * Geometry output turned into draw operations, shared by every renderer.
  *
- * This is where the y-axis flip happens: geometry hands us a top-left origin
- * with y running down, PDF wants bottom-left with y running up.
+ * Ops stay in **geometry space** — top-left origin, y running down. That is
+ * canvas's native space, and the PDF renderer flips as it draws. Style
+ * resolution, visibility, labels and header placement live here once rather
+ * than once per renderer.
  *
- * Kept as plain data so the layout decisions are testable without producing
- * a PDF. `index.ts` is the only thing that touches pdf-lib.
+ * Plain data, so the layout decisions are testable without producing
+ * anything. Nothing here knows about pdf-lib or a canvas.
  */
 
 export interface DrawLine {
@@ -35,8 +37,8 @@ export interface DrawText {
   align: 'left' | 'right';
   /**
    * What `y` is: the text's own baseline, or the vertical centre of its
-   * capitals. Resolving 'center' needs font metrics, so the renderer does it
-   * — this stays measurement-free.
+   * capitals. Resolving 'center' needs font metrics, so each renderer does it
+   * with its own — this stays measurement-free.
    */
   anchor: 'baseline' | 'center';
 }
@@ -65,7 +67,6 @@ export interface DrawOptions {
 }
 
 export function drawOps(sheet: Sheet, config: SheetConfig, options: DrawOptions = {}): DrawOp[] {
-  const flip = (y: number) => sheet.page.height - y;
   const ops: DrawOp[] = [];
 
   for (const row of sheet.rows) {
@@ -77,8 +78,8 @@ export function drawOps(sheet: Sheet, config: SheetConfig, options: DrawOptions 
 
       ops.push({
         kind: 'line',
-        start: { x: line.start.x, y: flip(line.start.y) },
-        end: { x: line.end.x, y: flip(line.end.y) },
+        start: { x: line.start.x, y: line.start.y },
+        end: { x: line.end.x, y: line.end.y },
         thickness: style.weight,
         color: parseHexColor(style.color),
         dash: style.dash,
@@ -87,8 +88,8 @@ export function drawOps(sheet: Sheet, config: SheetConfig, options: DrawOptions 
     }
   }
 
-  ops.push(...labelOps(sheet, config, flip));
-  ops.push(...headerOps(sheet, flip, { ...DEFAULT_HEADER_TEXT_STYLE, ...options.header }));
+  ops.push(...labelOps(sheet, config));
+  ops.push(...headerOps(sheet, { ...DEFAULT_HEADER_TEXT_STYLE, ...options.header }));
 
   return ops;
 }
@@ -104,7 +105,7 @@ function styleFor(type: LineType, config: SheetConfig): LineStyle {
  * Text longer than the block is drawn anyway rather than silently dropped —
  * overflow is config's problem to catch, not something to hide here.
  */
-function headerOps(sheet: Sheet, flip: (y: number) => number, style: HeaderTextStyle): DrawText[] {
+function headerOps(sheet: Sheet, style: HeaderTextStyle): DrawText[] {
   const { header } = sheet;
 
   if (!header || header.text === '') return [];
@@ -116,7 +117,7 @@ function headerOps(sheet: Sheet, flip: (y: number) => number, style: HeaderTextS
     text,
     x: header.x,
     // First baseline sits one font size below the top of the block.
-    y: flip(header.y + style.size + index * style.lineHeight),
+    y: header.y + style.size + index * style.lineHeight,
     size: style.size,
     color,
     align: 'left' as const,
@@ -130,7 +131,7 @@ function headerOps(sheet: Sheet, flip: (y: number) => number, style: HeaderTextS
  * A line nobody draws gets no label, so switching a guide off takes its
  * letter with it.
  */
-function labelOps(sheet: Sheet, config: SheetConfig, flip: (y: number) => number): DrawText[] {
+function labelOps(sheet: Sheet, config: SheetConfig): DrawText[] {
   const { labels } = config;
 
   if (!labels.enabled) return [];
@@ -150,7 +151,7 @@ function labelOps(sheet: Sheet, config: SheetConfig, flip: (y: number) => number
         kind: 'text',
         text,
         x: line.start.x - labels.gap,
-        y: flip(line.start.y),
+        y: line.start.y,
         size: labels.size,
         color,
         align: 'right',

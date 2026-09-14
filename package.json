@@ -5,6 +5,7 @@
   "description": "Printable practice sheet generator for type design and calligraphy",
   "type": "module",
   "scripts": {
+    "dev": "vite",
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",

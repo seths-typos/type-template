@@ -1,12 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { buildSheet } from '../../../geometry/index.js';
-import { baseConfig } from '../../../testing/fixtures.js';
-import { drawOps, type DrawLine, type DrawText } from '../draw.js';
-import type { SheetConfig } from '../../../config/types.js';
-import { METRIC_LABELS } from '../../../config/labels.js';
+import { buildSheet } from '../../geometry/index.js';
+import { baseConfig } from '../../testing/fixtures.js';
+import { drawOps, type DrawLine, type DrawText } from '../ops.js';
+import type { SheetConfig } from '../../config/types.js';
+import { METRIC_LABELS } from '../../config/labels.js';
 
-// Defaults are letter / landscape: a 792 x 612 pt page. Geometry's y runs down
-// from the top, PDF's runs up from the bottom, so pdfY = 612 - y.
+// Defaults are letter / landscape: a 792 x 612 pt page. Ops stay in geometry
+// space — top-left origin, y running down — and each renderer transforms from
+// there. The PDF renderer's flip is tested against real output in pdf.test.ts.
 
 function ops(config: SheetConfig, options = {}) {
   return drawOps(buildSheet(config), config, options);
@@ -18,12 +19,12 @@ const texts = (config: SheetConfig, options = {}) =>
 const bySource = (config: SheetConfig, source: string) =>
   lines(config).filter((op) => op.source === source);
 
-describe('drawOps — the y-axis flip', () => {
-  it('flips geometry y into PDF y', () => {
+describe('drawOps — geometry space', () => {
+  it('keeps geometry\u2019s y, unflipped', () => {
     const [ascender] = bySource(baseConfig(), 'ascender');
 
-    // Row 0's ascender line is 36 pt from the top of the page.
-    expect(ascender!.start.y).toBeCloseTo(576, 10);
+    // Row 0's ascender line is 36 pt from the top of the page, and stays there.
+    expect(ascender!.start.y).toBeCloseTo(36, 10);
   });
 
   it('leaves x untouched', () => {
@@ -39,13 +40,13 @@ describe('drawOps — the y-axis flip', () => {
     }
   });
 
-  it('puts the baseline below the ascender line in PDF space', () => {
+  it('puts the baseline further down the page than the ascender line', () => {
     const config = baseConfig();
     const [ascender] = bySource(config, 'ascender');
     const [baseline] = bySource(config, 'baseline');
 
-    expect(baseline!.start.y).toBeLessThan(ascender!.start.y);
-    expect(baseline!.start.y).toBeCloseTo(500.4, 10);
+    expect(baseline!.start.y).toBeGreaterThan(ascender!.start.y);
+    expect(baseline!.start.y).toBeCloseTo(111.6, 10);
   });
 });
 
@@ -140,8 +141,8 @@ describe('drawOps — header', () => {
 
     expect(line!.text).toBe('Type Cooker brief');
     expect(line!.x).toBe(36);
-    // Block top is at y 36, first baseline one font size below: 612 - 48.
-    expect(line!.y).toBeCloseTo(564, 10);
+    // Block top is at y 36, first baseline one font size below it.
+    expect(line!.y).toBeCloseTo(48, 10);
     expect(line!.size).toBe(12);
   });
 
@@ -149,7 +150,7 @@ describe('drawOps — header', () => {
     const drawn = texts(withHeader('brief\ndate'));
 
     expect(drawn.map((op) => op.text)).toEqual(['brief', 'date']);
-    expect(drawn[0]!.y - drawn[1]!.y).toBeCloseTo(14.4, 10);
+    expect(drawn[1]!.y - drawn[0]!.y).toBeCloseTo(14.4, 10);
   });
 
   it('takes a style override', () => {
@@ -157,16 +158,15 @@ describe('drawOps — header', () => {
 
     expect(line!.size).toBe(24);
     expect(line!.color).toEqual({ r: 1, g: 0, b: 0 });
-    expect(line!.y).toBeCloseTo(612 - 60, 10);
+    expect(line!.y).toBeCloseTo(60, 10);
   });
 
   it('keeps the header clear of the first row', () => {
     const config = withHeader('brief');
     const sheet = buildSheet(config);
     const [line] = texts(config);
-    const firstRowTop = 612 - sheet.rows[0]!.top;
 
-    expect(line!.y).toBeGreaterThan(firstRowTop);
+    expect(line!.y).toBeLessThan(sheet.rows[0]!.top);
   });
 });
 
@@ -204,9 +204,9 @@ describe('drawOps — metric line labels', () => {
     const capHeight = drawn.find((op) => op.text === 'C');
 
     expect(baseline!.anchor).toBe('center');
-    // Row 0's baseline is 111.6 from the top of a 612 pt page.
-    expect(baseline!.y).toBeCloseTo(500.4, 10);
-    expect(capHeight!.y).toBeCloseTo(612 - 39.6, 10);
+    // Row 0's baseline is 111.6 from the top, its cap height line 39.6.
+    expect(baseline!.y).toBeCloseTo(111.6, 10);
+    expect(capHeight!.y).toBeCloseTo(39.6, 10);
   });
 
   it('drops the label when its line is switched off', () => {

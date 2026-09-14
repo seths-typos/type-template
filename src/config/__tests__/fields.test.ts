@@ -39,6 +39,15 @@ describe('FIELDS', () => {
     expect(angle?.notes).toContain('REQUIRED');
   });
 
+  it('gives every choice field its allowed values', () => {
+    for (const field of FIELDS) {
+      if (field.type === 'enum' || field.type === 'preset') {
+        expect(field.options, field.path).toBeDefined();
+        expect(field.options!.length, field.path).toBeGreaterThan(1);
+      }
+    }
+  });
+
   it('gives every field a type', () => {
     for (const field of FIELDS) {
       expect(field.type, field.path).not.toBe('');

@@ -1,4 +1,5 @@
 import { DEFAULTS } from './defaults.js';
+import { METRIC_MODES, ORIENTATIONS, VERTICAL_ALIGNMENTS } from './options.js';
 import { PAGE_PRESET_NAMES, resolvePageSize } from './presets.js';
 import { toCapHeightReference } from './reference.js';
 import {
@@ -32,12 +33,10 @@ export type { Orientation, PagePreset } from './presets.js';
 export { toCapHeightReference } from './reference.js';
 export { FIELDS } from './fields.js';
 export { METRIC_LABELS } from './labels.js';
+export { METRIC_MODES, ORIENTATIONS, VERTICAL_ALIGNMENTS } from './options.js';
 export type { FieldSpec } from './fields.js';
 export type * from './types.js';
 
-const ORIENTATIONS = ['portrait', 'landscape'] as const;
-const MODES = ['capHeight', 'rowCount'] as const;
-const ALIGNMENTS = ['top', 'center', 'justify'] as const;
 
 export const LINE_NAMES = [
   'baseline',
@@ -149,7 +148,7 @@ function resolveMetrics(raw: unknown, issues: Issues): MetricsConfig {
 
   return {
     ...referenced,
-    mode: choice(metrics.mode, fallback.mode, 'metrics.mode', issues, MODES),
+    mode: choice(metrics.mode, fallback.mode, 'metrics.mode', issues, METRIC_MODES),
     rowCount: number(metrics.rowCount, fallback.rowCount, 'metrics.rowCount', issues, {
       atLeast: 1,
       integer: true,
@@ -160,7 +159,7 @@ function resolveMetrics(raw: unknown, issues: Issues): MetricsConfig {
       fallback.verticalAlign,
       'metrics.verticalAlign',
       issues,
-      ALIGNMENTS,
+      VERTICAL_ALIGNMENTS,
     ),
   };
 }

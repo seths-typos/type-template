@@ -8,9 +8,11 @@ Intended companion to Type Cooker: Type Cooker gives the brief, this app gives t
 
 ## Current phase
 
-**Engine only.** Config in, PDF out. No UI, no live preview, no front end.
+**Front-end MVP.** The engine is done — `geometry/`, `render/pdf/` and `config/` are all built and `createSheetPdf(input)` goes from raw input to PDF bytes.
 
-A web front end with real-time canvas preview comes later. Do not write any of it now. This section will be updated when that phase begins.
+Now building a wireframe web app: a form generated from `config/fields.ts`, a live canvas preview, a Download PDF button. **Wireframe styling only** — no visual design, no responsive layout, no UX decisions. Those come later, and this exists to make the parameters something you can feel rather than read.
+
+Local only. `npm run dev`. Nothing is hosted.
 
 ## Tech stack
 
@@ -51,25 +53,29 @@ Not used: "body height", "bounding box", "em box". These mean different things i
 
 One codebase, three modules with clean interfaces. **Not** services — no network boundaries, no separate processes.
 
-`src/index.ts` is the package entry, not a fourth module: `createSheetPdf(config)` is config in, PDF out — `buildSheet` followed by the renderer.
+`src/index.ts` is the package entry, not a fourth module: `createSheetPdf(input)` is raw input in, PDF out — `resolveConfig`, `buildSheet`, then the renderer. `web/` is the wireframe front end and is not a module either; it only consumes the package entry.
 
 ### 1. `geometry/`
 Pure functions. Validated config in, coordinates out. **Zero PDF awareness.** No imports from the renderer or any PDF library.
 
-Output is a plain data structure: a list of rows, each containing line segments (start point, end point, line type). The line type doubles as the style reference — `config.lines` keys are exactly the metric line types, and `slant` resolves to `config.slant.style`. One field, so the two cannot drift apart. This same output will later feed a canvas renderer.
+Output is a plain data structure: a list of rows, each containing line segments (start point, end point, line type). The line type doubles as the style reference — `config.lines` keys are exactly the metric line types, and `slant` resolves to `config.slant.style`. One field, so the two cannot drift apart. The same output feeds both renderers.
 
 Must be fully testable without producing a PDF.
 
-### 2. `render/pdf/`
-Consumes geometry output, draws it into a PDF. Owns page creation, the y-axis flip, stroke styling, dash patterns, and header text. Returns PDF bytes.
+### 2. `render/`
+**`render/ops.ts`** turns geometry output into draw operations: resolving each line's style, dropping invisible ones, anchoring labels and placing header text. Ops stay in **geometry space** — top-left origin, y down — so each renderer transforms from there rather than undoing someone else's transform. Plain data, testable without drawing anything.
+
+**`render/pdf/`** consumes those ops and draws them with pdf-lib. Owns page creation, the y-axis flip, and font metrics for text alignment. Returns PDF bytes.
+
+**`render/canvas/`** sits beside it consuming the same ops. Canvas is already y-down, so it has nothing to flip. It types its context as a narrow structural interface, not `CanvasRenderingContext2D`, so tests pass a recorder and need no DOM.
+
+Neither renderer knows about the other. They share an ops builder, not each other.
 
 **Label text is fixed, not configurable.** A type sheet always names the baseline, cap height and x-height — B, C and X, in `config/labels.ts`. Only their look (size, colour, gap, on/off) is config. Calligraphy mode will want its own set, chosen by mode rather than typed in.
 
 **Labels are the renderer's job.** Their anchor is the left end of the line they name, which geometry already gives; turning that into a placed glyph needs the font's metrics to right-align it into the margin and centre it on the line. Geometry stays measurement-free, and a canvas renderer measures its own the same way. A line that isn't drawn gets no label.
 
 **Visibility is the renderer's job.** Geometry emits every metric line whatever `LineStyle.visible` says; each renderer skips the invisible ones. `visible` sits alongside weight, color and dash — all presentational — so toggling one must not invalidate geometry output and force a relayout in the live preview. The exception is `slant.enabled`, which *is* structural: when slant is off there may be no valid `angle` in the config at all, so geometry cannot do that math even in principle.
-
-Later, `render/canvas/` will sit beside it consuming identical input. Neither renderer knows about the other.
 
 ### 3. `config/`
 Raw user input in, validated config out. Applies defaults field by field — anything the user doesn't set keeps its default. Rejects invalid input with clear errors.
@@ -78,7 +84,9 @@ Raw user input in, validated config out. Applies defaults field by field — any
 
 `resolveConfig(input)` is the entry. Problems are collected across the whole input and thrown together as a single `ConfigError` carrying `{ path, message }` per field — one bad value must not hide the next three, and a form later wants them all at once.
 
-**Reviewing the surface without a front end:** `npm run fields` prints every input field with its type, unit, default and constraints, driven by the `FIELDS` table in `config/fields.ts`. A test asserts that table covers exactly the input surface, so a field cannot be added without being described. `npm run resolve -- '{...}'` prints what a partial input resolves to.
+**The form is generated from this.** `web/` builds its controls from `FIELDS`, so the front end cannot fall behind the engine — a field added without being described fails the drift test before it can go missing from the form. `ConfigError`'s per-field paths map straight onto the controls.
+
+**Reviewing the surface:** `npm run fields` prints every input field with its type, unit, default and constraints, driven by the `FIELDS` table in `config/fields.ts`. A test asserts that table covers exactly the input surface, so a field cannot be added without being described. `npm run resolve -- '{...}'` prints what a partial input resolves to.
 
 **Isolation rule:** the choice of cap height as the reference metric lives in one function here — `toCapHeightReference` in `config/reference.ts`. If user testing says to switch the reference (e.g. to total metric height), that one function changes and nothing downstream cares.
 
@@ -200,7 +208,6 @@ Placeholders. Refine after first printed proofs.
 
 ## Do not
 
-- Do not write UI, preview, or canvas code in this phase.
 - Do not import a PDF library anywhere except `render/pdf/`, and test helpers that verify its output.
 - Do not convert units anywhere except `config/`.
 - Do not split renderer and PDF generation into separate modules — they are one thing.
@@ -216,4 +223,4 @@ Not yet resolved. Do not implement. Do not design around them beyond what's note
 - **Row gap as % of cap height** instead of fixed points. Currently fixed at 36 pt.
 - **Structured header for Type Cooker briefs.** Header is free text. May become structured fields (weight, contrast, width…) or consume Type Cooker output directly if a machine-readable format exists.
 - **More page presets.** Letter and A4 ship now; legal and iPad screen sizes are candidates. **Trap:** Apple's "points" are device-independent pixels at roughly 1/163 inch, not DTP points. A screen preset has to be converted to physical size at the config boundary like any other foreign unit, never downstream.
-- **Front end.** Web app accessible via URL with real-time canvas preview. `render/canvas/` will consume geometry output unchanged.
+- **Front end, beyond the wireframe.** Real UX, responsive layout, saved sheets, URL state, hosting. The MVP is in progress; see Current phase.
