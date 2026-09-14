@@ -51,6 +51,8 @@ Not used: "body height", "bounding box", "em box". These mean different things i
 
 One codebase, three modules with clean interfaces. **Not** services — no network boundaries, no separate processes.
 
+`src/index.ts` is the package entry, not a fourth module: `createSheetPdf(config)` is config in, PDF out — `buildSheet` followed by the renderer.
+
 ### 1. `geometry/`
 Pure functions. Validated config in, coordinates out. **Zero PDF awareness.** No imports from the renderer or any PDF library.
 
@@ -77,8 +79,10 @@ Raw user input in, validated config out. Applies defaults field by field — any
 ### Build order
 
 1. `geometry/` — feed it a hardcoded config object. Get the math right first.
-2. `render/pdf/` — draw geometry output, verify against printed page.
+2. `render/pdf/` — draw geometry output, verify against printed page. `npm run proof` writes sample sheets to `proofs/` for exactly that.
 3. `config/` — validation and defaults last, once geometry has revealed the full parameter shape.
+
+Until `config/` exists the defaults table below is hardcoded in `src/testing/fixtures.ts`, which both the tests and the proof script use. Building `config/` means moving them there, not writing them a second time.
 
 ## Config schema
 
@@ -190,7 +194,7 @@ Placeholders. Refine after first printed proofs.
 ## Do not
 
 - Do not write UI, preview, or canvas code in this phase.
-- Do not import a PDF library anywhere except `render/pdf/`.
+- Do not import a PDF library anywhere except `render/pdf/`, and test helpers that verify its output.
 - Do not convert units anywhere except `config/`.
 - Do not split renderer and PDF generation into separate modules — they are one thing.
 - Do not turn modules into services.
