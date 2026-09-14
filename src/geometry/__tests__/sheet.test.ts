@@ -75,7 +75,7 @@ describe('buildSheet — capHeight mode', () => {
     expect(row!.bottom).toBeCloseTo(136.8, 10);
   });
 
-  it('spaces rows a descender line to the next ascender line apart', () => {
+  it('spaces rows one band bottom to the next band top apart', () => {
     const rows = buildSheet(baseConfig()).rows;
 
     for (let i = 1; i < rows.length; i++) {

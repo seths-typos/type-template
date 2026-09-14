@@ -60,7 +60,7 @@ export const FIELDS: FieldSpec[] = [
   { path: 'metrics.xHeight', type: 'number', unit: '% of cap height', default: show(metrics.xHeight), notes: '> 0' },
   { path: 'metrics.ascender', type: 'number', unit: '% of cap height', default: show(metrics.ascender), notes: '>= 0; sets the top of the row band when above the cap height' },
   { path: 'metrics.descender', type: 'number', unit: '% of cap height', default: show(metrics.descender), notes: '<= 0; sets the bottom of the row band, or the baseline does at 0' },
-  { path: 'metrics.rowGap', type: 'number', unit: 'pt', default: show(metrics.rowGap), notes: '>= 0; descender line to next ascender line' },
+  { path: 'metrics.rowGap', type: 'number', unit: 'pt', default: show(metrics.rowGap), notes: '>= 0; bottom of one row band to the top of the next' },
   { path: 'metrics.verticalAlign', type: 'enum', default: show(metrics.verticalAlign), notes: 'top | center | justify' },
 
   ...lineStyle('lines.baseline', lines.baseline, 'baseline'),
@@ -75,7 +75,7 @@ export const FIELDS: FieldSpec[] = [
   { path: 'labels.gap', type: 'number', unit: 'pt', default: show(labels.gap), notes: '>= 0; label to the left end of its line' },
 
   { path: 'slant.enabled', type: 'boolean', default: show(slant.enabled), notes: 'diagonal guides for italic work' },
-  { path: 'slant.angle', type: 'number', unit: 'degrees from vertical', notes: 'REQUIRED when enabled, no default; -90 < angle < 90, positive leans right' },
+  { path: 'slant.angle', type: 'number', unit: 'degrees', notes: 'REQUIRED when enabled, no default; from vertical, -90 to 90, positive leans right' },
   { path: 'slant.spacing', type: 'number', unit: 'pt', default: show(slant.spacing), notes: '> 0; measured along the baseline' },
   { path: 'slant.inset', type: 'number', unit: 'pt', default: show(slant.inset), notes: 'first line, from the left edge of the row' },
   ...lineStyle('slant.style', slant.style, 'slant lines'),

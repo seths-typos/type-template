@@ -13,9 +13,8 @@ const columns = [
   (f: FieldSpec) => f.default ?? '—',
 ] as const;
 
-// Capped so one long default (labels.text) does not stretch every row.
-const CAP = 18;
-const widths = columns.map((get) => Math.min(CAP, Math.max(...FIELDS.map((f) => get(f).length))));
+// Every column is as wide as its widest cell, so rows always line up.
+const widths = columns.map((get) => Math.max(...FIELDS.map((f) => get(f).length)));
 
 const sections = new Map<string, FieldSpec[]>();
 

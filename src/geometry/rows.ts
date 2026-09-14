@@ -14,7 +14,7 @@ export interface RowLayout {
   rowCount: number;
   /** y of the first row's ascender line. */
   blockTop: number;
-  /** Descender line to the next ascender line. */
+  /** Bottom of one row band to the top of the next. */
   gap: number;
 }
 

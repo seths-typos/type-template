@@ -39,7 +39,7 @@ Use these terms exactly. Do not invent synonyms.
 | **descender line** | Bottom of strokes below baseline (p, g, y). Expressed as % of cap height. **Negative** (below baseline). |
 | **total metric height** | Height of the row band: topmost metric line to bottommost. Usually ascender to descender, but it closes down to the cap height line or up to the baseline when there is no ascender or descender. Derived, never input. |
 | **row** | One band of guidelines, spanning the total metric height. |
-| **row gap** | Whitespace between rows, measured from one row's **descender line to the next row's ascender line**. |
+| **row gap** | Whitespace between rows, measured from one row band's **bottom to the next row band's top** — the descender and ascender lines whenever a face has them. |
 | **row pitch** | total metric height + row gap. Derived. |
 | **slant lines** | Diagonal guides for italic/oblique work. Angle measured **from vertical**. |
 | **label** | A letter set in the left margin naming a metric line — B, C, X by default. |
@@ -117,7 +117,7 @@ interface SheetConfig {
     xHeight: number;          // % of cap height, 0–100+
     ascender: number;         // % of cap height, typically > 100
     descender: number;        // % of cap height, negative
-    rowGap: number;           // pt, descender line to next ascender line
+    rowGap: number;           // pt, bottom of one row band to the top of the next
     verticalAlign: 'top' | 'center' | 'justify';
   };
 

@@ -57,7 +57,7 @@ export interface MetricsConfig {
   ascender: number;
   /** % of cap height, negative */
   descender: number;
-  /** pt, descender line to next ascender line */
+  /** pt, bottom of one row band to the top of the next */
   rowGap: number;
   verticalAlign: VerticalAlign;
 }
