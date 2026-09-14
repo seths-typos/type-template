@@ -1,6 +1,7 @@
 import { ConfigError, buildSheet, createSheetPdf, resolveConfig } from '../src/index.js';
 import { drawSheetToCanvas } from '../src/render/canvas/index.js';
 import { buildForm } from './form.js';
+import { measure, previewSize } from './preview.js';
 
 const form = buildForm(document.querySelector('#form')!, () => render());
 const canvas = document.querySelector<HTMLCanvasElement>('#preview')!;
@@ -20,15 +21,19 @@ function render(): void {
     form.showIssues([]);
     lastGood = input;
 
-    const scale = canvas.parentElement!.clientWidth / sheet.page.width;
-    const dpr = window.devicePixelRatio || 1;
+    // Measure the content box, not the padded one, and let CSS lay the canvas
+    // out at 100% width. Sizing it in pixels here let it push its own
+    // container wider on every render.
+    const size = previewSize(
+      measure(canvas.parentElement!),
+      sheet.page,
+      window.devicePixelRatio || 1,
+    );
 
-    canvas.width = Math.round(sheet.page.width * scale * dpr);
-    canvas.height = Math.round(sheet.page.height * scale * dpr);
-    canvas.style.width = `${sheet.page.width * scale}px`;
-    canvas.style.height = `${sheet.page.height * scale}px`;
+    canvas.width = size.width;
+    canvas.height = size.height;
 
-    drawSheetToCanvas(ctx, sheet, config, { scale: scale * dpr });
+    drawSheetToCanvas(ctx, sheet, config, { scale: size.scale });
 
     status.textContent =
       `${sheet.page.width} x ${sheet.page.height} pt · ${sheet.rows.length} rows · ` +

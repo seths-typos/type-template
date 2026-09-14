@@ -32,6 +32,10 @@ main {
   align-items: start;
 }
 
+/* Grid items default to min-width: auto, so an oversized canvas would widen
+   its own column and the preview would grow on every render. */
+main > * { min-width: 0; }
+
 #form { background: #fff; border: 1px solid #ccc; }
 
 details { border-bottom: 1px solid #eee; }
@@ -57,4 +61,6 @@ textarea { height: 40px; resize: vertical; }
 .invalid { outline: 1px solid #c00; }
 
 #sheet { background: #fff; border: 1px solid #ccc; padding: 16px; }
-canvas { display: block; box-shadow: 0 0 0 1px #ddd; }
+/* The canvas never dictates layout width — it fills what it is given and
+   takes its height from the attribute aspect ratio. */
+canvas { display: block; width: 100%; height: auto; box-shadow: 0 0 0 1px #ddd; }
