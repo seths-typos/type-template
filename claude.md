@@ -74,7 +74,11 @@ Raw user input in, validated config out. Applies defaults field by field — any
 
 **Page size** is resolved here too: a preset name plus an orientation become explicit `{ width, height }` in points. Presets are a closed list users pick from — there is no free-form width/height input, so orientation always has well-defined dimensions to reorder. Adding a preset is one entry in `config/presets.ts`.
 
-**Isolation rule:** the choice of cap height as the reference metric lives in one function here. If user testing says to switch the reference (e.g. to total metric height), that one function changes and nothing downstream cares.
+`resolveConfig(input)` is the entry. Problems are collected across the whole input and thrown together as a single `ConfigError` carrying `{ path, message }` per field — one bad value must not hide the next three, and a form later wants them all at once.
+
+**Reviewing the surface without a front end:** `npm run fields` prints every input field with its type, unit, default and constraints, driven by the `FIELDS` table in `config/fields.ts`. A test asserts that table covers exactly the input surface, so a field cannot be added without being described. `npm run resolve -- '{...}'` prints what a partial input resolves to.
+
+**Isolation rule:** the choice of cap height as the reference metric lives in one function here — `toCapHeightReference` in `config/reference.ts`. If user testing says to switch the reference (e.g. to total metric height), that one function changes and nothing downstream cares.
 
 ### Build order
 
@@ -82,14 +86,15 @@ Raw user input in, validated config out. Applies defaults field by field — any
 2. `render/pdf/` — draw geometry output, verify against printed page. `npm run proof` writes sample sheets to `proofs/` for exactly that.
 3. `config/` — validation and defaults last, once geometry has revealed the full parameter shape.
 
-Until `config/` exists the defaults table below is hardcoded in `src/testing/fixtures.ts`, which both the tests and the proof script use. Building `config/` means moving them there, not writing them a second time.
+All three are built. The defaults table below lives in `config/defaults.ts` and nowhere else — the tests and the proof script both reach it through `resolveConfig()`.
 
 ## Config schema
 
 ```ts
-// Raw input side. `size` and `orientation` are resolved by config into the
-// `page: { width, height, margins }` that geometry and the renderers consume —
-// nothing downstream ever sees a preset name.
+// The raw input side, as `SheetInput` with every field optional. `size` and
+// `orientation` are resolved by config into the `page: { width, height,
+// margins }` that geometry and the renderers consume, so nothing downstream
+// ever sees a preset name. `SheetConfig` is the validated result.
 interface SheetConfig {
   page: {
     size: PagePreset;   // a preset name. No free-form dimensions.
@@ -182,6 +187,7 @@ Placeholders. Refine after first printed proofs.
 ## Geometry rules
 
 - Cap height is absolute. Every other vertical metric is `capHeight × (percent / 100)`.
+- The row band runs ascender line to descender line, and every other metric has to sit inside it. Config enforces `ascender >= 100`, `descender <= 0`, and `0 < xHeight <= ascender`.
 - Total metric height = `(ascender − descender) / 100 × capHeight`.
 - Row pitch = total metric height + rowGap.
 - **capHeight mode:** rows fill the available height (page height − margins − header) at the given pitch. Row count = floor of what fits.

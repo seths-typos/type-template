@@ -1,3 +1,5 @@
+import type { Orientation, PagePreset } from './presets.js';
+
 /**
  * Config schema for the validated config — what geometry and the renderers
  * consume. Page presets live in ./presets.ts.
@@ -39,8 +41,12 @@ export interface HeaderConfig {
   text: string;
 }
 
+export type MetricsMode = 'capHeight' | 'rowCount';
+
+export type VerticalAlign = 'top' | 'center' | 'justify';
+
 export interface MetricsConfig {
-  mode: 'capHeight' | 'rowCount';
+  mode: MetricsMode;
   /** pt, absolute. Input in capHeight mode; computed in rowCount mode. */
   capHeight: number;
   /** Input in rowCount mode; computed in capHeight mode. */
@@ -53,7 +59,7 @@ export interface MetricsConfig {
   descender: number;
   /** pt, descender line to next ascender line */
   rowGap: number;
-  verticalAlign: 'top' | 'center' | 'justify';
+  verticalAlign: VerticalAlign;
 }
 
 export interface LinesConfig {
@@ -99,4 +105,22 @@ export interface SheetConfig {
   lines: LinesConfig;
   labels: LabelsConfig;
   slant: SlantConfig;
+}
+
+/**
+ * Raw input. Every field is optional — whatever is left out keeps its
+ * default. `page.size` and `page.orientation` live here rather than in the
+ * validated config, because resolving them into dimensions is config's job.
+ */
+export interface SheetInput {
+  page?: {
+    size?: PagePreset;
+    orientation?: Orientation;
+    margins?: Partial<PageConfig['margins']>;
+  };
+  header?: Partial<HeaderConfig>;
+  metrics?: Partial<MetricsConfig>;
+  lines?: Partial<Record<keyof LinesConfig, Partial<LineStyle>>>;
+  labels?: Partial<Omit<LabelsConfig, 'text'>> & { text?: LabelsConfig['text'] };
+  slant?: Partial<Omit<SlantConfig, 'style'>> & { style?: Partial<LineStyle> };
 }

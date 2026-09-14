@@ -1,0 +1,39 @@
+/**
+ * Prints the config input surface: every field, its type, unit, default and
+ * constraints. Run with `npm run fields`.
+ *
+ * This is how the config surface gets reviewed without a front end.
+ */
+import { FIELDS, type FieldSpec } from '../src/config/index.js';
+
+const columns = [
+  (f: FieldSpec) => f.path.slice(f.path.indexOf('.') + 1),
+  (f: FieldSpec) => f.type,
+  (f: FieldSpec) => f.unit ?? '',
+  (f: FieldSpec) => f.default ?? '—',
+] as const;
+
+// Capped so one long default (labels.text) does not stretch every row.
+const CAP = 18;
+const widths = columns.map((get) => Math.min(CAP, Math.max(...FIELDS.map((f) => get(f).length))));
+
+const sections = new Map<string, FieldSpec[]>();
+
+for (const field of FIELDS) {
+  const section = field.path.slice(0, field.path.indexOf('.'));
+  sections.set(section, [...(sections.get(section) ?? []), field]);
+}
+
+console.log(`\nConfig input surface — ${FIELDS.length} fields. Anything omitted keeps its default.\n`);
+
+for (const [section, fields] of sections) {
+  console.log(section);
+
+  for (const field of fields) {
+    const cells = columns.map((get, i) => get(field).padEnd(widths[i]!));
+
+    console.log(`  ${cells.join('  ')}  ${field.notes ?? ''}`.trimEnd());
+  }
+
+  console.log('');
+}

@@ -1,55 +1,11 @@
-import { resolvePageSize } from '../config/presets.js';
-import type { LineStyle, SheetConfig } from '../config/types.js';
-
-const solid = (weight: number, color: string): LineStyle => ({
-  visible: true,
-  weight,
-  color,
-  dash: null,
-});
+import { resolveConfig } from '../config/index.js';
+import type { SheetConfig } from '../config/types.js';
 
 /**
- * The documented defaults, hardcoded here rather than in geometry — geometry
- * owns no defaults. Replace with the real config module once it exists.
+ * The defaults, resolved through config so the tests exercise the real
+ * thing rather than a parallel copy. Returns a fresh object each call —
+ * tests mutate it freely.
  */
 export function baseConfig(): SheetConfig {
-  return {
-    page: {
-      // Defaults: letter, landscape -> 792 x 612 pt.
-      ...resolvePageSize('letter', 'landscape'),
-      margins: { top: 36, right: 36, bottom: 36, left: 36 },
-    },
-    header: { enabled: false, height: 54, text: '' },
-    metrics: {
-      mode: 'capHeight',
-      capHeight: 72,
-      rowCount: 5,
-      xHeight: 70,
-      ascender: 105,
-      descender: -35,
-      rowGap: 36,
-      verticalAlign: 'top',
-    },
-    lines: {
-      baseline: solid(0.5, '#000000'),
-      capHeight: solid(0.5, '#888888'),
-      xHeight: { visible: true, weight: 0.5, color: '#888888', dash: [3, 3] },
-      ascender: solid(0.5, '#888888'),
-      descender: solid(0.5, '#888888'),
-    },
-    labels: {
-      enabled: true,
-      size: 6,
-      color: '#888888',
-      gap: 6,
-      text: { baseline: 'B', capHeight: 'C', xHeight: 'X' },
-    },
-    slant: {
-      enabled: false,
-      angle: 15,
-      spacing: 36,
-      inset: 72,
-      style: solid(0.5, '#888888'),
-    },
-  };
+  return resolveConfig();
 }

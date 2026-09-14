@@ -1,3 +1,5 @@
+import { HEX_COLOR } from '../../config/color.js';
+
 /** A colour in the 0–1 component range both pdf-lib and canvas want. */
 export interface Rgb {
   r: number;
@@ -5,11 +7,11 @@ export interface Rgb {
   b: number;
 }
 
-const HEX = /^#?([0-9a-f]{3}|[0-9a-f]{6})$/i;
+// Config owns the format; this only turns a valid colour into components.
 
 /** Parse `#rgb` or `#rrggbb` into 0–1 components. */
 export function parseHexColor(hex: string): Rgb {
-  const match = HEX.exec(hex.trim());
+  const match = HEX_COLOR.exec(hex.trim());
 
   if (!match) {
     throw new Error(`Invalid hex color '${hex}'. Expected #rgb or #rrggbb.`);

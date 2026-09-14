@@ -16,6 +16,8 @@ function slantOnly(row: Row): LineSegment[] {
 function slantConfig() {
   const config = baseConfig();
   config.slant.enabled = true;
+  // Angle has no default — config requires it whenever slant is on.
+  config.slant.angle = 15;
   return config;
 }
 

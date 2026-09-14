@@ -8,7 +8,9 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
-    "proof": "vite-node scripts/proof.ts"
+    "proof": "vite-node scripts/proof.ts",
+    "fields": "vite-node scripts/fields.ts",
+    "resolve": "vite-node scripts/resolve.ts"
   },
   "dependencies": {
     "pdf-lib": "^1.17.1"
