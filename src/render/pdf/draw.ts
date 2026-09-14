@@ -1,3 +1,4 @@
+import { METRIC_LABELS } from '../../config/labels.js';
 import type { LineStyle, SheetConfig } from '../../config/types.js';
 import type { LineType, Sheet } from '../../geometry/types.js';
 import { parseHexColor, type Rgb } from './color.js';
@@ -141,7 +142,7 @@ function labelOps(sheet: Sheet, config: SheetConfig, flip: (y: number) => number
     for (const line of row.lines) {
       if (line.type === 'slant') continue;
 
-      const text = labels.text[line.type];
+      const text = METRIC_LABELS[line.type];
 
       if (!text || !config.lines[line.type].visible) continue;
 

@@ -57,9 +57,9 @@ export const FIELDS: FieldSpec[] = [
   { path: 'metrics.mode', type: 'enum', default: show(metrics.mode), notes: 'capHeight | rowCount — which one is the input' },
   { path: 'metrics.capHeight', type: 'number', unit: 'pt', default: show(metrics.capHeight), notes: '> 0; the reference metric. Computed in rowCount mode' },
   { path: 'metrics.rowCount', type: 'integer', default: show(metrics.rowCount), notes: '>= 1; computed in capHeight mode' },
-  { path: 'metrics.xHeight', type: 'number', unit: '% of cap height', default: show(metrics.xHeight), notes: '> 0, at or below the ascender' },
-  { path: 'metrics.ascender', type: 'number', unit: '% of cap height', default: show(metrics.ascender), notes: '>= 100; the top of the row band' },
-  { path: 'metrics.descender', type: 'number', unit: '% of cap height', default: show(metrics.descender), notes: '<= 0; below the baseline' },
+  { path: 'metrics.xHeight', type: 'number', unit: '% of cap height', default: show(metrics.xHeight), notes: '> 0' },
+  { path: 'metrics.ascender', type: 'number', unit: '% of cap height', default: show(metrics.ascender), notes: '>= 0; sets the top of the row band when above the cap height' },
+  { path: 'metrics.descender', type: 'number', unit: '% of cap height', default: show(metrics.descender), notes: '<= 0; sets the bottom of the row band, or the baseline does at 0' },
   { path: 'metrics.rowGap', type: 'number', unit: 'pt', default: show(metrics.rowGap), notes: '>= 0; descender line to next ascender line' },
   { path: 'metrics.verticalAlign', type: 'enum', default: show(metrics.verticalAlign), notes: 'top | center | justify' },
 
@@ -69,16 +69,10 @@ export const FIELDS: FieldSpec[] = [
   ...lineStyle('lines.ascender', lines.ascender, 'ascender line'),
   ...lineStyle('lines.descender', lines.descender, 'descender line'),
 
-  { path: 'labels.enabled', type: 'boolean', default: show(labels.enabled), notes: 'letters naming each line, set in the left margin' },
+  { path: 'labels.enabled', type: 'boolean', default: show(labels.enabled), notes: 'B, C and X in the left margin naming their lines' },
   { path: 'labels.size', type: 'number', unit: 'pt', default: show(labels.size), notes: '> 0' },
   { path: 'labels.color', type: 'string', unit: 'hex', default: show(labels.color), notes: '#rgb or #rrggbb' },
   { path: 'labels.gap', type: 'number', unit: 'pt', default: show(labels.gap), notes: '>= 0; label to the left end of its line' },
-  {
-    path: 'labels.text',
-    type: 'record',
-    default: JSON.stringify(labels.text),
-    notes: 'keys are metric line names; omit a line to leave it unlabelled',
-  },
 
   { path: 'slant.enabled', type: 'boolean', default: show(slant.enabled), notes: 'diagonal guides for italic work' },
   { path: 'slant.angle', type: 'number', unit: 'degrees from vertical', notes: 'REQUIRED when enabled, no default; -90 < angle < 90, positive leans right' },

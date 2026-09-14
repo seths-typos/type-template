@@ -40,8 +40,25 @@ describe('totalMetricHeight', () => {
     expect(totalMetricHeight(72, METRICS)).toBeCloseTo(100.8, 10);
   });
 
-  it('rejects a descender above the ascender', () => {
-    expect(() => metricHeightRatio({ ascender: -10, descender: 10 })).toThrow(/must be above/);
+  it('closes the band down to the cap height when there is no ascender', () => {
+    const noAscender = { ...METRICS, ascender: 100 };
+
+    // Cap height to descender, not ascender to descender.
+    expect(totalMetricHeight(72, noAscender)).toBeCloseTo(97.2, 10);
+    expect(metricHeightRatio(noAscender)).toBeCloseTo(1.35, 10);
+  });
+
+  it('closes the band up to the baseline when there is no descender', () => {
+    expect(totalMetricHeight(72, { ...METRICS, descender: 0 })).toBeCloseTo(75.6, 10);
+  });
+
+  it('never closes past the cap height line or the baseline', () => {
+    // Both lines are always drawn, so they are the floor on the band.
+    expect(metricHeightRatio({ xHeight: 70, ascender: 80, descender: 0 })).toBeCloseTo(1, 10);
+  });
+
+  it('follows an x-height that reaches above the ascender', () => {
+    expect(metricHeightRatio({ xHeight: 130, ascender: 105, descender: 0 })).toBeCloseTo(1.3, 10);
   });
 
   it('rejects a non-positive cap height', () => {

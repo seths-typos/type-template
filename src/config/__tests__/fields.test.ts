@@ -3,15 +3,12 @@ import { DEFAULTS } from '../defaults.js';
 import { DEFAULTLESS, FIELDS } from '../fields.js';
 import { resolveConfig } from '../index.js';
 
-/** Fields whose value is a whole object the user replaces wholesale. */
-const OPAQUE = new Set(['labels.text']);
-
 function leafPaths(value: unknown, prefix = ''): string[] {
   return Object.entries(value as Record<string, unknown>).flatMap(([key, child]) => {
     const path = prefix ? `${prefix}.${key}` : key;
     const isObject = typeof child === 'object' && child !== null && !Array.isArray(child);
 
-    return isObject && !OPAQUE.has(path) ? leafPaths(child, path) : [path];
+    return isObject ? leafPaths(child, path) : [path];
   });
 }
 

@@ -3,6 +3,7 @@ import { buildSheet } from '../../../geometry/index.js';
 import { baseConfig } from '../../../testing/fixtures.js';
 import { drawOps, type DrawLine, type DrawText } from '../draw.js';
 import type { SheetConfig } from '../../../config/types.js';
+import { METRIC_LABELS } from '../../../config/labels.js';
 
 // Defaults are letter / landscape: a 792 x 612 pt page. Geometry's y runs down
 // from the top, PDF's runs up from the bottom, so pdfY = 612 - y.
@@ -223,10 +224,9 @@ describe('drawOps — metric line labels', () => {
     expect(labels(config)).toHaveLength(0);
   });
 
-  it('takes custom text per line', () => {
-    const config = baseConfig();
-    config.labels.text = { ascender: 'asc', baseline: 'base' };
-
-    expect(new Set(labels(config).map((op) => op.text))).toEqual(new Set(['asc', 'base']));
+  it('uses the fixed type-design set, not something configurable', () => {
+    expect(new Set(labels(baseConfig()).map((op) => op.text))).toEqual(
+      new Set(Object.values(METRIC_LABELS)),
+    );
   });
 });

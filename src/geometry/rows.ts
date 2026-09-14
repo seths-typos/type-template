@@ -1,6 +1,6 @@
 import type { MetricsConfig, SlantConfig } from '../config/types.js';
 import type { LineSegment, MetricLine, Rect, Row } from './types.js';
-import { metricOffsets } from './metrics.js';
+import { bandExtremes, metricOffsets } from './metrics.js';
 import { slantLines } from './slant.js';
 
 /** Top to bottom within a row band. */
@@ -34,15 +34,21 @@ export function buildRows(
   const pitch = layout.totalMetricHeight + layout.gap;
   const rows: Row[] = [];
 
+  // The band follows whichever metrics are there, so its edges are not always
+  // the ascender and descender.
+  const band = bandExtremes(metrics);
+  const bandTop = (layout.capHeight * band.top) / 100;
+  const bandBottom = (layout.capHeight * band.bottom) / 100;
+
   for (let index = 0; index < layout.rowCount; index++) {
     const top = layout.blockTop + index * pitch;
-    const baseline = top + offsets.ascender;
+    const baseline = top + bandTop;
 
     const row: Row = {
       index,
       top,
       baseline,
-      bottom: baseline - offsets.descender,
+      bottom: baseline - bandBottom,
       left: area.left,
       right: area.right,
       lines: [],

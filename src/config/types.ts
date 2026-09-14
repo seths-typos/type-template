@@ -83,8 +83,6 @@ export interface LabelsConfig {
   color: string;
   /** pt, between the label's right edge and the left end of its line */
   gap: number;
-  /** Text per metric line. Omit a line to leave it unlabelled. */
-  text: Partial<Record<keyof LinesConfig, string>>;
 }
 
 export interface SlantConfig {
@@ -121,6 +119,6 @@ export interface SheetInput {
   header?: Partial<HeaderConfig>;
   metrics?: Partial<MetricsConfig>;
   lines?: Partial<Record<keyof LinesConfig, Partial<LineStyle>>>;
-  labels?: Partial<Omit<LabelsConfig, 'text'>> & { text?: LabelsConfig['text'] };
+  labels?: Partial<LabelsConfig>;
   slant?: Partial<Omit<SlantConfig, 'style'>> & { style?: Partial<LineStyle> };
 }

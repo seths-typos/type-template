@@ -218,3 +218,50 @@ describe('buildSheet — metric lines', () => {
     expect(ys.at(-1)).toBeCloseTo(row!.bottom, 10);
   });
 });
+
+describe('buildSheet — the row band follows the metrics present', () => {
+  it('closes down to the cap height line when there is no ascender', () => {
+    const config = baseConfig();
+    config.metrics.ascender = 100;
+
+    const sheet = buildSheet(config);
+    const [row] = sheet.rows;
+
+    expect(sheet.totalMetricHeight).toBeCloseTo(97.2, 10);
+    // The band top is now the cap height line, 72 pt above the baseline.
+    expect(row!.baseline - row!.top).toBeCloseTo(72, 10);
+
+    const capLine = row!.lines.find((line) => line.type === 'capHeight');
+    expect(capLine!.start.y).toBeCloseTo(row!.top, 10);
+  });
+
+  it('closes up to the baseline when there is no descender', () => {
+    const config = baseConfig();
+    config.metrics.descender = 0;
+
+    const [row] = buildSheet(config).rows;
+
+    expect(row!.bottom).toBeCloseTo(row!.baseline, 10);
+  });
+
+  it('fits more rows once the band closes on both ends', () => {
+    const config = baseConfig();
+    config.metrics.ascender = 100;
+    config.metrics.descender = 0;
+
+    const sheet = buildSheet(config);
+
+    expect(sheet.totalMetricHeight).toBeCloseTo(72, 10);
+    expect(sheet.rows).toHaveLength(5);
+  });
+
+  it('follows an x-height that reaches above the ascender', () => {
+    const config = baseConfig();
+    config.metrics.xHeight = 130;
+
+    const [row] = buildSheet(config).rows;
+    const xLine = row!.lines.find((line) => line.type === 'xHeight');
+
+    expect(xLine!.start.y).toBeCloseTo(row!.top, 10);
+  });
+});

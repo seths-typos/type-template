@@ -47,7 +47,6 @@ export const DEFAULTS = {
     size: 6,
     color: '#888888',
     gap: 6,
-    text: { baseline: 'B', capHeight: 'C', xHeight: 'X' },
   },
   slant: {
     enabled: false,

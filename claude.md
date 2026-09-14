@@ -37,8 +37,8 @@ Use these terms exactly. Do not invent synonyms.
 | **x-height** | Height of lowercase letters without ascenders. Expressed as % of cap height. |
 | **ascender line** | Top of tall lowercase strokes (b, d, k). Expressed as % of cap height. Typically > 100%. |
 | **descender line** | Bottom of strokes below baseline (p, g, y). Expressed as % of cap height. **Negative** (below baseline). |
-| **total metric height** | Distance from ascender line to descender line. Derived, never input. |
-| **row** | One band of guidelines, ascender line to descender line. |
+| **total metric height** | Height of the row band: topmost metric line to bottommost. Usually ascender to descender, but it closes down to the cap height line or up to the baseline when there is no ascender or descender. Derived, never input. |
+| **row** | One band of guidelines, spanning the total metric height. |
 | **row gap** | Whitespace between rows, measured from one row's **descender line to the next row's ascender line**. |
 | **row pitch** | total metric height + row gap. Derived. |
 | **slant lines** | Diagonal guides for italic/oblique work. Angle measured **from vertical**. |
@@ -62,6 +62,8 @@ Must be fully testable without producing a PDF.
 
 ### 2. `render/pdf/`
 Consumes geometry output, draws it into a PDF. Owns page creation, the y-axis flip, stroke styling, dash patterns, and header text. Returns PDF bytes.
+
+**Label text is fixed, not configurable.** A type sheet always names the baseline, cap height and x-height — B, C and X, in `config/labels.ts`. Only their look (size, colour, gap, on/off) is config. Calligraphy mode will want its own set, chosen by mode rather than typed in.
 
 **Labels are the renderer's job.** Their anchor is the left end of the line they name, which geometry already gives; turning that into a placed glyph needs the font's metrics to right-align it into the margin and centre it on the line. Geometry stays measurement-free, and a canvas renderer measures its own the same way. A line that isn't drawn gets no label.
 
@@ -132,7 +134,6 @@ interface SheetConfig {
     size: number;       // pt
     color: string;      // hex
     gap: number;        // pt, between the label and the left end of its line
-    text: Partial<Record<keyof LinesConfig, string>>;  // omit a line to leave it unlabelled
   };
 
   slant: {
@@ -177,7 +178,6 @@ Placeholders. Refine after first printed proofs.
 | labels.size | 6 pt |
 | labels.color | `#888888` |
 | labels.gap | 6 pt |
-| labels.text | `{ baseline: 'B', capHeight: 'C', xHeight: 'X' }` |
 | slant.enabled | `false` |
 | slant.angle | **none — required if enabled** |
 | slant.spacing | 36 pt |
@@ -187,8 +187,9 @@ Placeholders. Refine after first printed proofs.
 ## Geometry rules
 
 - Cap height is absolute. Every other vertical metric is `capHeight × (percent / 100)`.
-- The row band runs ascender line to descender line, and every other metric has to sit inside it. Config enforces `ascender >= 100`, `descender <= 0`, and `0 < xHeight <= ascender`.
-- Total metric height = `(ascender − descender) / 100 × capHeight`.
+- The row band follows the metrics that are actually there. Its top is `max(ascender, xHeight, 100)` and its bottom is `min(descender, 0)` — the cap height line and the baseline are always drawn, so they are the floor on how far it can close. A face with no ascender, or with caps taller than its ascender, is a sheet rather than an error.
+- Total metric height = `(band top − band bottom) / 100 × capHeight`. With the defaults that is `(105 − −35) / 100 × capHeight`, the ascender-to-descender case.
+- Config enforces only `descender <= 0`, `xHeight > 0`, `ascender >= 0` and `capHeight > 0`. Ordering is not a rule, because the band adapts.
 - Row pitch = total metric height + rowGap.
 - **capHeight mode:** rows fill the available height (page height − margins − header) at the given pitch. Row count = floor of what fits.
 - Gaps sit **between** rows only — n rows occupy `n × total metric height + (n − 1) × rowGap`. No trailing gap. Zero rows is an error, not an empty sheet.
@@ -211,7 +212,7 @@ Placeholders. Refine after first printed proofs.
 Not yet resolved. Do not implement. Do not design around them beyond what's noted.
 
 - **Reference metric.** Cap height is the reference for now. User testing may switch this to total metric height. Kept isolated in `config/` for this reason.
-- **Calligraphy mode.** A second mode with heights in nib widths and a pen angle guide. Will require a nib-width input that type mode lacks. Defined conceptually, not built.
+- **Calligraphy mode.** A second mode with heights in nib widths, a pen angle guide, and its own label set in place of B/C/X. Will require a nib-width input that type mode lacks. Defined conceptually, not built.
 - **Row gap as % of cap height** instead of fixed points. Currently fixed at 36 pt.
 - **Structured header for Type Cooker briefs.** Header is free text. May become structured fields (weight, contrast, width…) or consume Type Cooker output directly if a machine-readable format exists.
 - **More page presets.** Letter and A4 ship now; legal and iPad screen sizes are candidates. **Trap:** Apple's "points" are device-independent pixels at roughly 1/163 inch, not DTP points. A screen preset has to be converted to physical size at the config boundary like any other foreign unit, never downstream.

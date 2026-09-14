@@ -31,6 +31,7 @@ export { PAGE_PRESETS, PAGE_PRESET_NAMES, resolvePageSize } from './presets.js';
 export type { Orientation, PagePreset } from './presets.js';
 export { toCapHeightReference } from './reference.js';
 export { FIELDS } from './fields.js';
+export { METRIC_LABELS } from './labels.js';
 export type { FieldSpec } from './fields.js';
 export type * from './types.js';
 
@@ -135,21 +136,16 @@ function resolveMetrics(raw: unknown, issues: Issues): MetricsConfig {
     }),
     xHeight: number(metrics.xHeight, fallback.xHeight, 'metrics.xHeight', issues, { above: 0 }),
     ascender: number(metrics.ascender, fallback.ascender, 'metrics.ascender', issues, {
-      atLeast: 100,
+      atLeast: 0,
     }),
     descender: number(metrics.descender, fallback.descender, 'metrics.descender', issues, {
       atMost: 0,
     }),
   });
 
-  // The row band runs ascender to descender, so every other metric has to sit
-  // inside it — including the cap height line, hence ascender >= 100%.
-  if (referenced.xHeight > referenced.ascender) {
-    issues.add(
-      'metrics.xHeight',
-      `must be at or below the ascender (${referenced.ascender}%), got ${referenced.xHeight}%`,
-    );
-  }
+  // No ordering rules beyond the sign of the descender: the row band follows
+  // whichever metrics are there, so a face with no ascender — or caps taller
+  // than its ascender — is a sheet, not an error.
 
   return {
     ...referenced,
@@ -208,33 +204,7 @@ function resolveLabels(raw: unknown, issues: Issues): LabelsConfig {
     size: number(labels.size, fallback.size, 'labels.size', issues, { above: 0 }),
     color: hexColor(labels.color, fallback.color, 'labels.color', issues),
     gap: number(labels.gap, fallback.gap, 'labels.gap', issues, { atLeast: 0 }),
-    text: resolveLabelText(labels.text, issues),
   };
-}
-
-function resolveLabelText(raw: unknown, issues: Issues): LabelsConfig['text'] {
-  if (raw === undefined) return { ...DEFAULTS.labels.text };
-
-  const entries = section(raw, 'labels.text', issues);
-  const resolved: LabelsConfig['text'] = {};
-
-  for (const [key, value] of Object.entries(entries)) {
-    if (!LINE_NAMES.includes(key as (typeof LINE_NAMES)[number])) {
-      issues.add('labels.text', `'${key}' is not a metric line. Use ${LINE_NAMES.join(', ')}.`);
-      continue;
-    }
-
-    const label = text(value, '', `labels.text.${key}`, issues);
-
-    if (label === '') {
-      issues.add(`labels.text.${key}`, 'must not be empty — omit the line to leave it unlabelled');
-      continue;
-    }
-
-    resolved[key as (typeof LINE_NAMES)[number]] = label;
-  }
-
-  return resolved;
 }
 
 function resolveSlant(raw: unknown, issues: Issues): SlantConfig {

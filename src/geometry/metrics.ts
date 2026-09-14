@@ -31,27 +31,36 @@ export function metricOffsets(
 }
 
 /**
- * The span of one row band as a multiple of cap height:
- * (ascender - descender) / 100.
+ * Top and bottom of the row band, as percentages of cap height.
+ *
+ * Usually the ascender and descender, but the band follows whichever metrics
+ * are actually there: give a face no ascender and the band closes down to the
+ * cap height line, no descender and it closes up to the baseline. The cap
+ * height line and baseline are always drawn, so they are the floor on how far
+ * it can close.
  */
-export function metricHeightRatio(
-  metrics: Pick<MetricsConfig, 'ascender' | 'descender'>,
-): number {
-  const ratio = (metrics.ascender - metrics.descender) / 100;
-
-  if (!(ratio > 0)) {
-    throw new Error(
-      `Ascender (${metrics.ascender}%) must be above descender (${metrics.descender}%).`,
-    );
-  }
-
-  return ratio;
+export function bandExtremes(
+  metrics: Pick<MetricsConfig, 'xHeight' | 'ascender' | 'descender'>,
+): { top: number; bottom: number } {
+  return {
+    top: Math.max(metrics.ascender, metrics.xHeight, 100),
+    bottom: Math.min(metrics.descender, 0),
+  };
 }
 
-/** Ascender line to descender line, in points. */
+/** The span of one row band as a multiple of cap height. */
+export function metricHeightRatio(
+  metrics: Pick<MetricsConfig, 'xHeight' | 'ascender' | 'descender'>,
+): number {
+  const { top, bottom } = bandExtremes(metrics);
+
+  return (top - bottom) / 100;
+}
+
+/** Top of the row band to the bottom of it, in points. */
 export function totalMetricHeight(
   capHeight: number,
-  metrics: Pick<MetricsConfig, 'ascender' | 'descender'>,
+  metrics: Pick<MetricsConfig, 'xHeight' | 'ascender' | 'descender'>,
 ): number {
   if (!(capHeight > 0)) {
     throw new Error(`Cap height must be greater than 0, got ${capHeight}.`);
@@ -87,7 +96,7 @@ export function solveCapHeight(
   availableHeight: number,
   rowCount: number,
   rowGap: number,
-  metrics: Pick<MetricsConfig, 'ascender' | 'descender'>,
+  metrics: Pick<MetricsConfig, 'xHeight' | 'ascender' | 'descender'>,
 ): number {
   if (!Number.isInteger(rowCount) || rowCount < 1) {
     throw new Error(`Row count must be a positive integer, got ${rowCount}.`);

@@ -25,7 +25,6 @@ describe('resolveConfig — defaults', () => {
     });
     expect(config.metrics.capHeight).toBe(72);
     expect(config.metrics.ascender).toBe(105);
-    expect(config.labels.text).toEqual({ baseline: 'B', capHeight: 'C', xHeight: 'X' });
     expect(config.lines.xHeight.dash).toEqual([3, 3]);
   });
 
@@ -118,14 +117,20 @@ describe('resolveConfig — reporting problems', () => {
 });
 
 describe('resolveConfig — metric rules', () => {
-  it('requires the row band to contain every other metric', () => {
-    expect(issuePaths({ metrics: { ascender: 90 } })).toEqual(['metrics.ascender']);
+  it('requires the descender to be at or below the baseline', () => {
     expect(issuePaths({ metrics: { descender: 20 } })).toEqual(['metrics.descender']);
-    expect(issuePaths({ metrics: { xHeight: 120 } })).toEqual(['metrics.xHeight']);
+    expect(resolveConfig({ metrics: { descender: 0 } }).metrics.descender).toBe(0);
   });
 
-  it('accepts an x-height above the cap height but inside the ascender', () => {
-    expect(resolveConfig({ metrics: { xHeight: 104 } }).metrics.xHeight).toBe(104);
+  it('accepts a face with no ascender, or caps taller than its ascender', () => {
+    // The row band follows the metrics that exist rather than assuming an
+    // ascender is there to define it.
+    expect(resolveConfig({ metrics: { ascender: 100 } }).metrics.ascender).toBe(100);
+    expect(resolveConfig({ metrics: { ascender: 90 } }).metrics.ascender).toBe(90);
+  });
+
+  it('accepts an x-height reaching above the cap height or the ascender', () => {
+    expect(resolveConfig({ metrics: { xHeight: 120 } }).metrics.xHeight).toBe(120);
   });
 
   it('requires a whole number of rows', () => {
@@ -185,18 +190,10 @@ describe('resolveConfig — lines and labels', () => {
     expect(config.lines.baseline.dash).toBeNull();
   });
 
-  it('replaces the label set rather than merging into it', () => {
-    const config = resolveConfig({ labels: { text: { baseline: 'base' } } });
+  it('takes the look of the labels but not their text', () => {
+    const config = resolveConfig({ labels: { size: 8, color: '#333333' } });
 
-    expect(config.labels.text).toEqual({ baseline: 'base' });
-  });
-
-  it('rejects a label for something that is not a metric line', () => {
-    expect(issuePaths({ labels: { text: { slant: 'S' } } })).toEqual(['labels.text']);
-  });
-
-  it('rejects an empty label', () => {
-    expect(issuePaths({ labels: { text: { baseline: '' } } })).toEqual(['labels.text.baseline']);
+    expect(config.labels).toEqual({ enabled: true, size: 8, color: '#333333', gap: 6 });
   });
 });
 
