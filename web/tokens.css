@@ -1,0 +1,160 @@
+/* Text-o-matic tokens, generated from the Figma variables in
+   https://www.figma.com/design/2qz7HUZpSowl87urNt5vYq/Type-Template-Maker
+   (synced 2026-10-09). Figma is the source of truth; web/tokens.json is the
+   matching raw copy.
+
+   Three layers, as in Figma:
+   - Core: primitives. Reference these only from the layers below.
+   - Color: semantic colours, aliasing Core.
+   - Responsive: sizes with Large and Small modes. Large is the default;
+     Small applies under [data-size="small"]. No breakpoint is chosen yet. */
+@import url('https://fonts.googleapis.com/css2?family=Michroma&family=Special+Gothic&display=swap');
+
+/* ── Core ─────────────────────────────────────────────── */
+:root {
+  --color-black: #132322;
+  --color-near-black: #474848;
+  --color-grey: #999999;
+  --color-white: #fbfbf9;
+  --color-red: #cb0106;
+  --color-green: #b7cdc0;
+  --color-teal: #01655a;
+  --color-blue: #75a7be;
+  --color-blue-light: #cee2e9;
+
+  --font-size-n2: 8px;
+  --font-size-n1: 11px;
+  --font-size-1: 14px;
+  --font-size-2: 19px;
+  --font-size-3: 25px;
+  --font-size-4: 33px;
+  --font-size-5: 44px;
+  --font-size-6: 59px;
+  --font-size-7: 79px;
+  --font-size-8: 105px;
+
+  --spacing-1: 4px;
+  --spacing-2: 8px;
+  --spacing-3: 12px;
+  --spacing-4: 16px;
+  --spacing-5: 24px;
+  --spacing-6: 32px;
+  --spacing-7: 48px;
+  --spacing-8: 64px;
+  --spacing-9: 96px;
+  --spacing-10: 128px;
+
+  --radius-1: 4px;
+  --radius-2: 8px;
+  --radius-3: 16px;
+  --radius-4: 24px;
+
+  --border-base: 1px;
+  --border-thick: 2px;
+
+  --font-family-display: "Michroma", "Eurostile", system-ui, sans-serif;
+  --font-family-heading: "Michroma", "Eurostile", system-ui, sans-serif;
+  --font-family-body: "Special Gothic", "Helvetica Neue", system-ui, sans-serif;
+  --font-family-ui: "Special Gothic", "Helvetica Neue", system-ui, sans-serif;
+
+  /* Every weight is "Regular" in Figma. */
+  --weight-display: 400;
+  --weight-heading: 400;
+  --weight-body: 400;
+  --weight-ui: 400;
+}
+
+/* ── Color ────────────────────────────────────────────── */
+:root {
+  --color-bg: var(--color-black);
+  --color-bg-contrast: var(--color-white);
+  --color-text-ondark: var(--color-white);
+  --color-text-onlight: var(--color-black);
+  --color-text-disabled: rgb(from var(--color-near-black) r g b / 0.75);
+  --color-ui-accent: var(--color-teal);
+  --color-ui-contrast: var(--color-red);
+  --color-ui-disabled: rgb(from var(--color-near-black) r g b / 0.5);
+  --active: var(--color-blue);
+  --inactive: var(--color-blue-light);
+  --border: var(--color-black);
+}
+
+/* ── Responsive ───────────────────────────────────────── */
+:root {
+  --type-display-1: var(--font-size-8);
+  --type-heading-h1: var(--font-size-6);
+  --type-heading-h2: var(--font-size-5);
+  --type-heading-h3: var(--font-size-1);
+  --type-body-md: var(--font-size-1);
+  --type-body-sm: var(--font-size-n1);
+  --type-ui-md: var(--font-size-1);
+  --type-ui-sm: var(--font-size-n1);
+  /* Local, not yet in Figma: field error messages. 10px sits between the
+     core scale's 8 (too small to read) and ui-sm's 11; the scale has no
+     step there. */
+  --type-ui-xs: 10px;
+
+  --spacers-padding-xs: var(--spacing-2);
+  --spacers-padding-sm: var(--spacing-4);
+  --spacers-padding-md: var(--spacing-5);
+  --spacers-padding-lg: var(--spacing-7);
+  --spacers-margin-xs: var(--spacing-2);
+  --spacers-margin-sm: var(--spacing-4);
+  --spacers-margin-md: var(--spacing-6);
+  --spacers-margin-lg: var(--spacing-8);
+  --spacers-btwn-module: var(--spacing-10);
+
+  --grid-columns: 12;
+  --grid-margin: var(--spacing-8);
+  --grid-gutter: var(--spacing-5);
+
+  --corner-sm: var(--radius-1);
+  --corner-md: var(--radius-3);
+  --corner-lg: var(--radius-4);
+}
+
+[data-size="small"] {
+  --type-display-1: var(--font-size-7);
+  --type-heading-h1: var(--font-size-5);
+  --type-heading-h2: var(--font-size-4);
+  --type-heading-h3: var(--font-size-n1);
+
+  --spacers-padding-sm: var(--spacing-3);
+  --spacers-padding-md: var(--spacing-4);
+  --spacers-padding-lg: var(--spacing-6);
+  --spacers-margin-sm: var(--spacing-3);
+  --spacers-margin-md: var(--spacing-5);
+  --spacers-margin-lg: var(--spacing-7);
+  --spacers-btwn-module: var(--spacing-9);
+
+  --grid-columns: 4;
+  --grid-margin: var(--spacing-4);
+  --grid-gutter: var(--spacing-4);
+
+  --corner-md: var(--radius-2);
+  --corner-lg: var(--radius-3);
+}
+
+/* ── Text styles ──────────────────────────────────────── */
+.display-1,
+.heading-h1,
+.heading-h2,
+.heading-h3,
+.body-md,
+.body-sm,
+.ui-md,
+.ui-sm,
+.ui-xs {
+  line-height: 1;
+  letter-spacing: 0;
+}
+.display-1 { font: var(--weight-display) var(--type-display-1)/1 var(--font-family-display); }
+.heading-h1 { font: var(--weight-heading) var(--type-heading-h1)/1 var(--font-family-heading); }
+.heading-h2 { font: var(--weight-heading) var(--type-heading-h2)/1 var(--font-family-heading); }
+.heading-h3 { font: var(--weight-heading) var(--type-heading-h3)/1 var(--font-family-heading); }
+.body-md { font: var(--weight-body) var(--type-body-md)/1 var(--font-family-body); }
+.body-sm { font: var(--weight-body) var(--type-body-sm)/1 var(--font-family-body); }
+.ui-md { font: var(--weight-ui) var(--type-ui-md)/1 var(--font-family-ui); text-transform: uppercase; }
+.ui-sm { font: var(--weight-ui) var(--type-ui-sm)/1 var(--font-family-ui); text-transform: uppercase; }
+/* Local, not yet in Figma. */
+.ui-xs { font: var(--weight-ui) var(--type-ui-xs)/1 var(--font-family-ui); text-transform: uppercase; }

@@ -1,0 +1,688 @@
+:root {
+  /* Square corners, softened. Not on the Figma radius scale (4, 8, 16, 24). */
+  --corner-xs: 2px;
+}
+
+body {
+  margin: 0;
+  padding: var(--spacers-padding-md);
+  background: var(--color-bg);
+}
+
+/* One row's editor: its number above its preview card, centred on it. */
+.row-editor {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: fit-content;
+}
+
+.row-editor-title {
+  margin: 0 0 var(--spacers-padding-xs);
+  color: var(--ink, var(--color-text-ondark));
+}
+
+/* A part of a row's editor — Preview, Metrics — under its own heading.
+   Full width, so a section without toggles ("Same as Row 1") still lines up
+   with the card's left edge. */
+.row-section {
+  display: flex;
+  flex-direction: column;
+  align-self: stretch;
+}
+
+/* Flush left over its part, whatever that part centres. */
+.row-section-title {
+  align-self: stretch;
+  margin: 0 0 var(--spacers-margin-xs);
+  color: var(--ink, var(--color-text-ondark));
+  text-align: left;
+}
+
+/* Row preview card, "Active" state. Values from Figma node 292:1547. */
+.row-preview {
+  /* Width is set inline, matched to the controls below it. */
+  height: 256px;
+  border-radius: var(--corner-xs);
+  background: var(--color-bg-contrast);
+  overflow: hidden;
+}
+
+.row-preview svg {
+  display: block;
+}
+
+/* Metric toggle: the metric's name, then a 24px round on/off button, the
+   name centred on the button. A rule runs over the name and on along the
+   button's top edge. */
+.metric-toggle {
+  --diameter: 24px;
+  --rule: var(--border-thick);
+  /* The toggle's two colours: its lines, rings and fills, and text set on a
+     fill. Light on the dark page by default; a light panel flips them. */
+  --ink: var(--color-white);
+  --ink-contrast: var(--color-text-onlight);
+  /* What the toggle sits on: the inside of an OFF button. */
+  --paper: var(--color-bg);
+  /* The value field, from the button's right edge: the value, then the unit
+     cap. */
+  --field-value: 48px;
+  --field-unit: 31px;
+  --drawer: calc(var(--field-value) + var(--field-unit));
+
+  position: relative;
+  display: flex;
+  align-items: center;
+  /* In a column of toggles each one takes the column's width, so names sit
+     flush left and buttons flush right. */
+  justify-content: space-between;
+  gap: var(--spacers-padding-xs);
+  color: var(--ink);
+}
+
+/* The rule: from the name's left end along the button's top. An open
+   field carries it on from there as its top edge. */
+.metric-toggle::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: var(--drawer);
+  height: var(--rule);
+  background: var(--ink);
+}
+
+/* Trimmed to the cap height so it centres on the button by its capitals,
+   then nudged 2px below centre. */
+.metric-toggle-name {
+  position: relative;
+  cursor: pointer;
+  /* A quick double click toggles twice; don't select the name as well. */
+  user-select: none;
+  top: 2px;
+  text-box: trim-both cap alphabetic;
+}
+
+/* The button plus room for its field, reserved open or closed. */
+.metric-control {
+  position: relative;
+  flex: none;
+  width: calc(var(--diameter) + var(--drawer));
+  height: var(--diameter);
+}
+
+/* Off: a flat white outline reading OFF. Square, with the bottom-left corner
+   cut as the row frame's is.
+
+   Like the frame, the outline is two filled shapes: the button itself is the
+   white one, ::before the red one inset by the rule width. clip-path cuts
+   the corner from both. */
+.toggle {
+  /* Smaller than the frame's cut: at 24px tall the control can't take the
+     frame's 24px, so it carries the same 45° at a size it can hold. */
+  --cut: var(--spacing-2);
+  --inner-cut: calc(var(--cut) - var(--rule) * 0.5858);
+
+  position: relative;
+  z-index: 1;
+  appearance: none;
+  box-sizing: border-box;
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: var(--diameter);
+  height: var(--diameter);
+  padding: 0;
+  border: none;
+  border-radius: var(--corner-xs);
+  background: var(--ink);
+  clip-path: polygon(
+    0 0,
+    100% 0,
+    100% 100%,
+    var(--cut) 100%,
+    0 calc(100% - var(--cut))
+  );
+  color: var(--ink);
+  font: inherit;
+  text-transform: inherit;
+  cursor: pointer;
+}
+
+/* The red inside of the outline. */
+.toggle::before {
+  content: '';
+  position: absolute;
+  inset: var(--rule);
+  background: var(--paper);
+  clip-path: polygon(
+    0 0,
+    100% 0,
+    100% 100%,
+    var(--inner-cut) 100%,
+    0 calc(100% - var(--inner-cut))
+  );
+}
+
+/* ON/OFF scaled down to sit inside the button, above its red inside.
+   Nudged right: the cut corner takes weight from the left, so the box's
+   optical centre sits right of its geometric one. */
+.toggle > span {
+  position: relative;
+  left: 1px;
+  font-size: calc(var(--diameter) * 0.29);
+  line-height: 1;
+  /* Trim to the capitals so ON/OFF centres optically, not on its line box. */
+  text-box: trim-both cap alphabetic;
+}
+
+/* On: the shape filled, reading ON. Its right corners go square only when
+   a field opens against them, so button and field read as one piece. */
+.toggle[aria-pressed="true"] {
+  color: var(--ink-contrast);
+}
+
+.metric-toggle:has(.metric-drawer) .toggle[aria-pressed="true"] {
+  border-radius: var(--corner-xs) 0 0 0;
+}
+
+.toggle[aria-pressed="true"]::before {
+  display: none;
+}
+
+/* Clips the field so it slides out from the button's right edge, and back
+   in to disappear there. */
+.metric-drawer-clip {
+  position: absolute;
+  top: 0;
+  /* Tucked 1px under the button: edge to edge, the two anti-alias against
+     each other on a fractional pixel and leave a hairline of red between. */
+  left: calc(var(--diameter) - 1px);
+  width: calc(var(--drawer) + 1px);
+  height: var(--diameter);
+  overflow: hidden;
+}
+
+/* The field: closed, tucked away to the left of the button's edge, out of
+   sight; open, slid out to the right of it. */
+.metric-drawer {
+  box-sizing: border-box;
+  display: flex;
+  height: 100%;
+  border: var(--rule) solid var(--ink);
+  border-left: none;
+  /* Square at its right end, with the top-right corner cut as the row
+     frame's is. The end is solid white, so the cut needs no outline. */
+  border-radius: 0 0 var(--corner-xs) 0;
+  clip-path: polygon(
+    0 0,
+    calc(100% - var(--spacing-2)) 0,
+    100% var(--spacing-2),
+    100% 100%,
+    0 100%
+  );
+  /* All white: the border, the unit cap, and the 1px tucked under the
+     button are one fill, so nothing seams. The red value span is painted
+     over it, and its rounded corners show this white through. */
+  padding-left: 1px;
+  background: var(--ink);
+  transform: translateX(-100%);
+  transition: transform 200ms ease-out;
+}
+
+.metric-toggle:has(.toggle[aria-pressed="true"]) .metric-drawer {
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .metric-drawer {
+    transition: none;
+  }
+}
+
+.metric-input {
+  box-sizing: border-box;
+  /* Exactly the red span between the button and the unit cap, so the value
+     centres in the space the eye sees. */
+  width: calc(var(--field-value) - var(--rule));
+  min-width: 0;
+  padding: 0;
+  border: none;
+  /* Its outer corners rounded, showing the white behind. */
+  border-radius: var(--corner-xs);
+  background: var(--paper);
+  color: var(--ink);
+  font: inherit;
+  text-align: center;
+}
+
+/* Invalid: the field inverts, ink behind the value. Red alone can't mark an
+   error on a red panel. */
+.metric-input[aria-invalid="true"] {
+  background: var(--ink);
+  color: var(--ink-contrast);
+}
+
+/* The last good preview while a value is invalid: still there, plainly not
+   current. */
+.row-editor.is-stale .row-preview {
+  opacity: 0.35;
+}
+
+/* A toggle with the line under it that says what's wrong with its value.
+   The line takes no room until there is something to say. */
+.metric-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.metric-error {
+  /* Held to the toggle's width, so a long message wraps under it. */
+  width: 0;
+  min-width: 100%;
+  margin: var(--spacers-margin-xs) 0 0;
+  color: var(--ink);
+  line-height: 1.3;
+  /* Even lines rather than a word left on its own. */
+  text-wrap: balance;
+  /* Flush with the field's right end, the end it hangs from. */
+  text-align: right;
+}
+
+.metric-error:empty {
+  display: none;
+}
+
+.metric-input:focus-visible {
+  /* A square ring 3px in. An outline would follow the box's rounded corners,
+     so the ring is two inset shadows instead: red over white, 3px and 4px
+     deep, leaving a 1px white line. An inset shadow's inner corners lose
+     its depth from the radius, and 2px less 3px is square. */
+  outline: none;
+  box-shadow:
+    inset 0 0 0 3px var(--paper),
+    inset 0 0 0 calc(3px + var(--border-base)) var(--ink);
+}
+
+/* The unit, on a white cap closing the field's right end. */
+/* Same size and the same cap trim as ON/OFF: both centre on their capitals
+   in the same 24px height, so they share a baseline. */
+.metric-unit > span {
+  line-height: 1;
+  text-box: trim-both cap alphabetic;
+}
+
+.metric-unit {
+  display: grid;
+  place-items: center;
+  width: var(--field-unit);
+  color: var(--ink-contrast);
+  font-size: calc(var(--diameter) * 0.29);
+}
+
+/* The red field holding every row's editor — one now, up to six. Everything
+   inside inks in white; text on a white fill takes the red, as if cut out of
+   it. */
+.rows {
+  --ink: var(--color-white);
+  --ink-contrast: var(--color-red);
+  --paper: var(--color-red);
+
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--spacers-padding-md);
+  width: fit-content;
+  padding: var(--spacers-padding-md);
+  border-radius: var(--corner-xs);
+  background: var(--paper);
+}
+
+/* One row's editor: its preview, then the controls that drive it, framed
+   in white with its top-right and bottom-left corners cut on the diagonal,
+   and its title set into the top edge of the frame.
+
+   A CSS border can't follow a cut corner, so the frame is two filled shapes
+   stacked on the editor's pseudo-elements: ::before is the white shape, and
+   ::after a red one inset by the border width on top of it. The 2px of white
+   left showing between them is the frame. clip-path cuts both.
+
+   The shapes start --frame-top down rather than at the editor's edge, so the
+   title can straddle the top line without being clipped. */
+.editor {
+  --frame: var(--border-thick);
+  --frame-top: var(--spacing-2);
+  --bevel: var(--spacing-5);
+  /* The red shape's corner cut. Insetting a 45° edge by the frame width moves
+     it in by frame × √2, but the shape's corner moves in by frame on each
+     axis, so the cut shrinks by frame × (2 − √2) to keep the diagonal as
+     thick as the sides. */
+  --inner-bevel: calc(var(--bevel) - var(--frame) * 0.5858);
+  /* Rounding where a bevel meets a side. polygon() has no arcs, so each of
+     those corners becomes two points: --joint back along the side, --joint-d
+     along the diagonal on each axis. For a 45° turn, a 2px radius meets its
+     edges r × tan(22.5°) from the corner, and a pair of points that close
+     sits within a few hundredths of a pixel of the true arc. */
+  --joint: calc(var(--corner-xs) * 0.4142);
+  --joint-d: calc(var(--corner-xs) * 0.2929);
+
+  position: relative;
+  /* Its own stacking context, so the shapes at z-index -1 stay behind the
+     content but inside the editor. */
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacers-padding-md);
+  padding: calc(var(--spacers-padding-md) + var(--frame));
+  padding-top: calc(var(--frame-top) + var(--frame) + var(--spacers-padding-md));
+}
+
+.editor::before,
+.editor::after {
+  content: '';
+  position: absolute;
+  z-index: -1;
+}
+
+.editor::before {
+  inset: var(--frame-top) 0 0 0;
+  /* Rounds all four corners; the bevel cuts below remove two of them. The
+     red shape inside stays square, as a border's inner radius is its outer
+     radius less its width: 2 − 2. */
+  border-radius: var(--corner-xs);
+  background: var(--ink);
+  clip-path: polygon(
+    0 0,
+    calc(100% - var(--bevel) - var(--joint)) 0,
+    calc(100% - var(--bevel) + var(--joint-d)) var(--joint-d),
+    calc(100% - var(--joint-d)) calc(var(--bevel) - var(--joint-d)),
+    100% calc(var(--bevel) + var(--joint)),
+    100% 100%,
+    calc(var(--bevel) + var(--joint)) 100%,
+    calc(var(--bevel) - var(--joint-d)) calc(100% - var(--joint-d)),
+    var(--joint-d) calc(100% - var(--bevel) + var(--joint-d)),
+    0 calc(100% - var(--bevel) - var(--joint))
+  );
+}
+
+.editor::after {
+  inset: calc(var(--frame-top) + var(--frame)) var(--frame) var(--frame) var(--frame);
+  background: var(--paper);
+  clip-path: polygon(
+    0 0,
+    calc(100% - var(--inner-bevel)) 0,
+    100% var(--inner-bevel),
+    100% 100%,
+    var(--inner-bevel) 100%,
+    0 calc(100% - var(--inner-bevel))
+  );
+}
+
+/* The title, set into the frame's top line: a short lead of line, a gap,
+   the title, a gap, then the line runs on. Its red background is what
+   breaks the line; trimmed to the capitals, it centres on the line by them. */
+.editor .row-editor-title {
+  position: absolute;
+  top: calc(var(--frame-top) + var(--frame) / 2);
+  /* The lead: the line runs this far before the title's gap begins. */
+  left: var(--spacing-5);
+  margin: 0;
+  padding: 0 var(--spacing-3);
+  background: var(--paper);
+  text-box: trim-both cap alphabetic;
+  transform: translateY(-50%);
+}
+
+.rows .metric-toggle {
+  --ink: inherit;
+  --ink-contrast: inherit;
+  --paper: inherit;
+}
+
+.metric-controls {
+  display: flex;
+  flex-direction: column;
+  width: fit-content;
+  gap: var(--spacers-padding-sm);
+}
+
+/* The row editors, side by side, wrapping as the window allows. */
+.row-editors {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacers-padding-md);
+}
+
+/* Rows and their Metrics sections are fieldsets, to be disabled in one
+   step. Drop the browser's fieldset frame and spacing. */
+.editor,
+.row-section {
+  min-inline-size: 0;
+  margin: 0;
+  border: 0;
+}
+
+.row-section {
+  padding: 0;
+}
+
+/* Disabled: past the row count, the whole row; following row 1, its
+   toggles. 0.7 opacity leaves white on the red at 3.2:1 — under the 4.5:1
+   text minimum, which disabled controls are exempt from, but still clear of
+   the 3:1 for large text and non-text. Not both at once: a following row
+   past the count dims once, not twice. */
+.editor.is-inactive > *,
+.editor:not(.is-inactive) .row-section.is-following .metric-controls {
+  opacity: 0.7;
+}
+
+/* A row past the count dims its frame further still, so the row as a whole
+   reads as set aside. The frame is decoration, not a control's edge, so no
+   contrast minimum applies. Only the white shape fades: the red one inside
+   it stays solid, and the frame's 2px band shows the panel through. */
+.editor.is-inactive::before {
+  opacity: 0.35;
+}
+
+.editor:disabled *,
+.row-section:disabled * {
+  cursor: default;
+}
+
+/* ── Sheet controls ───────────────────────────────────── */
+
+/* Above the rows: the title on the left, the sheet's controls — how many
+   rows, and whether they share metrics — on the right. */
+.sheet-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  align-self: stretch;
+  gap: var(--spacers-margin-lg);
+}
+
+.sheet-title {
+  margin: 0;
+  color: var(--ink);
+}
+
+.sheet-controls {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacers-margin-lg);
+}
+
+/* A control's name above it. */
+.sheet-control {
+  --rule: var(--border-thick);
+  --cut: var(--spacing-2);
+
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacers-margin-xs);
+  color: var(--ink);
+}
+
+/* Number of rows: six stops, a slot apart, with a square thumb cut like
+   the toggles. The track runs between the first stop and the last, which
+   sit half a thumb in from the input's ends. */
+.row-count-slider {
+  --thumb: 24px;
+  --slot: 32px;
+
+  width: calc(var(--thumb) + 5 * var(--slot));
+  /* The first stop, not the input's edge, lines up under the label. At 1 the
+     thumb, centred on that stop, hangs half its width past the label. */
+  margin-left: calc(var(--thumb) / -2);
+}
+
+.row-count {
+  appearance: none;
+  display: block;
+  width: 100%;
+  height: var(--thumb);
+  margin: 0;
+  background:
+    /* A tick at each stop. */
+    repeating-linear-gradient(
+        to right,
+        var(--ink) 0 var(--rule),
+        transparent var(--rule) var(--slot)
+      )
+      calc(var(--thumb) / 2 - var(--rule) / 2) center /
+      calc(100% - var(--thumb) + var(--rule)) var(--spacing-2) no-repeat,
+    /* The track. */
+    linear-gradient(var(--ink), var(--ink)) center /
+      calc(100% - var(--thumb)) var(--rule) no-repeat;
+  cursor: pointer;
+}
+
+.row-count::-webkit-slider-runnable-track {
+  height: var(--thumb);
+  background: transparent;
+}
+
+.row-count::-moz-range-track {
+  height: var(--thumb);
+  background: transparent;
+}
+
+.row-count::-webkit-slider-thumb {
+  appearance: none;
+  width: var(--thumb);
+  height: var(--thumb);
+  border: none;
+  border-radius: var(--corner-xs);
+  background: var(--ink);
+  clip-path: polygon(0 0, 100% 0, 100% 100%, var(--cut) 100%, 0 calc(100% - var(--cut)));
+}
+
+.row-count::-moz-range-thumb {
+  width: var(--thumb);
+  height: var(--thumb);
+  border: none;
+  border-radius: var(--corner-xs);
+  background: var(--ink);
+  clip-path: polygon(0 0, 100% 0, 100% 100%, var(--cut) 100%, 0 calc(100% - var(--cut)));
+}
+
+.row-count:focus-visible {
+  outline: var(--border-base) solid var(--ink);
+  outline-offset: 4px;
+}
+
+/* The stop numbers, each centred under its stop. */
+.row-count-stops {
+  display: grid;
+  grid-template-columns: repeat(6, var(--slot));
+  justify-items: center;
+  margin: var(--spacers-margin-xs) 0 0 calc(var(--thumb) / 2 - var(--slot) / 2);
+}
+
+.row-count-stops > span {
+  opacity: 0.55;
+}
+
+.row-count-stops > .is-current {
+  opacity: 1;
+}
+
+/* Row metrics: a white shell, cut at bottom-left and top-right like the open
+   toggles, holding the options. The chosen one is the shell's white; the
+   other is red, inset by the rule. */
+.choice {
+  box-sizing: border-box;
+  display: flex;
+  gap: var(--rule);
+  height: 24px;
+  padding: var(--rule);
+  border-radius: var(--corner-xs);
+  background: var(--ink);
+  clip-path: polygon(
+    0 0,
+    calc(100% - var(--cut)) 0,
+    100% var(--cut),
+    100% 100%,
+    var(--cut) 100%,
+    0 calc(100% - var(--cut))
+  );
+  font-family: var(--font-family-ui);
+  text-transform: uppercase;
+}
+
+.choice-option {
+  /* The red option's own cut, so a white band runs along the shell's
+     diagonal just as along its sides — the frame's inset rule again. */
+  --inner-cut: calc(var(--cut) - var(--rule) * 0.5858);
+
+  position: relative;
+  display: grid;
+  place-items: center;
+  padding: 0 var(--spacing-3);
+  border-radius: var(--corner-xs);
+  background: var(--paper);
+  color: var(--ink);
+  font-size: calc(24px * 0.29);
+  cursor: pointer;
+}
+
+.choice-option:first-child {
+  clip-path: polygon(0 0, 100% 0, 100% 100%, var(--inner-cut) 100%, 0 calc(100% - var(--inner-cut)));
+}
+
+.choice-option:last-child {
+  clip-path: polygon(0 0, calc(100% - var(--inner-cut)) 0, 100% var(--inner-cut), 100% 100%, 0 100%);
+}
+
+.choice-option > span {
+  line-height: 1;
+  text-box: trim-both cap alphabetic;
+}
+
+/* The radio fills its option, invisible, so the option is the target. */
+.choice-option > input {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.choice-option:has(input:checked) {
+  background: transparent;
+  color: var(--ink-contrast);
+}
+
+/* A square ring 3px in, as on the value fields. */
+.choice-option:has(input:focus-visible) {
+  box-shadow:
+    inset 0 0 0 3px var(--paper),
+    inset 0 0 0 calc(3px + var(--border-base)) var(--ink);
+}
+
+.choice-option:has(input:checked:focus-visible) {
+  box-shadow:
+    inset 0 0 0 3px var(--ink),
+    inset 0 0 0 calc(3px + var(--border-base)) var(--ink-contrast);
+}
