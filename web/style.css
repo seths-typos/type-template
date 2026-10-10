@@ -33,8 +33,8 @@ body {
 
 /* Row preview card, "Active" state. Values from Figma node 292:1547. */
 .row-preview {
-  /* Width is set inline, matched to the controls below it. */
-  height: 256px;
+  /* Size is set inline: the width matched to the controls below it, the
+     height from CARD in row-preview.ts. */
   border-radius: var(--corner-xs);
   background: var(--color-bg-contrast);
   overflow: hidden;
@@ -540,10 +540,11 @@ body {
 /* ── Sheet controls ───────────────────────────────────── */
 
 /* Above the rows: the title on the left, the sheet's controls — how many
-   rows, and whether they share metrics — on the right. */
+   rows, and whether they share metrics — on the right, the two centred on
+   each other. */
 .sheet-header {
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   justify-content: space-between;
   align-self: stretch;
   gap: var(--spacers-margin-lg);

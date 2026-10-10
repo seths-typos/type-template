@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { resolveConfig } from '../../src/index.js';
-import { rowPreviewLayout } from '../row-preview.js';
+import { BAND, rowPreviewLayout } from '../row-preview.js';
 
 const yOf = (layout: ReturnType<typeof rowPreviewLayout>, type: string) =>
   layout.lines.find((line) => line.type === type)?.y;
@@ -25,8 +25,8 @@ describe('rowPreviewLayout', () => {
       const layout = rowPreviewLayout(resolveConfig({ metrics }));
       const ys = layout.lines.map((line) => line.y);
 
-      expect(Math.min(...ys)).toBeCloseTo(29.5, 10);
-      expect(Math.max(...ys)).toBeCloseTo(199.5, 10);
+      expect(Math.min(...ys)).toBeCloseTo(BAND.top, 10);
+      expect(Math.max(...ys)).toBeCloseTo(BAND.bottom, 10);
     }
   });
 
@@ -55,7 +55,7 @@ describe('rowPreviewLayout', () => {
     const on = rowPreviewLayout(resolveConfig({ slant: { enabled: true, angle: 30 } }));
     expect(on.slants.length).toBeGreaterThan(0);
     for (const { start, end } of on.slants) {
-      expect(Math.min(start.y, end.y)).toBeGreaterThanOrEqual(29.5 - 1e-9);
+      expect(Math.min(start.y, end.y)).toBeGreaterThanOrEqual(BAND.top - 1e-9);
       expect(Math.max(start.x, end.x)).toBeLessThanOrEqual(90 + 1e-9);
     }
   });
