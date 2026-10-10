@@ -485,6 +485,45 @@ body {
   opacity: 0.35;
 }
 
+/* The dimming eases rather than snapping, alongside the preview powering. */
+.editor > *,
+.editor::before,
+.row-section .metric-controls {
+  transition: opacity 300ms ease-out;
+}
+
+/* A row switching on or off with the row count: its lines fade up, or drop
+   away with a last flicker like a screen going off. Only the lines; the card
+   stays put. On mirrors off's fade — same length, easing out where it eases
+   in — without the flicker. */
+.row-preview.is-powering-on svg {
+  animation: screen-on 320ms ease-out;
+}
+
+.row-preview.is-powering-off svg {
+  animation: screen-off 320ms ease-in forwards;
+}
+
+@keyframes screen-on {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes screen-off {
+  0% { opacity: 1; }
+  15% { opacity: 0.4; }
+  28% { opacity: 0.85; }
+  100% { opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .editor > *,
+  .editor::before,
+  .row-section .metric-controls {
+    transition: none;
+  }
+}
+
 .editor:disabled *,
 .row-section:disabled * {
   cursor: default;

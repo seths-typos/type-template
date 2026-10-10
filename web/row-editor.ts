@@ -47,8 +47,12 @@ export interface RowEditor {
   setState(state: RowState): void;
   /** Show the controls' values from the state, and redraw. */
   sync(): void;
-  /** In use, or past the row count: dimmed and every control disabled. */
-  setActive(active: boolean): void;
+  /**
+   * In use, or past the row count: dimmed and every control disabled. With
+   * `animate`, the preview powers on or off like a screen rather than
+   * switching at once.
+   */
+  setActive(active: boolean, animate?: boolean): void;
   /** Whether the metrics can be edited here, or follow another row's. */
   setMetricsEditable(editable: boolean): void;
 }
@@ -128,12 +132,14 @@ export function createRowEditor(options: RowEditorOptions): RowEditor {
    * was.
    */
   let inactive = false;
+  /** The lines are fading out; the empty card waits until they have. */
+  let poweringOff = false;
 
   /** Rebuild the preview from the state, or flag what stops it. */
   function refresh(): void {
     if (inactive) {
       for (const toggle of byPath.values()) toggle.setError(null);
-      show(EMPTY_ROW);
+      if (!poweringOff) show(EMPTY_ROW);
       return;
     }
 
@@ -188,11 +194,35 @@ export function createRowEditor(options: RowEditorOptions): RowEditor {
       sync();
     },
     sync,
-    setActive(active) {
+    setActive(active, animate = false) {
+      const changed = inactive === active;
       inactive = !active;
-      sync();
       editor.disabled = !active;
       editor.classList.toggle('is-inactive', !active);
+
+      const power = animate && changed && !REDUCED_MOTION.matches;
+      if (power && !active && preview) {
+        // Off: fade the lines still showing, then leave the card empty.
+        const fading = preview;
+        poweringOff = true;
+        fading.querySelector('.row-preview')?.classList.add('is-powering-off');
+        fading.addEventListener(
+          'animationend',
+          () => {
+            poweringOff = false;
+            // Only if it is still the card showing and the row is still off.
+            if (inactive && preview === fading) show(EMPTY_ROW);
+          },
+          { once: true },
+        );
+        sync();
+        return;
+      }
+
+      poweringOff = false;
+      sync();
+      // On: the freshly drawn lines flicker up.
+      if (power && active) preview?.querySelector('.row-preview')?.classList.add('is-powering-on');
     },
     setMetricsEditable(editable) {
       metrics.disabled = !editable;
@@ -201,6 +231,8 @@ export function createRowEditor(options: RowEditorOptions): RowEditor {
     },
   };
 }
+
+const REDUCED_MOTION = matchMedia('(prefers-reduced-motion: reduce)');
 
 /** A row with nothing drawn: what a row past the count shows. */
 const EMPTY_ROW: SheetConfig = resolveConfig({

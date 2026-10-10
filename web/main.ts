@@ -1,4 +1,3 @@
-import { DEFAULTS } from '../src/index.js';
 import { copyRowState, createRowEditor, newRowState } from './row-editor.js';
 import { MAX_ROWS, createChoiceToggle, createRowCountSlider } from './sheet-controls.js';
 
@@ -10,7 +9,9 @@ type RowMetrics = 'same' | 'different';
  * count comes back up. With "same", every row draws row 1's state.
  */
 const sheet = {
-  rowCount: DEFAULTS.metrics.rowCount as number,
+  // The page starts small; the engine's own default (5) is for sheets made
+  // without it.
+  rowCount: 3,
   metrics: 'same' as RowMetrics,
   rows: Array.from({ length: MAX_ROWS }, newRowState),
 };
@@ -37,8 +38,9 @@ function applyMetrics(): void {
   });
 }
 
-function applyRowCount(): void {
-  editors.forEach((editor, i) => editor.setActive(i < sheet.rowCount));
+/** With `animate`, rows switching on or off power up or down like screens. */
+function applyRowCount(animate = false): void {
+  editors.forEach((editor, i) => editor.setActive(i < sheet.rowCount, animate));
 }
 
 // The red field: a header — its title, then the sheet's controls — and a
@@ -55,7 +57,7 @@ sheetControls.className = 'sheet-controls';
 sheetControls.append(
   createRowCountSlider(sheet.rowCount, (count) => {
     sheet.rowCount = count;
-    applyRowCount();
+    applyRowCount(true);
   }),
   createChoiceToggle<RowMetrics>(
     'Row metrics',
