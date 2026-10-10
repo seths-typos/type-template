@@ -1,6 +1,7 @@
 import { ConfigError, DEFAULT_FONT_UNITS, fontUnitsToPercent, resolveConfig } from '../src/index.js';
 import type { FontUnitMetrics, MetricLine, SheetConfig } from '../src/index.js';
 import { METRIC_TOGGLES, createMetricToggle, type MetricToggle } from './button.js';
+import { toLineStyle, type LineStyles } from './line-styles.js';
 import { metricOrderErrors } from './metric-order.js';
 import { renderRowPreview } from './row-preview.js';
 
@@ -38,6 +39,8 @@ export interface RowEditorOptions {
   row: number;
   /** The metrics this row draws. Rows sharing metrics share this object. */
   state: RowState;
+  /** How each line is drawn, shared by every row. Read on each redraw. */
+  styles: LineStyles;
   /** The state was changed through this row's controls; the row has redrawn. */
   onChange: () => void;
 }
@@ -66,11 +69,11 @@ export interface RowEditor {
  * stays readable to assistive tech as such.
  */
 export function createRowEditor(options: RowEditorOptions): RowEditor {
-  const { row, onChange } = options;
+  const { row, styles, onChange } = options;
   let state = options.state;
 
   const editor = document.createElement('fieldset');
-  editor.className = 'editor';
+  editor.className = 'editor frame';
   const metrics = document.createElement('fieldset');
   metrics.className = 'row-section';
   const controls = document.createElement('div');
@@ -142,7 +145,7 @@ export function createRowEditor(options: RowEditorOptions): RowEditor {
     }
 
     const errors = new Map<string, string>();
-    const config = toConfig(state, errors);
+    const config = toConfig(state, styles, errors);
 
     // Errors belong to the row being edited; a row following another's
     // metrics shows them only on that row.
@@ -249,7 +252,11 @@ const EMPTY_ROW: SheetConfig = resolveConfig({
  * the metrics can't be drawn. A bad italic angle alone doesn't stop the row:
  * it comes back without slant lines, the error still recorded.
  */
-function toConfig(state: RowState, errors: Map<string, string>): SheetConfig | null {
+function toConfig(
+  state: RowState,
+  styles: LineStyles,
+  errors: Map<string, string>,
+): SheetConfig | null {
   for (const [key, value] of Object.entries(state.units)) {
     if (value === null) errors.set(`metrics.${key}`, 'Enter a number.');
   }
@@ -272,25 +279,26 @@ function toConfig(state: RowState, errors: Map<string, string>): SheetConfig | n
     return null;
   }
 
-  const visibility = (type: MetricLine) => ({ visible: state.visible[type] });
+  const line = (type: MetricLine) => ({ ...toLineStyle(styles[type]), visible: state.visible[type] });
   const input = {
     metrics: fontUnitsToPercent(units),
     lines: {
-      ascender: visibility('ascender'),
-      capHeight: visibility('capHeight'),
-      xHeight: visibility('xHeight'),
-      baseline: visibility('baseline'),
-      descender: visibility('descender'),
+      ascender: line('ascender'),
+      capHeight: line('capHeight'),
+      xHeight: line('xHeight'),
+      baseline: line('baseline'),
+      descender: line('descender'),
     },
   };
   const slantOff = { enabled: false };
+  const slantStyle = toLineStyle(styles.slant);
 
   try {
     return resolveConfig({
       ...input,
       slant:
         state.slant.enabled && slantTyped
-          ? { enabled: true, angle: state.slant.angle! }
+          ? { enabled: true, angle: state.slant.angle!, style: slantStyle }
           : slantOff,
     });
   } catch (error) {

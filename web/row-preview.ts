@@ -98,13 +98,16 @@ function svg<K extends keyof SVGElementTagNameMap>(
 }
 
 /**
- * Preview lines are a fixed 1 px so they stay legible at card size; colour and
- * dash come from the config. The dash pattern is read in px, not scaled.
+ * Preview lines are drawn 2 px per printed point, so the engine's 0.5 pt is
+ * 1 px and the heaviest, 1.5 pt, is 3: legible at card size without scaling
+ * with it. Colour and dash come from the config; the dash is read in px.
  */
+const PX_PER_PT = 2;
+
 function stroke(style: LineStyle): Record<string, string | number> {
   return {
     stroke: style.color,
-    'stroke-width': 1,
+    'stroke-width': style.weight * PX_PER_PT,
     ...(style.dash ? { 'stroke-dasharray': style.dash.join(' ') } : {}),
   };
 }
@@ -121,7 +124,7 @@ export function renderRowPreview(
   section.className = 'row-editor';
 
   const title = document.createElement('h3');
-  title.className = 'heading-h3 row-editor-title';
+  title.className = 'heading-h3 row-editor-title frame-title';
   title.textContent = `Row ${row}`;
 
   const card = document.createElement('div');

@@ -1,3 +1,4 @@
+import { createLineStylesPanel, defaultLineStyles } from './line-styles.js';
 import { copyRowState, createRowEditor, newRowState } from './row-editor.js';
 import { MAX_ROWS, createChoiceToggle, createRowCountSlider } from './sheet-controls.js';
 
@@ -14,12 +15,15 @@ const sheet = {
   rowCount: 3,
   metrics: 'same' as RowMetrics,
   rows: Array.from({ length: MAX_ROWS }, newRowState),
+  /** How each line is drawn, the same in every row. */
+  lines: defaultLineStyles(),
 };
 
 const editors = sheet.rows.map((state, i) =>
   createRowEditor({
     row: i + 1,
     state,
+    styles: sheet.lines,
     onChange: () => {
       // Row 1 leads when metrics are shared: the others show its values.
       if (sheet.metrics === 'same' && i === 0) {
@@ -86,7 +90,21 @@ const rowEditors = document.createElement('div');
 rowEditors.className = 'row-editors';
 rowEditors.append(...editors.map((editor) => editor.element));
 
-panel.append(header, rowEditors);
+// Line styles sit under the rows, and every row redraws with them.
+const lineStyles = createLineStylesPanel({
+  styles: sheet.lines,
+  onChange: () => {
+    for (const editor of editors) editor.sync();
+  },
+});
+
+panel.append(header, rowEditors, lineStyles);
+
+// Line Styles spans two row editors. Their width comes from their contents,
+// so it's measured, and again whenever it changes.
+new ResizeObserver(([entry]) => {
+  lineStyles.style.setProperty('--editor-width', `${entry!.borderBoxSize[0]!.inlineSize}px`);
+}).observe(editors[0]!.element);
 document.querySelector('#app')!.append(panel);
 
 applyMetrics();
