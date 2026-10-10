@@ -36,6 +36,8 @@ The rebuilt front end narrows what the user controls. The engine's wider surface
 
 **Italic angle** is degrees from vertical, as Glyphs enters it: 0 is upright, positive leans right, and a typical italic is 8–15. Decided 2026-10-10 over a protractor convention (90 = upright). Valid range is strictly between −90 and 90. Note RoboFont/UFO count the other way (right-leaning is negative), so importing from a UFO would flip the sign.
 
+**Metric order** is enforced by the editor, not the engine: ascender above cap height, x-height strictly between 0 and cap height, descender below 0, all in font units. A metric switched off isn't checked. The rules live in `web/metric-order.ts`; config still accepts any order, since the band adapts.
+
 **Engine implications (not built yet):**
 - Fixing the band height and deriving cap height from it makes total metric height the reference. That is the parked *Reference metric* decision, now taken for this UX. It changes in `toCapHeightReference` and nowhere else.
 - Per-row metrics are new. Today `metrics` is a single set shared by every row. With individual metrics, every row band is still the same height, so each row's cap height comes out different.

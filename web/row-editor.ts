@@ -1,6 +1,7 @@
 import { ConfigError, DEFAULT_FONT_UNITS, fontUnitsToPercent, resolveConfig } from '../src/index.js';
 import type { FontUnitMetrics, MetricLine, SheetConfig } from '../src/index.js';
 import { METRIC_TOGGLES, createMetricToggle, type MetricToggle } from './button.js';
+import { metricOrderErrors } from './metric-order.js';
 import { renderRowPreview } from './row-preview.js';
 
 /**
@@ -261,6 +262,13 @@ function toConfig(state: RowState, errors: Map<string, string>): SheetConfig | n
   // judge the others until it is usable.
   if (!(units.capHeight > 0)) {
     errors.set('metrics.capHeight', 'Must be greater than 0.');
+    return null;
+  }
+
+  // Out of order, the row is left undrawn like any other bad metric.
+  const disorder = metricOrderErrors(units, state.visible);
+  if (disorder.size > 0) {
+    for (const [path, message] of disorder) errors.set(path, message);
     return null;
   }
 
