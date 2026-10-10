@@ -70,14 +70,11 @@ export function createRowEditor(options: RowEditorOptions): RowEditor {
 
   const editor = document.createElement('fieldset');
   editor.className = 'editor';
-  const metricsHeading = document.createElement('h4');
-  metricsHeading.className = 'ui-md row-section-title';
-  metricsHeading.textContent = 'Metrics';
   const metrics = document.createElement('fieldset');
   metrics.className = 'row-section';
   const controls = document.createElement('div');
   controls.className = 'metric-controls';
-  metrics.append(metricsHeading, controls);
+  metrics.append(controls);
   editor.append(metrics);
 
   /** Each field's toggle, keyed by the config path its errors come back on. */

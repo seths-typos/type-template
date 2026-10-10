@@ -6,7 +6,7 @@
 body {
   margin: 0;
   padding: var(--spacers-padding-md);
-  background: var(--color-bg);
+  background: var(--color-mist);
 }
 
 /* One row's editor: its number above its preview card, centred on it. */
@@ -19,24 +19,16 @@ body {
 
 .row-editor-title {
   margin: 0 0 var(--spacers-padding-xs);
-  color: var(--ink, var(--color-text-ondark));
+  color: var(--ink, var(--color-text-onlight));
 }
 
-/* A part of a row's editor — Preview, Metrics — under its own heading.
-   Full width, so a section without toggles ("Same as Row 1") still lines up
-   with the card's left edge. */
+/* A part of a row's editor, such as its Metrics. Full width, so a section
+   without toggles ("Same as Row 1") still lines up with the card's left
+   edge. */
 .row-section {
   display: flex;
   flex-direction: column;
   align-self: stretch;
-}
-
-/* Flush left over its part, whatever that part centres. */
-.row-section-title {
-  align-self: stretch;
-  margin: 0 0 var(--spacers-margin-xs);
-  color: var(--ink, var(--color-text-ondark));
-  text-align: left;
 }
 
 /* Row preview card, "Active" state. Values from Figma node 292:1547. */
@@ -46,6 +38,10 @@ body {
   border-radius: var(--corner-xs);
   background: var(--color-bg-contrast);
   overflow: hidden;
+  /* An inset outline, not a border: the SVG is drawn to the card's exact
+     size, and a border would shrink the box it has to fit in. */
+  outline: var(--border-thick) solid var(--color-black);
+  outline-offset: calc(-1 * var(--border-thick));
 }
 
 .row-preview svg {
@@ -60,10 +56,10 @@ body {
   --rule: var(--border-thick);
   /* The toggle's two colours: its lines, rings and fills, and text set on a
      fill. Light on the dark page by default; a light panel flips them. */
-  --ink: var(--color-white);
-  --ink-contrast: var(--color-text-onlight);
+  --ink: var(--color-black);
+  --ink-contrast: var(--color-mist);
   /* What the toggle sits on: the inside of an OFF button. */
-  --paper: var(--color-bg);
+  --paper: var(--color-mist);
   /* The value field, from the button's right edge: the value, then the unit
      cap. */
   --field-value: 48px;
@@ -324,9 +320,9 @@ body {
    inside inks in white; text on a white fill takes the red, as if cut out of
    it. */
 .rows {
-  --ink: var(--color-white);
-  --ink-contrast: var(--color-red);
-  --paper: var(--color-red);
+  --ink: var(--color-black);
+  --ink-contrast: var(--color-mist);
+  --paper: var(--color-mist);
 
   display: flex;
   flex-direction: column;
@@ -432,6 +428,10 @@ body {
   background: var(--paper);
   text-box: trim-both cap alphabetic;
   transform: translateY(-50%);
+  /* Its own layer for good. The translate leaves it on a half pixel, and
+     Safari otherwise lifts it onto a layer only while the frame behind it
+     fades, rounding it a pixel off until the fade ends. */
+  will-change: transform;
 }
 
 .rows .metric-toggle {
@@ -472,9 +472,16 @@ body {
    text minimum, which disabled controls are exempt from, but still clear of
    the 3:1 for large text and non-text. Not both at once: a following row
    past the count dims once, not twice. */
-.editor.is-inactive > *,
+.editor.is-inactive > :not(.row-editor),
+.editor.is-inactive .row-editor > :not(.row-editor-title),
 .editor:not(.is-inactive) .row-section.is-following .metric-controls {
   opacity: 0.7;
+}
+
+/* The title's background is what breaks the frame line behind it, so it
+   stays solid: only the text dims, or the line would show through. */
+.editor.is-inactive .row-editor-title {
+  color: rgb(from var(--ink) r g b / 0.7);
 }
 
 /* A row past the count dims its frame further still, so the row as a whole
@@ -486,10 +493,11 @@ body {
 }
 
 /* The dimming eases rather than snapping, alongside the preview powering. */
-.editor > *,
+.editor > :not(.row-editor),
+.row-editor > *,
 .editor::before,
 .row-section .metric-controls {
-  transition: opacity 300ms ease-out;
+  transition: opacity 300ms ease-out, color 300ms ease-out;
 }
 
 /* A row switching on or off with the row count: its lines fade up, or drop

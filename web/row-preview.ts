@@ -123,10 +123,6 @@ export function renderRowPreview(
   title.className = 'heading-h3 row-editor-title';
   title.textContent = `Row ${row}`;
 
-  const heading = document.createElement('h4');
-  heading.className = 'ui-md row-section-title';
-  heading.textContent = 'Preview';
-
   const card = document.createElement('div');
   card.className = 'row-preview';
   card.style.width = `${width}px`;
@@ -151,6 +147,6 @@ export function renderRowPreview(
   }
 
   card.append(root);
-  section.append(title, heading, card);
+  section.append(title, card);
   return section;
 }

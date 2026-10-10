@@ -21,17 +21,21 @@
   --color-teal: #01655a;
   --color-blue: #75a7be;
   --color-blue-light: #cee2e9;
+  /* Local, not yet in Figma: trying it as the background. */
+  --color-mist: #f0f3f4;
 
-  --font-size-n2: 8px;
+  /* Local, not yet in Figma: a minor third (×1.2) on 13px, each step
+     rounded to the nearest pixel. Figma's is a perfect fourth on 14. */
+  --font-size-n2: 9px;
   --font-size-n1: 11px;
-  --font-size-1: 14px;
-  --font-size-2: 19px;
-  --font-size-3: 25px;
-  --font-size-4: 33px;
-  --font-size-5: 44px;
-  --font-size-6: 59px;
-  --font-size-7: 79px;
-  --font-size-8: 105px;
+  --font-size-1: 13px;
+  --font-size-2: 16px;
+  --font-size-3: 19px;
+  --font-size-4: 22px;
+  --font-size-5: 27px;
+  --font-size-6: 32px;
+  --font-size-7: 39px;
+  --font-size-8: 47px;
 
   --spacing-1: 4px;
   --spacing-2: 8px;
@@ -82,17 +86,17 @@
 /* ── Responsive ───────────────────────────────────────── */
 :root {
   --type-display-1: var(--font-size-8);
-  --type-heading-h1: var(--font-size-6);
+  /* Local, not yet in Figma: remapped onto the minor-third scale, keeping
+     the hierarchy. h2 (the page title) sits two steps below h1. */
+  --type-heading-h1: var(--font-size-7);
   --type-heading-h2: var(--font-size-5);
   --type-heading-h3: var(--font-size-1);
   --type-body-md: var(--font-size-1);
   --type-body-sm: var(--font-size-n1);
   --type-ui-md: var(--font-size-1);
   --type-ui-sm: var(--font-size-n1);
-  /* Local, not yet in Figma: field error messages. 10px sits between the
-     core scale's 8 (too small to read) and ui-sm's 11; the scale has no
-     step there. */
-  --type-ui-xs: 10px;
+  /* Local, not yet in Figma: field error messages. */
+  --type-ui-xs: var(--font-size-n2);
 
   --spacers-padding-xs: var(--spacing-2);
   --spacers-padding-sm: var(--spacing-4);
@@ -115,7 +119,8 @@
 
 [data-size="small"] {
   --type-display-1: var(--font-size-7);
-  --type-heading-h1: var(--font-size-5);
+  /* Local, as above: each a step below Large. */
+  --type-heading-h1: var(--font-size-6);
   --type-heading-h2: var(--font-size-4);
   --type-heading-h3: var(--font-size-n1);
 
