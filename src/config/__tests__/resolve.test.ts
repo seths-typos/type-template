@@ -24,7 +24,8 @@ describe('resolveConfig — defaults', () => {
       margins: { top: 36, right: 36, bottom: 36, left: 36 },
     });
     expect(config.metrics.capHeight).toBe(72);
-    expect(config.metrics.ascender).toBe(105);
+    // 800 units over a 700-unit cap height, as a font editor would enter it.
+    expect(config.metrics.ascender).toBeCloseTo((800 / 700) * 100, 10);
     expect(config.lines.xHeight.dash).toEqual([3, 3]);
   });
 
@@ -50,7 +51,7 @@ describe('resolveConfig — defaults apply field by field', () => {
     const config = resolveConfig({ metrics: { capHeight: 96 } });
 
     expect(config.metrics.capHeight).toBe(96);
-    expect(config.metrics.xHeight).toBe(70);
+    expect(config.metrics.xHeight).toBeCloseTo((500 / 700) * 100, 10);
     expect(config.metrics.rowGap).toBe(36);
   });
 
@@ -60,7 +61,7 @@ describe('resolveConfig — defaults apply field by field', () => {
     expect(config.lines.xHeight).toEqual({
       visible: true,
       weight: 0.5,
-      color: '#888888',
+      color: '#cb0106',
       dash: null,
     });
   });

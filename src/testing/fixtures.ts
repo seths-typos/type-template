@@ -9,3 +9,12 @@ import type { SheetConfig } from '../config/types.js';
 export function baseConfig(): SheetConfig {
   return resolveConfig();
 }
+
+/**
+ * The defaults with the metrics pinned to fixed, round values: 70% x-height,
+ * 105% ascender, -35% descender. Geometry tests hand-check positions against
+ * these, so they must not move when the default metrics do.
+ */
+export function fixedMetricsConfig(): SheetConfig {
+  return resolveConfig({ metrics: { xHeight: 70, ascender: 105, descender: -35 } });
+}

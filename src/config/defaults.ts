@@ -1,5 +1,9 @@
 import type { LineStyle, MetricsMode, VerticalAlign } from './types.js';
 import type { Orientation, PagePreset } from './presets.js';
+import { DEFAULT_FONT_UNITS, fontUnitsToPercent } from './font-units.js';
+
+/** The default metrics, entered in font units the way a font editor takes them. */
+const fontMetrics = fontUnitsToPercent(DEFAULT_FONT_UNITS);
 
 const guide = (color: string, dash: number[] | null = null): LineStyle => ({
   visible: true,
@@ -29,18 +33,18 @@ export const DEFAULTS = {
     mode: 'capHeight' as MetricsMode,
     capHeight: 72,
     rowCount: 5,
-    xHeight: 70,
-    ascender: 105,
-    descender: -35,
+    xHeight: fontMetrics.xHeight,
+    ascender: fontMetrics.ascender,
+    descender: fontMetrics.descender,
     rowGap: 36,
     verticalAlign: 'top' as VerticalAlign,
   },
   lines: {
-    baseline: guide('#000000'),
-    capHeight: guide('#888888'),
-    xHeight: guide('#888888', [3, 3]),
-    ascender: guide('#888888'),
-    descender: guide('#888888'),
+    baseline: guide('#474848'),
+    capHeight: guide('#474848'),
+    xHeight: guide('#cb0106', [3, 3]),
+    ascender: guide('#474848'),
+    descender: guide('#474848'),
   },
   labels: {
     enabled: true,
@@ -52,6 +56,6 @@ export const DEFAULTS = {
     enabled: false,
     spacing: 36,
     inset: 72,
-    style: guide('#888888'),
+    style: guide('#999999'),
   },
 } as const satisfies Record<string, unknown>;

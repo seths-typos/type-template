@@ -1,14 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import { buildSheet } from '../sheet.js';
 import type { LineType } from '../types.js';
-import { baseConfig } from '../../testing/fixtures.js';
+import { fixedMetricsConfig } from '../../testing/fixtures.js';
 
 // Defaults are letter / landscape: a 792 x 612 pt page, 36 pt margins,
 // leaving a 720 x 540 pt area.
 
 describe('buildSheet — available area', () => {
   it('sits inside the margins', () => {
-    const { area } = buildSheet(baseConfig());
+    const { area } = buildSheet(fixedMetricsConfig());
 
     expect(area).toEqual({
       top: 36,
@@ -21,7 +21,7 @@ describe('buildSheet — available area', () => {
   });
 
   it('reserves the header below the top margin', () => {
-    const config = baseConfig();
+    const config = fixedMetricsConfig();
     config.header.enabled = true;
     config.header.text = 'Type Cooker brief';
 
@@ -39,18 +39,18 @@ describe('buildSheet — available area', () => {
   });
 
   it('omits the header block when disabled', () => {
-    expect(buildSheet(baseConfig()).header).toBeNull();
+    expect(buildSheet(fixedMetricsConfig()).header).toBeNull();
   });
 
   it('rejects margins that leave no room', () => {
-    const config = baseConfig();
+    const config = fixedMetricsConfig();
     config.page.margins = { top: 400, right: 36, bottom: 400, left: 36 };
 
     expect(() => buildSheet(config)).toThrow(/no room/);
   });
 
   it('rejects a page with no dimensions', () => {
-    const config = baseConfig();
+    const config = fixedMetricsConfig();
     config.page.width = 0;
 
     expect(() => buildSheet(config)).toThrow(/positive dimensions/);
@@ -59,7 +59,7 @@ describe('buildSheet — available area', () => {
 
 describe('buildSheet — capHeight mode', () => {
   it('fills the available height with whole rows at the given pitch', () => {
-    const sheet = buildSheet(baseConfig());
+    const sheet = buildSheet(fixedMetricsConfig());
 
     expect(sheet.capHeight).toBe(72);
     expect(sheet.totalMetricHeight).toBeCloseTo(100.8, 10);
@@ -68,7 +68,7 @@ describe('buildSheet — capHeight mode', () => {
   });
 
   it('positions the first row band against the top of the area', () => {
-    const [row] = buildSheet(baseConfig()).rows;
+    const [row] = buildSheet(fixedMetricsConfig()).rows;
 
     expect(row!.top).toBe(36);
     expect(row!.baseline).toBeCloseTo(111.6, 10);
@@ -76,7 +76,7 @@ describe('buildSheet — capHeight mode', () => {
   });
 
   it('spaces rows one band bottom to the next band top apart', () => {
-    const rows = buildSheet(baseConfig()).rows;
+    const rows = buildSheet(fixedMetricsConfig()).rows;
 
     for (let i = 1; i < rows.length; i++) {
       expect(rows[i]!.top - rows[i - 1]!.bottom).toBeCloseTo(36, 10);
@@ -84,7 +84,7 @@ describe('buildSheet — capHeight mode', () => {
   });
 
   it('throws when not even one row fits', () => {
-    const config = baseConfig();
+    const config = fixedMetricsConfig();
     config.metrics.capHeight = 600;
 
     expect(() => buildSheet(config)).toThrow(/No rows fit/);
@@ -93,7 +93,7 @@ describe('buildSheet — capHeight mode', () => {
 
 describe('buildSheet — rowCount mode', () => {
   it('solves a cap height that makes the rows exactly fill the area', () => {
-    const config = baseConfig();
+    const config = fixedMetricsConfig();
     config.metrics.mode = 'rowCount';
     config.metrics.rowCount = 6;
 
@@ -105,7 +105,7 @@ describe('buildSheet — rowCount mode', () => {
   });
 
   it('holds the row gap fixed and ignores the input cap height', () => {
-    const config = baseConfig();
+    const config = fixedMetricsConfig();
     config.metrics.mode = 'rowCount';
     config.metrics.rowCount = 5;
     config.metrics.capHeight = 999;
@@ -119,14 +119,14 @@ describe('buildSheet — rowCount mode', () => {
 
 describe('buildSheet — verticalAlign', () => {
   it('top leaves the slack at the bottom', () => {
-    const sheet = buildSheet(baseConfig());
+    const sheet = buildSheet(fixedMetricsConfig());
 
     expect(sheet.rows[0]!.top).toBe(36);
     expect(sheet.rows.at(-1)!.bottom).toBeCloseTo(547.2, 10);
   });
 
   it('center splits the slack evenly above and below', () => {
-    const config = baseConfig();
+    const config = fixedMetricsConfig();
     config.metrics.verticalAlign = 'center';
 
     const sheet = buildSheet(config);
@@ -138,7 +138,7 @@ describe('buildSheet — verticalAlign', () => {
   });
 
   it('justify distributes the slack into the gaps', () => {
-    const config = baseConfig();
+    const config = fixedMetricsConfig();
     config.metrics.verticalAlign = 'justify';
 
     const rows = buildSheet(config).rows;
@@ -152,7 +152,7 @@ describe('buildSheet — verticalAlign', () => {
   });
 
   it('justify falls back to top with a single row', () => {
-    const config = baseConfig();
+    const config = fixedMetricsConfig();
     config.metrics.verticalAlign = 'justify';
     config.metrics.capHeight = 300;
 
@@ -164,7 +164,7 @@ describe('buildSheet — verticalAlign', () => {
   });
 
   it('leaves rowCount mode untouched — there is no slack to distribute', () => {
-    const config = baseConfig();
+    const config = fixedMetricsConfig();
     config.metrics.mode = 'rowCount';
     config.metrics.verticalAlign = 'justify';
 
@@ -178,7 +178,7 @@ describe('buildSheet — verticalAlign', () => {
 
 describe('buildSheet — metric lines', () => {
   it('emits all five metric lines per row, top to bottom', () => {
-    const [row] = buildSheet(baseConfig()).rows;
+    const [row] = buildSheet(fixedMetricsConfig()).rows;
     const types = row!.lines.map((line) => line.type);
 
     expect(types).toEqual<LineType[]>([
@@ -191,7 +191,7 @@ describe('buildSheet — metric lines', () => {
   });
 
   it('emits metric lines regardless of visibility — that is the renderer’s call', () => {
-    const config = baseConfig();
+    const config = fixedMetricsConfig();
     config.lines.xHeight.visible = false;
 
     const [row] = buildSheet(config).rows;
@@ -200,7 +200,7 @@ describe('buildSheet — metric lines', () => {
   });
 
   it('spans the full available width horizontally', () => {
-    const [row] = buildSheet(baseConfig()).rows;
+    const [row] = buildSheet(fixedMetricsConfig()).rows;
 
     for (const line of row!.lines) {
       expect(line.start.x).toBe(36);
@@ -210,7 +210,7 @@ describe('buildSheet — metric lines', () => {
   });
 
   it('orders the metric lines down the page', () => {
-    const [row] = buildSheet(baseConfig()).rows;
+    const [row] = buildSheet(fixedMetricsConfig()).rows;
     const ys = row!.lines.map((line) => line.start.y);
 
     expect(ys).toEqual([...ys].sort((a, b) => a - b));
@@ -221,7 +221,7 @@ describe('buildSheet — metric lines', () => {
 
 describe('buildSheet — the row band follows the metrics present', () => {
   it('closes down to the cap height line when there is no ascender', () => {
-    const config = baseConfig();
+    const config = fixedMetricsConfig();
     config.metrics.ascender = 100;
 
     const sheet = buildSheet(config);
@@ -236,7 +236,7 @@ describe('buildSheet — the row band follows the metrics present', () => {
   });
 
   it('closes up to the baseline when there is no descender', () => {
-    const config = baseConfig();
+    const config = fixedMetricsConfig();
     config.metrics.descender = 0;
 
     const [row] = buildSheet(config).rows;
@@ -245,7 +245,7 @@ describe('buildSheet — the row band follows the metrics present', () => {
   });
 
   it('fits more rows once the band closes on both ends', () => {
-    const config = baseConfig();
+    const config = fixedMetricsConfig();
     config.metrics.ascender = 100;
     config.metrics.descender = 0;
 
@@ -256,7 +256,7 @@ describe('buildSheet — the row band follows the metrics present', () => {
   });
 
   it('follows an x-height that reaches above the ascender', () => {
-    const config = baseConfig();
+    const config = fixedMetricsConfig();
     config.metrics.xHeight = 130;
 
     const [row] = buildSheet(config).rows;

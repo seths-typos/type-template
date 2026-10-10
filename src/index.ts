@@ -6,7 +6,9 @@ import type { DrawOptions } from './render/pdf/index.js';
 
 export { resolveConfig, DEFAULTS, ConfigError, FIELDS } from './config/index.js';
 export type { ConfigIssue, FieldSpec } from './config/index.js';
-export { buildSheet } from './geometry/index.js';
+export { DEFAULT_FONT_UNITS, fontUnitsToPercent } from './config/index.js';
+export type { FontUnitMetrics } from './config/index.js';
+export { bandExtremes, buildSheet, metricOffsets, slantLines } from './geometry/index.js';
 export { renderSheetPdf } from './render/pdf/index.js';
 export { PAGE_PRESETS, PAGE_PRESET_NAMES, resolvePageSize } from './config/presets.js';
 export type { PagePreset, Orientation } from './config/presets.js';

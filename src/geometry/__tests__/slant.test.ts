@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { buildSheet } from '../sheet.js';
 import type { LineSegment, Row } from '../types.js';
-import { baseConfig } from '../../testing/fixtures.js';
+import { fixedMetricsConfig } from '../../testing/fixtures.js';
 
 /** x where a segment's line crosses the row's baseline. */
 function baselineAnchor(row: Row, line: LineSegment): number {
@@ -14,7 +14,7 @@ function slantOnly(row: Row): LineSegment[] {
 }
 
 function slantConfig() {
-  const config = baseConfig();
+  const config = fixedMetricsConfig();
   config.slant.enabled = true;
   // Angle has no default — config requires it whenever slant is on.
   config.slant.angle = 15;
@@ -23,7 +23,7 @@ function slantConfig() {
 
 describe('slant lines', () => {
   it('emits none when disabled', () => {
-    const [row] = buildSheet(baseConfig()).rows;
+    const [row] = buildSheet(fixedMetricsConfig()).rows;
     expect(slantOnly(row!)).toHaveLength(0);
   });
 

@@ -1,5 +1,6 @@
 export { buildSheet } from './sheet.js';
 export {
+  bandExtremes,
   fitRowCount,
   metricHeightRatio,
   metricOffsets,

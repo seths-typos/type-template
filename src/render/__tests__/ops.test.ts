@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { buildSheet } from '../../geometry/index.js';
-import { baseConfig } from '../../testing/fixtures.js';
+import { fixedMetricsConfig } from '../../testing/fixtures.js';
 import { drawOps, type DrawLine, type DrawText } from '../ops.js';
 import type { SheetConfig } from '../../config/types.js';
 import { METRIC_LABELS } from '../../config/labels.js';
@@ -21,27 +21,27 @@ const bySource = (config: SheetConfig, source: string) =>
 
 describe('drawOps — geometry space', () => {
   it('keeps geometry\u2019s y, unflipped', () => {
-    const [ascender] = bySource(baseConfig(), 'ascender');
+    const [ascender] = bySource(fixedMetricsConfig(), 'ascender');
 
     // Row 0's ascender line is 36 pt from the top of the page, and stays there.
     expect(ascender!.start.y).toBeCloseTo(36, 10);
   });
 
   it('leaves x untouched', () => {
-    const [ascender] = bySource(baseConfig(), 'ascender');
+    const [ascender] = bySource(fixedMetricsConfig(), 'ascender');
 
     expect(ascender!.start.x).toBe(36);
     expect(ascender!.end.x).toBe(756);
   });
 
   it('keeps horizontal lines horizontal', () => {
-    for (const op of lines(baseConfig())) {
+    for (const op of lines(fixedMetricsConfig())) {
       expect(op.start.y).toBeCloseTo(op.end.y, 10);
     }
   });
 
   it('puts the baseline further down the page than the ascender line', () => {
-    const config = baseConfig();
+    const config = fixedMetricsConfig();
     const [ascender] = bySource(config, 'ascender');
     const [baseline] = bySource(config, 'baseline');
 
@@ -52,20 +52,20 @@ describe('drawOps — geometry space', () => {
 
 describe('drawOps — styles', () => {
   it('resolves each line type to its config style', () => {
-    const config = baseConfig();
+    const config = fixedMetricsConfig();
     const [baseline] = bySource(config, 'baseline');
     const [xHeight] = bySource(config, 'xHeight');
 
-    // Every metric line is 0.5 pt — only colour separates the baseline.
+    // Every metric line is 0.5 pt — only colour separates the x-height.
     expect(baseline!.thickness).toBe(0.5);
-    expect(baseline!.color).toEqual({ r: 0, g: 0, b: 0 });
+    expect(baseline!.color).toEqual({ r: 0x47 / 255, g: 0x48 / 255, b: 0x48 / 255 });
 
     expect(xHeight!.thickness).toBe(0.5);
-    expect(xHeight!.color.r).toBeCloseTo(0x88 / 255, 10);
+    expect(xHeight!.color).toEqual({ r: 0xcb / 255, g: 0x01 / 255, b: 0x06 / 255 });
   });
 
   it('resolves slant lines to the slant style, not the metric styles', () => {
-    const config = baseConfig();
+    const config = fixedMetricsConfig();
     config.slant.enabled = true;
     config.slant.style.weight = 0.25;
     config.slant.style.color = '#ff0000';
@@ -80,7 +80,7 @@ describe('drawOps — styles', () => {
   });
 
   it('passes a dash array through, and null for solid', () => {
-    const config = baseConfig();
+    const config = fixedMetricsConfig();
     config.lines.xHeight.dash = [3, 2];
 
     expect(bySource(config, 'xHeight')[0]!.dash).toEqual([3, 2]);
@@ -90,12 +90,12 @@ describe('drawOps — styles', () => {
 
 describe('drawOps — visibility', () => {
   it('draws five lines per row when everything is visible', () => {
-    const sheet = buildSheet(baseConfig());
-    expect(lines(baseConfig())).toHaveLength(sheet.rows.length * 5);
+    const sheet = buildSheet(fixedMetricsConfig());
+    expect(lines(fixedMetricsConfig())).toHaveLength(sheet.rows.length * 5);
   });
 
   it('skips a line whose style is invisible', () => {
-    const config = baseConfig();
+    const config = fixedMetricsConfig();
     config.lines.xHeight.visible = false;
 
     expect(bySource(config, 'xHeight')).toHaveLength(0);
@@ -103,7 +103,7 @@ describe('drawOps — visibility', () => {
   });
 
   it('skips slant lines geometry emitted when the slant style is invisible', () => {
-    const config = baseConfig();
+    const config = fixedMetricsConfig();
     config.slant.enabled = true;
     config.slant.style.visible = false;
 
@@ -118,7 +118,7 @@ describe('drawOps — visibility', () => {
 describe('drawOps — header', () => {
   // Labels are text ops too, so switch them off to isolate the header.
   function withHeader(text: string): SheetConfig {
-    const config = baseConfig();
+    const config = fixedMetricsConfig();
     config.labels.enabled = false;
     config.header.enabled = true;
     config.header.text = text;
@@ -126,7 +126,7 @@ describe('drawOps — header', () => {
   }
 
   it('draws nothing when the header is disabled', () => {
-    const config = baseConfig();
+    const config = fixedMetricsConfig();
     config.labels.enabled = false;
 
     expect(texts(config)).toHaveLength(0);
@@ -175,7 +175,7 @@ describe('drawOps — metric line labels', () => {
     ops(config).filter((op): op is DrawText => op.kind === 'text');
 
   it('labels the baseline, cap height and x-height of every row', () => {
-    const config = baseConfig();
+    const config = fixedMetricsConfig();
     const sheet = buildSheet(config);
     const drawn = labels(config);
 
@@ -184,11 +184,11 @@ describe('drawOps — metric line labels', () => {
   });
 
   it('leaves the ascender and descender unlabelled by default', () => {
-    expect(labels(baseConfig()).map((op) => op.text)).not.toContain('A');
+    expect(labels(fixedMetricsConfig()).map((op) => op.text)).not.toContain('A');
   });
 
   it('sets them in the left margin, clear of the writing area', () => {
-    const config = baseConfig();
+    const config = fixedMetricsConfig();
     const [label] = labels(config);
 
     // Right edge sits the configured gap before the line's left end.
@@ -198,7 +198,7 @@ describe('drawOps — metric line labels', () => {
   });
 
   it('centres each label on its own line', () => {
-    const config = baseConfig();
+    const config = fixedMetricsConfig();
     const drawn = labels(config);
     const baseline = drawn.find((op) => op.text === 'B');
     const capHeight = drawn.find((op) => op.text === 'C');
@@ -210,7 +210,7 @@ describe('drawOps — metric line labels', () => {
   });
 
   it('drops the label when its line is switched off', () => {
-    const config = baseConfig();
+    const config = fixedMetricsConfig();
     config.lines.xHeight.visible = false;
 
     expect(labels(config).map((op) => op.text)).not.toContain('X');
@@ -218,14 +218,14 @@ describe('drawOps — metric line labels', () => {
   });
 
   it('draws none when labels are disabled', () => {
-    const config = baseConfig();
+    const config = fixedMetricsConfig();
     config.labels.enabled = false;
 
     expect(labels(config)).toHaveLength(0);
   });
 
   it('uses the fixed type-design set, not something configurable', () => {
-    expect(new Set(labels(baseConfig()).map((op) => op.text))).toEqual(
+    expect(new Set(labels(fixedMetricsConfig()).map((op) => op.text))).toEqual(
       new Set(Object.values(METRIC_LABELS)),
     );
   });

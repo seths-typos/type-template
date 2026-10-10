@@ -10,9 +10,39 @@ Intended companion to Type Cooker: Type Cooker gives the brief, this app gives t
 
 **Front-end MVP.** The engine is done — `geometry/`, `render/pdf/` and `config/` are all built and `createSheetPdf(input)` goes from raw input to PDF bytes.
 
-Now building a wireframe web app: a form generated from `config/fields.ts`, a live canvas preview, a Download PDF button. **Wireframe styling only** — no visual design, no responsive layout, no UX decisions. Those come later, and this exists to make the parameters something you can feel rather than read.
+A wireframe web app is built and parked in `draft/`, served at `/draft/`: a form generated from `config/fields.ts`, a live canvas preview, a Download PDF button. It is reference, not the product.
+
+The real UX is being rebuilt from scratch at the root (`index.html`, `web/`), starting blank. Design tokens live in `web/tokens.css` and `web/tokens.json`.
 
 Local only. `npm run dev`. Nothing is hosted.
+
+## New UX
+
+The rebuilt front end narrows what the user controls. The engine's wider surface stays; the UX just doesn't expose all of it.
+
+**Fixed by the UX, not chosen by the user:**
+- **Orientation** is always landscape.
+- **Row count** is 1–6.
+- **Row height** — the total metric height, highest metric line to lowest — is determined by the row count alone. The user never sets a cap height or a row height in points.
+- **Rows are evenly spaced.** The row gap value is not decided yet.
+
+**Happy path:**
+1. Choose the number of rows (1–6).
+2. Edit the row metrics. Either every row shares one set of metrics, or each row has its own.
+3. Optionally change line colours.
+4. Optionally add a header.
+5. Preview, then print through the browser's print dialog or download the PDF. Both are offered.
+6. Optionally download the config as JSON. A downloaded config can be loaded back in to restore the sheet.
+
+**Italic angle** is degrees from vertical, as Glyphs enters it: 0 is upright, positive leans right, and a typical italic is 8–15. Decided 2026-10-10 over a protractor convention (90 = upright). Valid range is strictly between −90 and 90. Note RoboFont/UFO count the other way (right-leaning is negative), so importing from a UFO would flip the sign.
+
+**Engine implications (not built yet):**
+- Fixing the band height and deriving cap height from it makes total metric height the reference. That is the parked *Reference metric* decision, now taken for this UX. It changes in `toCapHeightReference` and nowhere else.
+- Per-row metrics are new. Today `metrics` is a single set shared by every row. With individual metrics, every row band is still the same height, so each row's cap height comes out different.
+
+**Open:**
+- The row gap value, and whether it scales with row count. Deferred — use the current default until decided.
+- Where loading a JSON config sits in the flow (an entry point before step 1, or available anywhere).
 
 ## Tech stack
 
@@ -25,6 +55,7 @@ Local only. `npm run dev`. Nothing is hosted.
 - **Internal unit is the point.** 1 pt = 1/72 inch (DTP/PostScript point — identical to the modern typographic point on a type gauge).
 - All geometry, config, and PDF output use points. No conversion inside the engine.
 - If other units are ever accepted from users (mm, nib widths), conversion happens **only** in the config module at the boundary. Never downstream.
+- **Font units** are the first such unit. The new UX takes ascender, cap height, x-height and descender the way Glyphs, RoboFont and FontLab do: height above a baseline of 0, in units of a (usually 1000-unit) em, descender negative. `config/font-units.ts` converts them to percent of cap height; only the ratios reach the sheet. The default metrics are entered this way too, as 800 / 700 / 500 / -200 (`DEFAULT_FONT_UNITS`).
 - Coordinate origin for geometry output: top-left of page, y increases downward. The PDF renderer is responsible for flipping to PDF's bottom-left origin.
 - Within a row, metrics are measured **up** from the baseline: x-height at 60% sits 60% of cap height above it, a negative descender below it. Page coordinates are the flip of that — placing a line subtracts, `y = baseline − offset`. The renderer contract stays top-left, y down.
 
@@ -53,7 +84,7 @@ Not used: "body height", "bounding box", "em box". These mean different things i
 
 One codebase, three modules with clean interfaces. **Not** services — no network boundaries, no separate processes.
 
-`src/index.ts` is the package entry, not a fourth module: `createSheetPdf(input)` is raw input in, PDF out — `resolveConfig`, `buildSheet`, then the renderer. `web/` is the wireframe front end and is not a module either; it only consumes the package entry.
+`src/index.ts` is the package entry, not a fourth module: `createSheetPdf(input)` is raw input in, PDF out — `resolveConfig`, `buildSheet`, then the renderer. `web/` (the front end) and `draft/` (the parked wireframe) are not modules either; they only consume the package entry.
 
 ### 1. `geometry/`
 Pure functions. Validated config in, coordinates out. **Zero PDF awareness.** No imports from the renderer or any PDF library.
@@ -84,7 +115,7 @@ Raw user input in, validated config out. Applies defaults field by field — any
 
 `resolveConfig(input)` is the entry. Problems are collected across the whole input and thrown together as a single `ConfigError` carrying `{ path, message }` per field — one bad value must not hide the next three, and a form later wants them all at once.
 
-**The form is generated from this.** `web/` builds its controls from `FIELDS`, so the front end cannot fall behind the engine — a field added without being described fails the drift test before it can go missing from the form. `ConfigError`'s per-field paths map straight onto the controls.
+**The form is generated from this.** The `draft/` wireframe builds its controls from `FIELDS`, so the front end cannot fall behind the engine — a field added without being described fails the drift test before it can go missing from the form. `ConfigError`'s per-field paths map straight onto the controls.
 
 **Reviewing the surface:** `npm run fields` prints every input field with its type, unit, default and constraints, driven by the `FIELDS` table in `config/fields.ts`. A test asserts that table covers exactly the input surface, so a field cannot be added without being described. `npm run resolve -- '{...}'` prints what a partial input resolves to.
 
@@ -163,7 +194,7 @@ interface LineStyle {
 
 ### Defaults
 
-Placeholders. Refine after first printed proofs.
+Placeholders. Refine after first printed proofs. Line colours and dash states come from the Figma row preview (node 292:1547).
 
 | Field | Default |
 |---|---|
@@ -174,14 +205,13 @@ Placeholders. Refine after first printed proofs.
 | header.height | 54 pt |
 | metrics.mode | `capHeight` |
 | metrics.capHeight | 72 pt |
-| metrics.xHeight | 70 |
-| metrics.ascender | 105 |
-| metrics.descender | -35 |
+| metrics.xHeight | 71.43 (500 of 700 font units) |
+| metrics.ascender | 114.29 (800 of 700 font units) |
+| metrics.descender | -28.57 (-200 of 700 font units) |
 | metrics.rowGap | 36 pt |
 | metrics.verticalAlign | `top` |
-| lines.baseline | visible, 0.5 pt, `#000000`, solid |
-| lines.xHeight | visible, 0.5 pt, `#888888`, dashed `[3, 3]` |
-| lines.* (others) | visible, 0.5 pt, `#888888`, solid |
+| lines.xHeight | visible, 0.5 pt, `#cb0106`, dashed `[3, 3]` |
+| lines.* (others) | visible, 0.5 pt, `#474848`, solid |
 | labels.enabled | `true` |
 | labels.size | 6 pt |
 | labels.color | `#888888` |
@@ -190,7 +220,7 @@ Placeholders. Refine after first printed proofs.
 | slant.angle | **none — required if enabled** |
 | slant.spacing | 36 pt |
 | slant.inset | 72 pt |
-| slant.style | visible, 0.5 pt, `#888888`, solid |
+| slant.style | visible, 0.5 pt, `#999999`, solid |
 
 ## Geometry rules
 
@@ -218,7 +248,7 @@ Placeholders. Refine after first printed proofs.
 
 Not yet resolved. Do not implement. Do not design around them beyond what's noted.
 
-- **Reference metric.** Cap height is the reference for now. User testing may switch this to total metric height. Kept isolated in `config/` for this reason.
+- **Reference metric.** Cap height is the engine's reference for now. The new UX switches to total metric height (see New UX); kept isolated in `config/` for this reason.
 - **Calligraphy mode.** A second mode with heights in nib widths, a pen angle guide, and its own label set in place of B/C/X. Will require a nib-width input that type mode lacks. Defined conceptually, not built.
 - **Row gap as % of cap height** instead of fixed points. Currently fixed at 36 pt.
 - **Structured header for Type Cooker briefs.** Header is free text. May become structured fields (weight, contrast, width…) or consume Type Cooker output directly if a machine-readable format exists.

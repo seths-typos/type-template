@@ -32,6 +32,8 @@ export { PAGE_PRESETS, PAGE_PRESET_NAMES, resolvePageSize } from './presets.js';
 export type { Orientation, PagePreset } from './presets.js';
 export { toCapHeightReference } from './reference.js';
 export { FIELDS } from './fields.js';
+export { DEFAULT_FONT_UNITS, fontUnitsToPercent } from './font-units.js';
+export type { FontUnitMetrics } from './font-units.js';
 export { METRIC_LABELS } from './labels.js';
 export { METRIC_MODES, ORIENTATIONS, VERTICAL_ALIGNMENTS } from './options.js';
 export type { FieldSpec } from './fields.js';

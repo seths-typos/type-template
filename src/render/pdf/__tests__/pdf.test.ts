@@ -61,9 +61,9 @@ describe('renderSheetPdf', () => {
     const config = baseConfig();
     const content = await contentStream(await renderSheetPdf(buildSheet(config), config));
 
-    // Baseline is black, the other metrics #888888. All are 0.5 pt.
-    expect(content).toContain('0 0 0 RG');
-    expect(content).toContain(`${0x88 / 255} ${0x88 / 255} ${0x88 / 255} RG`);
+    // X-height is #cb0106, the other metrics #474848. All are 0.5 pt.
+    expect(content).toContain(`${0x47 / 255} ${0x48 / 255} ${0x48 / 255} RG`);
+    expect(content).toContain(`${0xcb / 255} ${0x01 / 255} ${0x06 / 255} RG`);
     expect(content).toContain('0.5 w');
     expect(content).not.toContain('\n1 w\n');
   });
