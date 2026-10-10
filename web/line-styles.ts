@@ -1,5 +1,5 @@
 import type { LineStyle, MetricLine } from '../src/index.js';
-import { createChoiceToggle, createStopSlider } from './sheet-controls.js';
+import { createChoiceToggle, createStopSlider, nameClass } from './sheet-controls.js';
 
 /** Every line the sheet draws: the five metric lines and the slant lines. */
 export type StyledLine = MetricLine | 'slant';
@@ -73,14 +73,23 @@ export interface LineStylesPanelOptions {
   onChange: () => void;
 }
 
+const WEIGHT_STOPS = [
+  { value: 1, label: 'Thin' },
+  { value: 2, label: 'Medium' },
+  { value: 3, label: 'Thick' },
+];
+
 /**
- * "Line Styles": a black block cut like the row editors, its title inside.
- * Pick a line on the left and set its weight, dash and colour on the right,
- * across a rule that each line's name runs into.
+ * "Line Styles": framed and titled like a row editor, a column for each
+ * line. Each column names its line, draws it as it's styled, then sets its
+ * weight, dash and colour, the three controls one width.
+ *
+ * The controls' own names ("Weight", "Stroke", "Colour") would repeat six
+ * times over, so they're for screen readers only; each column is a group
+ * named by its line.
  */
 export function createLineStylesPanel(options: LineStylesPanelOptions): HTMLElement {
   const { styles, onChange } = options;
-  let current: StyledLine = STYLED_LINES[0]!.type;
 
   const panel = document.createElement('section');
   panel.className = 'line-styles frame';
@@ -89,54 +98,48 @@ export function createLineStylesPanel(options: LineStylesPanelOptions): HTMLElem
   title.className = 'heading-h3 frame-title';
   title.textContent = 'Line Styles';
 
-  const picker = document.createElement('div');
-  picker.className = 'line-picker';
-  picker.setAttribute('role', 'radiogroup');
-  picker.setAttribute('aria-label', 'Line');
+  const columns = document.createElement('div');
+  columns.className = 'line-columns';
 
   for (const { type, name } of STYLED_LINES) {
-    const option = document.createElement('label');
-    option.className = 'line-option ui-sm';
+    const choice = styles[type];
+    const nameId = `line-styles-${type}`;
 
-    const radio = document.createElement('input');
-    radio.type = 'radio';
-    radio.name = 'line-styles-line';
-    radio.value = type;
-    radio.checked = type === current;
-    radio.addEventListener('change', () => {
-      if (!radio.checked) return;
-      current = type;
-      showControls();
-    });
+    const column = document.createElement('div');
+    column.className = 'line-column';
+    column.setAttribute('role', 'group');
+    column.setAttribute('aria-labelledby', nameId);
 
-    const text = document.createElement('span');
-    text.className = 'line-name';
-    text.textContent = name;
+    const heading = document.createElement('span');
+    heading.className = 'ui-sm line-column-name';
+    heading.id = nameId;
+    heading.textContent = name;
 
-    option.append(radio, text);
-    picker.append(option);
-  }
+    // The line itself, as the preview draws it.
+    const sample = document.createElement('span');
+    sample.className = 'line-sample';
+    sample.setAttribute('aria-hidden', 'true');
+    const draw = () => {
+      sample.style.setProperty('--line-weight', `${choice.weight}px`);
+      sample.style.setProperty('--line-color', choice.color);
+      sample.classList.toggle('is-dashed', choice.dashed);
+    };
+    draw();
 
-  const controls = document.createElement('div');
-  controls.className = 'line-controls';
-
-
-  /** The controls for the line picked, rebuilt each time the pick changes. */
-  function showControls(): void {
-    const choice = styles[current];
+    const changed = () => {
+      draw();
+      onChange();
+    };
 
     const weight = createStopSlider(
       'Weight',
-      [
-        { value: 1, label: 'Thin' },
-        { value: 2, label: 'Medium' },
-        { value: 3, label: 'Thick' },
-      ],
+      WEIGHT_STOPS,
       choice.weight,
       (value) => {
         choice.weight = value as LineWeight;
-        onChange();
+        changed();
       },
+      { fluid: true, hideName: true },
     );
 
     const dash = createChoiceToggle(
@@ -148,20 +151,20 @@ export function createLineStylesPanel(options: LineStylesPanelOptions): HTMLElem
       choice.dashed ? 'dashed' : 'solid',
       (value) => {
         choice.dashed = value === 'dashed';
-        onChange();
+        changed();
       },
+      { hideName: true },
     );
 
-    controls.replaceChildren(weight, dash, createColorPicker(choice, onChange));
+    const controls = document.createElement('div');
+    controls.className = 'line-column-controls';
+    controls.append(weight, dash, createColorPicker(choice, changed));
+
+    column.append(heading, sample, controls);
+    columns.append(column);
   }
 
-  showControls();
-
-  const body = document.createElement('div');
-  body.className = 'line-styles-body';
-  body.append(picker, controls);
-
-  panel.append(title, body);
+  panel.append(title, columns);
   return panel;
 }
 
@@ -177,7 +180,7 @@ function createColorPicker(choice: LineChoice, onChange: () => void): HTMLElemen
   control.setAttribute('aria-labelledby', id);
 
   const label = document.createElement('span');
-  label.className = 'ui-sm sheet-control-name';
+  label.className = nameClass({ hideName: true });
   label.id = id;
   label.textContent = 'Colour';
 

@@ -19,11 +19,22 @@ export interface Stop {
  * numbers one apart. A native range input, so keyboard and screen readers get
  * the usual slider behaviour; only its look is custom.
  */
+export interface ControlOptions {
+  /** Name it for screen readers only, where its place already says it. */
+  hideName?: boolean;
+}
+
+export interface StopSliderOptions extends ControlOptions {
+  /** Fill the container's width rather than set stops a slot apart. */
+  fluid?: boolean;
+}
+
 export function createStopSlider(
   name: string,
   stops: Stop[],
   value: number,
   onChange: (value: number) => void,
+  options: StopSliderOptions = {},
 ): HTMLElement {
   const id = `sheet-control-${nextId++}`;
 
@@ -31,7 +42,7 @@ export function createStopSlider(
   control.className = 'sheet-control';
 
   const label = document.createElement('label');
-  label.className = 'ui-sm sheet-control-name';
+  label.className = nameClass(options);
   label.htmlFor = id;
   label.textContent = name;
 
@@ -55,11 +66,18 @@ export function createStopSlider(
   const labels = document.createElement('div');
   labels.className = 'ui-xs stop-slider-stops';
   labels.setAttribute('aria-hidden', 'true');
-  for (const stop of stops) {
+  const ticks = document.createElement('div');
+  ticks.className = 'stop-slider-ticks';
+  stops.forEach((stop, i) => {
     const span = document.createElement('span');
     span.textContent = stop.label;
+    span.style.setProperty('--i', String(i));
     labels.append(span);
-  }
+
+    const tick = document.createElement('span');
+    tick.style.setProperty('--i', String(i));
+    ticks.append(tick);
+  });
 
   const mark = () => {
     Array.from(labels.children).forEach((span, i) =>
@@ -75,9 +93,9 @@ export function createStopSlider(
   });
 
   const slider = document.createElement('div');
-  slider.className = 'stop-slider';
+  slider.className = options.fluid ? 'stop-slider is-fluid' : 'stop-slider';
   slider.style.setProperty('--stops', String(stops.length));
-  slider.append(input, labels);
+  slider.append(ticks, input, labels);
 
   control.append(label, slider);
   return control;
@@ -110,6 +128,7 @@ export function createChoiceToggle<T extends string>(
   choices: Choice<T>[],
   value: T,
   onChange: (value: T) => void,
+  options: ControlOptions = {},
 ): HTMLElement {
   const id = `sheet-control-${nextId++}`;
 
@@ -119,7 +138,7 @@ export function createChoiceToggle<T extends string>(
   control.setAttribute('aria-labelledby', id);
 
   const label = document.createElement('span');
-  label.className = 'ui-sm sheet-control-name';
+  label.className = nameClass(options);
   label.id = id;
   label.textContent = name;
 
@@ -148,4 +167,9 @@ export function createChoiceToggle<T extends string>(
 
   control.append(label, shell);
   return control;
+}
+
+/** A control's name: shown above it, or kept for screen readers only. */
+export function nameClass(options: ControlOptions): string {
+  return options.hideName ? 'visually-hidden' : 'ui-sm sheet-control-name';
 }
