@@ -86,6 +86,22 @@ const header = document.createElement('div');
 header.className = 'sheet-header';
 header.append(title, sheetControls);
 
+// What to do with the finished sheet. Not wired up yet: printing and the
+// PDF wait on the engine taking per-row metrics, and the config on its file
+// format.
+const actions = document.createElement('div');
+actions.className = 'sheet-actions';
+for (const label of ['Preview', 'Print', 'Save to PDF', 'Download Config']) {
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.className = 'action-button';
+  button.textContent = label;
+  // Read by the stylesheet to hold the width of the label at its hover
+  // weight.
+  button.dataset.label = label;
+  actions.append(button);
+}
+
 const rowEditors = document.createElement('div');
 rowEditors.className = 'row-editors';
 rowEditors.append(...editors.map((editor) => editor.element));
@@ -98,12 +114,18 @@ const lineStyles = createLineStylesPanel({
   },
 });
 
-panel.append(header, rowEditors, lineStyles);
+// Under the rows: Line Styles, then the actions centred in the space left
+// beside it.
+const footer = document.createElement('div');
+footer.className = 'sheet-footer';
+footer.append(lineStyles, actions);
 
-// Line Styles spans two row editors. Their width comes from their contents,
-// so it's measured, and again whenever it changes.
+panel.append(header, rowEditors, footer);
+
+// Line Styles spans four row editors. A row editor's width comes from its
+// contents, so it's measured, and again whenever it changes.
 new ResizeObserver(([entry]) => {
-  lineStyles.style.setProperty('--editor-width', `${entry!.borderBoxSize[0]!.inlineSize}px`);
+  panel.style.setProperty('--editor-width', `${entry!.borderBoxSize[0]!.inlineSize}px`);
 }).observe(editors[0]!.element);
 document.querySelector('#app')!.append(panel);
 

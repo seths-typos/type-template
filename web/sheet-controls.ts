@@ -148,6 +148,9 @@ export function createChoiceToggle<T extends string>(
   for (const choice of choices) {
     const option = document.createElement('label');
     option.className = 'choice-option';
+    // Read by the stylesheet to hold the width of the label at its hover
+    // weight.
+    option.dataset.label = choice.label;
 
     const radio = document.createElement('input');
     radio.type = 'radio';

@@ -81,8 +81,8 @@ const WEIGHT_STOPS = [
 
 /**
  * "Line Styles": framed and titled like a row editor, a column for each
- * line. Each column names its line, draws it as it's styled, then sets its
- * weight, dash and colour, the three controls one width.
+ * line. Each column names its line over a rule, then sets its weight, dash
+ * and colour, the three controls one width.
  *
  * The controls' own names ("Weight", "Stroke", "Colour") would repeat six
  * times over, so they're for screen readers only; each column is a group
@@ -110,26 +110,19 @@ export function createLineStylesPanel(options: LineStylesPanelOptions): HTMLElem
     column.setAttribute('role', 'group');
     column.setAttribute('aria-labelledby', nameId);
 
+    // The column's header: its name, underlined.
     const heading = document.createElement('span');
-    heading.className = 'ui-sm line-column-name';
+    heading.className = 'line-column-name';
     heading.id = nameId;
     heading.textContent = name;
 
-    // The line itself, as the preview draws it.
-    const sample = document.createElement('span');
-    sample.className = 'line-sample';
-    sample.setAttribute('aria-hidden', 'true');
-    const draw = () => {
-      sample.style.setProperty('--line-weight', `${choice.weight}px`);
-      sample.style.setProperty('--line-color', choice.color);
-      sample.classList.toggle('is-dashed', choice.dashed);
-    };
-    draw();
+    const rule = document.createElement('span');
+    rule.className = 'line-column-rule';
+    rule.setAttribute('aria-hidden', 'true');
 
-    const changed = () => {
-      draw();
-      onChange();
-    };
+    const head = document.createElement('div');
+    head.className = 'ui-sm line-column-head';
+    head.append(heading, rule);
 
     const weight = createStopSlider(
       'Weight',
@@ -137,7 +130,7 @@ export function createLineStylesPanel(options: LineStylesPanelOptions): HTMLElem
       choice.weight,
       (value) => {
         choice.weight = value as LineWeight;
-        changed();
+        onChange();
       },
       { fluid: true, hideName: true },
     );
@@ -151,16 +144,16 @@ export function createLineStylesPanel(options: LineStylesPanelOptions): HTMLElem
       choice.dashed ? 'dashed' : 'solid',
       (value) => {
         choice.dashed = value === 'dashed';
-        changed();
+        onChange();
       },
       { hideName: true },
     );
 
     const controls = document.createElement('div');
     controls.className = 'line-column-controls';
-    controls.append(weight, dash, createColorPicker(choice, changed));
+    controls.append(weight, dash, createColorPicker(choice, onChange));
 
-    column.append(heading, sample, controls);
+    column.append(head, controls);
     columns.append(column);
   }
 

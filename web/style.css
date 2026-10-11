@@ -172,6 +172,13 @@ body {
   text-box: trim-both cap alphabetic;
 }
 
+/* Medium on hover, over the button or the name that presses it. The button
+   is a fixed square, so the heavier ON/OFF moves nothing. */
+.toggle:enabled:hover > span,
+.metric-toggle:has(.metric-toggle-name:hover) .toggle:enabled > span {
+  font-weight: var(--weight-ui-medium);
+}
+
 /* On: the shape filled, reading ON. Its right corners go square only when
    a field opens against them, so button and field read as one piece. */
 .toggle[aria-pressed="true"] {
@@ -465,11 +472,15 @@ body {
   gap: var(--spacers-padding-sm);
 }
 
-/* The row editors, side by side, wrapping as the window allows. */
+/* The row editors, all six side by side on one line. They keep their
+   width rather than squeeze to fit; a narrow window scrolls. */
 .row-editors {
   display: flex;
-  flex-wrap: wrap;
   gap: var(--spacers-padding-md);
+}
+
+.row-editors > * {
+  flex: none;
 }
 
 /* Rows and their Metrics sections are fieldsets, to be disabled in one
@@ -746,8 +757,25 @@ body {
 }
 
 .choice-option > span {
+  grid-area: 1 / 1;
   line-height: 1;
   text-box: trim-both cap alphabetic;
+}
+
+/* Medium on hover, as the action buttons. The label set again at that
+   weight, unseen and no height, in the same grid cell, keeps the option as
+   wide as its heavier label, so hovering moves nothing. */
+.choice-option::after {
+  content: attr(data-label);
+  grid-area: 1 / 1;
+  height: 0;
+  overflow: hidden;
+  visibility: hidden;
+  font-weight: var(--weight-ui-medium);
+}
+
+.choice-option:hover:has(input:enabled) {
+  font-weight: var(--weight-ui-medium);
 }
 
 /* The radio fills its option, invisible, so the option is the target. */
@@ -803,32 +831,45 @@ body {
   flex-direction: column;
 }
 
-.line-column-name {
-  margin-bottom: var(--spacers-margin-xs);
-}
+/* The column's header: its name over a rule, the two sharing one grid
+   cell. The name is trimmed to its capitals, so its box runs cap height to
+   baseline; the rule's box runs from the same cap height down past the
+   baseline by --gap, then the rule's own thickness. */
+.line-column-head {
+  --rule: var(--border-thick);
+  --gap: var(--spacers-margin-xs);
+  /* From the name's cap height to the rule's underside. `cap` is the font's
+     cap height, so this follows the name's size. */
+  --rise: calc(1cap + var(--gap) + var(--rule));
 
-/* The line drawn as the preview draws it: --line-weight and --line-color
-   set inline, a 3/3 dash when dashed. A fixed band, so a thicker line
-   doesn't push the controls down. */
-.line-sample {
-  display: flex;
-  align-items: center;
-  height: var(--spacing-2);
+  display: grid;
   margin-bottom: var(--spacers-margin-sm);
 }
 
-.line-sample::before {
-  content: '';
-  flex: 1;
-  height: var(--line-weight);
-  background: var(--line-color);
+.line-column-name {
+  grid-area: 1 / 1;
+  align-self: start;
+  text-box: trim-both cap alphabetic;
 }
 
-.line-sample.is-dashed::before {
-  background: repeating-linear-gradient(
-    to right,
-    var(--line-color) 0 3px,
-    transparent 3px 6px
+/* The rule along the bottom of the cell, turning up at its right end on
+   the diagonal to finish level with the name's cap height: a 45° rise as
+   wide as it is tall.
+
+   One shape, so the turn has no seam. A 45° band a rule thick spans
+   rule × √2 across; its inner edge meets the level run's top rule × (√2 − 1)
+   short of the outer corner. */
+.line-column-rule {
+  grid-area: 1 / 1;
+  height: var(--rise);
+  background: var(--ink);
+  clip-path: polygon(
+    0 calc(100% - var(--rule)),
+    calc(100% - var(--rise) - var(--rule) * 0.4142) calc(100% - var(--rule)),
+    calc(100% - var(--rule) * 1.4142) 0,
+    100% 0,
+    calc(100% - var(--rise)) 100%,
+    0 100%
   );
 }
 
@@ -888,4 +929,103 @@ body {
   clip-path: inset(50%);
   white-space: nowrap;
   border: 0;
+}
+
+/* ── Sheet actions ────────────────────────────────────── */
+
+/* Under the rows, as wide as they are: Line Styles, then the actions. */
+.sheet-footer {
+  display: flex;
+  align-self: stretch;
+  gap: var(--spacers-padding-md);
+}
+
+/* Beside Line Styles, taking the rest of the line, the buttons centred in
+   it both ways. */
+.sheet-actions {
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacers-padding-sm);
+}
+
+/* An ink button cut like the choice switch: bottom-left and top-right
+   corners on the diagonal, as if a box seen from one side. On hover the
+   cuts move to the other two corners, the box seen from the other side.
+
+   Every corner is two points in the polygon: apart by --cut where the corner
+   is cut, together where it's square. Both states have the same eight
+   points, so the shape morphs between them: one pair of cuts closes as the
+   other opens, and halfway all four corners are cut a little, the box
+   turning through face-on. */
+.action-button {
+  --cut: var(--spacing-2);
+
+  appearance: none;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 32px;
+  padding: 0 var(--spacing-4);
+  border: 0;
+  border-radius: var(--corner-xs);
+  background: var(--ink);
+  color: var(--ink-contrast);
+  clip-path: polygon(
+    0 0,
+    0 0,
+    calc(100% - var(--cut)) 0,
+    100% var(--cut),
+    100% 100%,
+    100% 100%,
+    var(--cut) 100%,
+    0 calc(100% - var(--cut))
+  );
+  font: var(--weight-ui) var(--type-ui-sm) / 1 var(--font-family-ui);
+  text-transform: uppercase;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: clip-path 220ms ease-in-out;
+}
+
+/* The label set again at the hover weight, unseen and no height, so the
+   button is always as wide as its heavier label and hovering moves nothing
+   beside it. */
+.action-button::after {
+  content: attr(data-label);
+  height: 0;
+  overflow: hidden;
+  visibility: hidden;
+  font-weight: var(--weight-ui-medium);
+}
+
+.action-button:hover {
+  font-weight: var(--weight-ui-medium);
+  clip-path: polygon(
+    0 var(--cut),
+    var(--cut) 0,
+    100% 0,
+    100% 0,
+    100% calc(100% - var(--cut)),
+    calc(100% - var(--cut)) 100%,
+    0 100%,
+    0 100%
+  );
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .action-button {
+    transition: none;
+  }
+}
+
+/* clip-path would cut an outline, so focus is a ring inside, as on the
+   choice switch. */
+.action-button:focus-visible {
+  outline: none;
+  box-shadow:
+    inset 0 0 0 3px var(--ink),
+    inset 0 0 0 calc(3px + var(--border-base)) var(--ink-contrast);
 }

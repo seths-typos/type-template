@@ -8,7 +8,7 @@
    - Color: semantic colours, aliasing Core.
    - Responsive: sizes with Large and Small modes. Large is the default;
      Small applies under [data-size="small"]. No breakpoint is chosen yet. */
-@import url('https://fonts.googleapis.com/css2?family=Michroma&family=Special+Gothic&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Michroma&family=Special+Gothic:wght@400;500&display=swap');
 
 /* ── Core ─────────────────────────────────────────────── */
 :root {
@@ -66,6 +66,8 @@
   --weight-heading: 400;
   --weight-body: 400;
   --weight-ui: 400;
+  /* Local, not yet in Figma: UI text emphasised, as on a hovered button. */
+  --weight-ui-medium: 500;
 }
 
 /* ── Color ────────────────────────────────────────────── */

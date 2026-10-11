@@ -29,10 +29,11 @@ The rebuilt front end narrows what the user controls. The engine's wider surface
 **Happy path:**
 1. Choose the number of rows (1–6).
 2. Edit the row metrics. Either every row shares one set of metrics, or each row has its own.
-3. Optionally change line colours.
-4. Optionally add a header.
-5. Preview, then print through the browser's print dialog or download the PDF. Both are offered.
-6. Optionally download the config as JSON. A downloaded config can be loaded back in to restore the sheet.
+3. Optionally change line styles: weight, dash and colour.
+4. Preview, then print through the browser's print dialog or download the PDF. Both are offered.
+5. Optionally download the config as JSON. A downloaded config can be loaded back in to restore the sheet.
+
+**Header text is dropped from the UX for now** (2026-10-10). The engine keeps its `header` config; the front end just doesn't offer it.
 
 **Italic angle** is degrees from vertical, as Glyphs enters it: 0 is upright, positive leans right, and a typical italic is 8–15. Decided 2026-10-10 over a protractor convention (90 = upright). Valid range is strictly between −90 and 90. Note RoboFont/UFO count the other way (right-leaning is negative), so importing from a UFO would flip the sign.
 
