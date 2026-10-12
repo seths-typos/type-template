@@ -25,6 +25,7 @@ The rebuilt front end narrows what the user controls. The engine's wider surface
 - **Row count** is 1–6.
 - **Row height** — the total metric height, highest metric line to lowest — is determined by the row count alone. The user never sets a cap height or a row height in points.
 - **Rows are evenly spaced.** The row gap value is not decided yet.
+- **No metric labels.** The printed sheet and its preview leave out the B / C / X labels (`labels.enabled: false`). The engine keeps them for sheets made without the UX.
 
 **Happy path:**
 1. Choose the number of rows (1–6).

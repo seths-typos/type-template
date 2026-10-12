@@ -1029,3 +1029,67 @@ body {
     inset 0 0 0 3px var(--ink),
     inset 0 0 0 calc(3px + var(--border-base)) var(--ink-contrast);
 }
+
+/* ── Sheet preview ────────────────────────────────────── */
+
+/* The sheet as it will print, on a panel that slides down from the top of
+   the screen. Starts above it; .is-open brings it down. */
+.sheet-preview {
+  --ink: var(--color-black);
+  --ink-contrast: var(--color-mist);
+  --paper: var(--color-mist);
+
+  box-sizing: border-box;
+  position: fixed;
+  inset: 0 0 auto;
+  width: 100%;
+  max-width: none;
+  height: calc(100dvh - var(--spacers-margin-lg));
+  max-height: none;
+  margin: 0;
+  padding: var(--spacers-padding-lg) var(--grid-margin);
+  border: 0;
+  border-bottom: var(--border-thick) solid var(--ink);
+  background: var(--paper);
+  color: var(--ink);
+  transform: translateY(-100%);
+  transition: transform 320ms ease-out;
+}
+
+.sheet-preview.is-open {
+  transform: none;
+}
+
+.sheet-preview::backdrop {
+  background: rgb(from var(--color-black) r g b / 0.4);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sheet-preview {
+    transition: none;
+  }
+}
+
+/* Top right: an action button, as on the page. */
+.sheet-preview-close {
+  position: absolute;
+  top: var(--spacers-padding-xs);
+  right: var(--grid-margin);
+}
+
+/* The page, centred in what's left, drawn to fit it. */
+.sheet-preview-stage {
+  display: grid;
+  place-items: center;
+  height: 100%;
+  overflow: hidden;
+}
+
+.sheet-preview-paper {
+  display: block;
+  outline: var(--border-thick) solid var(--ink);
+}
+
+.sheet-preview-message {
+  margin: 0;
+}

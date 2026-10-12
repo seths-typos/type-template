@@ -1,6 +1,9 @@
 import { createLineStylesPanel, defaultLineStyles } from './line-styles.js';
+import { createPreviewDialog } from './preview-dialog.js';
 import { copyRowState, createRowEditor, newRowState } from './row-editor.js';
+import { rowInput } from './row-input.js';
 import { MAX_ROWS, createChoiceToggle, createRowCountSlider } from './sheet-controls.js';
+import { previewSheet, type PreviewSheet } from './sheet-preview.js';
 
 type RowMetrics = 'same' | 'different';
 
@@ -86,12 +89,45 @@ const header = document.createElement('div');
 header.className = 'sheet-header';
 header.append(title, sheetControls);
 
-// What to do with the finished sheet. Not wired up yet: printing and the
-// PDF wait on the engine taking per-row metrics, and the config on its file
-// format.
+const preview = createPreviewDialog();
+
+/**
+ * The sheet as it will print, or, when a row has a value to fix, the
+ * preview opened to say which.
+ */
+function printable(): PreviewSheet | null {
+  const inputs = [];
+  for (let i = 0; i < sheet.rowCount; i++) {
+    const state = sheet.metrics === 'same' ? sheet.rows[0]! : sheet.rows[i]!;
+    const input = rowInput(state, sheet.lines);
+    if (!input) {
+      // With shared metrics, row 1's values are the ones to fix.
+      const row = sheet.metrics === 'same' ? 1 : i + 1;
+      preview.open({ message: `Row ${row} has a value to fix before the sheet can be printed.` });
+      return null;
+    }
+    inputs.push(input);
+  }
+  return previewSheet(inputs);
+}
+
+/** Run `action` on the sheet, if it can be made. */
+const withSheet = (action: (content: PreviewSheet) => unknown) => () => {
+  const content = printable();
+  if (content) void action(content);
+};
+
+// What to do with the finished sheet. Print and Save to PDF are not wired
+// up yet; Download Config waits on the config's file format.
 const actions = document.createElement('div');
 actions.className = 'sheet-actions';
-for (const label of ['Preview', 'Print', 'Save to PDF', 'Download Config']) {
+const ACTIONS: { label: string; run?: () => void }[] = [
+  { label: 'Preview', run: withSheet((content) => preview.open(content)) },
+  { label: 'Print' },
+  { label: 'Save to PDF' },
+  { label: 'Download Config' },
+];
+for (const { label, run } of ACTIONS) {
   const button = document.createElement('button');
   button.type = 'button';
   button.className = 'action-button';
@@ -99,6 +135,7 @@ for (const label of ['Preview', 'Print', 'Save to PDF', 'Download Config']) {
   // Read by the stylesheet to hold the width of the label at its hover
   // weight.
   button.dataset.label = label;
+  if (run) button.addEventListener('click', run);
   actions.append(button);
 }
 
@@ -127,7 +164,7 @@ panel.append(header, rowEditors, footer);
 new ResizeObserver(([entry]) => {
   panel.style.setProperty('--editor-width', `${entry!.borderBoxSize[0]!.inlineSize}px`);
 }).observe(editors[0]!.element);
-document.querySelector('#app')!.append(panel);
+document.querySelector('#app')!.append(panel, preview.element);
 
 applyMetrics();
 applyRowCount();
