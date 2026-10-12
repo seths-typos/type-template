@@ -1,4 +1,5 @@
 import { createLineStylesPanel, defaultLineStyles } from './line-styles.js';
+import { printSheet, saveSheetPdf } from './output.js';
 import { createPreviewDialog } from './preview-dialog.js';
 import { copyRowState, createRowEditor, newRowState } from './row-editor.js';
 import { rowInput } from './row-input.js';
@@ -117,14 +118,14 @@ const withSheet = (action: (content: PreviewSheet) => unknown) => () => {
   if (content) void action(content);
 };
 
-// What to do with the finished sheet. Print and Save to PDF are not wired
-// up yet; Download Config waits on the config's file format.
+// What to do with the finished sheet. Download Config waits on the config's
+// file format.
 const actions = document.createElement('div');
 actions.className = 'sheet-actions';
 const ACTIONS: { label: string; run?: () => void }[] = [
   { label: 'Preview', run: withSheet((content) => preview.open(content)) },
-  { label: 'Print' },
-  { label: 'Save to PDF' },
+  { label: 'Print', run: withSheet(printSheet) },
+  { label: 'Save to PDF', run: withSheet(saveSheetPdf) },
   { label: 'Download Config' },
 ];
 for (const { label, run } of ACTIONS) {

@@ -1093,3 +1093,34 @@ body {
 .sheet-preview-message {
   margin: 0;
 }
+
+/* ── Printing ─────────────────────────────────────────── */
+
+/* The sheet set out for printing: off screen, and on paper the only thing
+   there, at its own size. */
+.print-sheet {
+  display: none;
+}
+
+@media print {
+  body {
+    margin: 0;
+    padding: 0;
+    background: none;
+  }
+
+  body > :not(.print-sheet) {
+    display: none !important;
+  }
+
+  /* One page exactly: a rounding hair over would print a blank second. */
+  .print-sheet {
+    display: block;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  .print-sheet svg {
+    display: block;
+  }
+}
