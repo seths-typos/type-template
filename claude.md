@@ -103,7 +103,9 @@ Must be fully testable without producing a PDF.
 
 **`render/canvas/`** sits beside it consuming the same ops. Canvas is already y-down, so it has nothing to flip. It types its context as a narrow structural interface, not `CanvasRenderingContext2D`, so tests pass a recorder and need no DOM.
 
-Neither renderer knows about the other. They share an ops builder, not each other.
+**`render/svg/`** is the third, turning the same ops into an SVG document sized in points. The front end prints with it: vector lines at the sheet's true size, through the browser's print dialog.
+
+No renderer knows about another. They share an ops builder, not each other (`render/svg/` borrows only the canvas renderer's `toCss` colour helper).
 
 **Label text is fixed, not configurable.** A type sheet always names the baseline, cap height and x-height — B, C and X, in `config/labels.ts`. Only their look (size, colour, gap, on/off) is config. Calligraphy mode will want its own set, chosen by mode rather than typed in.
 
