@@ -1,21 +1,11 @@
-import { ConfigError, DEFAULT_FONT_UNITS, fontUnitsToPercent, resolveConfig } from '../src/index.js';
+import { DEFAULT_FONT_UNITS, resolveConfig } from '../src/index.js';
 import type { FontUnitMetrics, MetricLine, SheetConfig } from '../src/index.js';
 import { METRIC_TOGGLES, createMetricToggle, type MetricToggle } from './button.js';
-import { toLineStyle, type LineStyles } from './line-styles.js';
-import { metricOrderErrors } from './metric-order.js';
+import type { LineStyles } from './line-styles.js';
 import { renderRowPreview } from './row-preview.js';
+import { rowInput, type RowState } from './row-input.js';
 
-/**
- * What a row's controls hold. Values stay as typed — font units and degrees —
- * and go through config to become a sheet, so a bad value is caught there,
- * named against its field, and never reaches the preview. Null is text that
- * isn't a number.
- */
-export type RowState = {
-  units: Record<keyof FontUnitMetrics, number | null>;
-  visible: Record<MetricLine, boolean>;
-  slant: { enabled: boolean; angle: number | null };
-};
+export type { RowState };
 
 export function newRowState(): RowState {
   return {
@@ -247,85 +237,12 @@ const EMPTY_ROW: SheetConfig = resolveConfig({
   slant: { enabled: false },
 });
 
-/**
- * The row as config, recording any problems against their fields. Null when
- * the metrics can't be drawn. A bad italic angle alone doesn't stop the row:
- * it comes back without slant lines, the error still recorded.
- */
+/** The row as config, or null when it can't be drawn; see `rowInput`. */
 function toConfig(
   state: RowState,
   styles: LineStyles,
   errors: Map<string, string>,
 ): SheetConfig | null {
-  for (const [key, value] of Object.entries(state.units)) {
-    if (value === null) errors.set(`metrics.${key}`, 'Enter a number.');
-  }
-  const slantTyped = !state.slant.enabled || state.slant.angle !== null;
-  if (!slantTyped) errors.set('slant.angle', 'Enter a number.');
-  if ([...errors.keys()].some((path) => path.startsWith('metrics.'))) return null;
-
-  const units = state.units as FontUnitMetrics;
-  // Everything else is measured against the cap height, so config can't
-  // judge the others until it is usable.
-  if (!(units.capHeight > 0)) {
-    errors.set('metrics.capHeight', 'Must be greater than 0.');
-    return null;
-  }
-
-  // Out of order, the row is left undrawn like any other bad metric.
-  const disorder = metricOrderErrors(units, state.visible);
-  if (disorder.size > 0) {
-    for (const [path, message] of disorder) errors.set(path, message);
-    return null;
-  }
-
-  const line = (type: MetricLine) => ({ ...toLineStyle(styles[type]), visible: state.visible[type] });
-  const input = {
-    metrics: fontUnitsToPercent(units),
-    lines: {
-      ascender: line('ascender'),
-      capHeight: line('capHeight'),
-      xHeight: line('xHeight'),
-      baseline: line('baseline'),
-      descender: line('descender'),
-    },
-  };
-  const slantOff = { enabled: false };
-  const slantStyle = toLineStyle(styles.slant);
-
-  try {
-    return resolveConfig({
-      ...input,
-      slant:
-        state.slant.enabled && slantTyped
-          ? { enabled: true, angle: state.slant.angle!, style: slantStyle }
-          : slantOff,
-    });
-  } catch (error) {
-    if (!(error instanceof ConfigError)) throw error;
-    for (const { path, message } of error.issues) {
-      // The only way an angle that parsed can fail is its range.
-      errors.set(path, path === 'slant.angle' ? ANGLE_RANGE : describe(message));
-    }
-
-    // Only the angle was wrong: draw the row without its slant lines.
-    if (error.issues.every(({ path }) => path.startsWith('slant.'))) {
-      return resolveConfig({ ...input, slant: slantOff });
-    }
-    return null;
-  }
-}
-
-/** Config's range is open: ±90° would be a flat line, so 90 is out. */
-const ANGLE_RANGE = 'Use an angle between −90° and 90°.';
-
-/**
- * Config's message as the field should show it. Its ", got …" names the value
- * config saw — a percentage of cap height for the font-unit fields, not what
- * was typed — so it is dropped. The sign is unchanged by the conversion, so
- * the rule itself still holds.
- */
-function describe(message: string): string {
-  const rule = message.replace(/, got .*$/, '');
-  return `${rule[0]!.toUpperCase()}${rule.slice(1)}.`;
+  const input = rowInput(state, styles, errors);
+  return input ? resolveConfig(input) : null;
 }
