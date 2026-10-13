@@ -14,11 +14,13 @@
 :root {
   --color-black: #132322;
   --color-near-black: #474848;
-  --color-grey: #999999;
+  --color-grey: #dcdbdc;
   --color-white: #fbfef9;
   --color-red: #cb0106;
   --color-green: #b7cdc0;
   --color-teal: #035f55;
+  /* Local, not yet in Figma: HSL 221° 12% 31%, the rules across the page. */
+  --color-steel: #464c59;
   --color-blue: #75a7be;
   --color-blue-light: #cee2e9;
   /* Local, not yet in Figma: trying it as the background. */
@@ -72,7 +74,7 @@
 
 /* ── Color ────────────────────────────────────────────── */
 :root {
-  --color-bg: var(--color-mist);
+  --color-bg: var(--color-grey);
   --color-bg-contrast: var(--color-white);
   --color-text-ondark: var(--color-white);
   --color-text-onlight: var(--color-black);
@@ -111,7 +113,7 @@
   --spacers-btwn-module: var(--spacing-10);
 
   --grid-columns: 12;
-  --grid-margin: var(--spacing-8);
+  --grid-margin: var(--spacing-5);
   --grid-gutter: var(--spacing-5);
 
   --corner-sm: var(--radius-1);

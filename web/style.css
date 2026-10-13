@@ -328,19 +328,19 @@ body {
    it. */
 .rows {
   --ink: var(--color-black);
-  --ink-contrast: var(--color-mist);
-  --paper: var(--color-mist);
+  --ink-contrast: var(--color-bg);
+  --paper: var(--color-bg);
 
   /* The page grid: --grid-columns columns between --grid-margin margins,
      --grid-gutter apart. Everything below spans whole columns, and widens
      and narrows with the window. Designed at a 13" MacBook Air's 1470 px;
-     below 1440 px it stops narrowing and the page scrolls across. */
+     below 1366 px it stops narrowing and the page scrolls across. */
   display: grid;
   grid-template-columns: repeat(var(--grid-columns), minmax(0, 1fr));
   column-gap: var(--grid-gutter);
   row-gap: var(--spacers-padding-md);
   box-sizing: border-box;
-  min-width: 1440px;
+  min-width: 1366px;
   padding: var(--spacers-padding-md) var(--grid-margin);
   background: var(--paper);
 }
@@ -707,12 +707,11 @@ body {
    smaller by edge × (2 − √2), so the diagonals are as thick as the sides,
    and its rounding tighter by the edge, so the curves run parallel. */
 .block.is-outlined {
-  --ink: var(--color-teal);
-  --ink-contrast: var(--color-mist);
+  --ink: var(--color-black);
+  --ink-contrast: var(--color-bg);
   --paper: var(--color-bg);
-  /* The edge's colour. The same as the ink inside, for now; kept apart so
-     the two can differ. */
-  --edge-color: var(--ink);
+  /* The edge's colour, apart from the ink inside. Clear: no outline. */
+  --edge-color: transparent;
   /* Heavier than the rules inside, to hold the shape. */
   --edge: calc(var(--border-thick) * 2);
 
@@ -831,9 +830,21 @@ body {
 }
 
 /* Row Metrics: the title, the sheet's controls and the row editors, on
-   teal. */
+   the page itself, inked in black, between two rules that run the width of
+   the window.
+
+   The rules are a border image drawn on the top and bottom borders only,
+   pushed out past both sides by a window's width. Border image overflow
+   paints but takes no room, so the page doesn't scroll for it. No corner
+   cuts: the rules are its edges now. */
 .metrics-block {
-  --paper: var(--color-teal);
+  --ink: var(--color-black);
+  --paper: var(--color-bg);
+  --rule: var(--border-thick);
+
+  border-block: var(--rule) solid transparent;
+  border-image: linear-gradient(var(--color-steel) 0 0) 1 / var(--rule) 0 / 0 100vw;
+  clip-path: none;
 
   /* The rows sit close to the sides; the corner cuts clear them above and
      below. */
@@ -847,9 +858,19 @@ body {
 /* The title is out of the flow, in its notch, so the controls are pushed
    over to the right themselves, and kept as clear of the top-right bevel as
    the title is of the top-left. */
+/* Without a notch, the title is back in the header's row: flush with the
+   rows' left edge and centred on the controls' height, the controls flush
+   with the rows' right edge. */
+.metrics-block .block-title {
+  position: static;
+  height: auto;
+  padding: 0;
+  background: none;
+  clip-path: none;
+}
+
 .metrics-block .sheet-controls {
   margin-left: auto;
-  margin-right: var(--bevel);
 }
 
 /* On the block the controls' names sit to their left rather than above,
@@ -1451,7 +1472,7 @@ body {
   --cut: var(--spacing-2);
   --border: 0px;
   --fill: var(--color-black);
-  --fill-hover: var(--color-teal);
+  --fill-hover: var(--color-near-black);
   --label: var(--color-mist);
   --label-hover: var(--label);
   /* The inner cut's distance from the edges: a 45° edge moved in by
@@ -1650,4 +1671,191 @@ body {
   .print-sheet svg {
     display: block;
   }
+}
+
+/* ── Panel direction ──────────────────────────────────── */
+
+/* Blocks without fields or outlines: titles set in the flow, at the top of
+   their block, no notches; the page divided by steel rules instead. */
+
+/* The page fills the window, its last row taking what's left, so the rule
+   between Line Styles and Header can run to the bottom of the window. */
+.rows {
+  grid-template-rows: auto auto 1fr;
+  min-height: 100dvh;
+  padding-bottom: 0;
+}
+
+.block {
+  clip-path: none;
+}
+
+.block.is-outlined::after,
+.is-outlined .block-title::before {
+  content: none;
+}
+
+.block-title,
+.is-outlined .block-title {
+  position: static;
+  display: block;
+  height: auto;
+  margin: 0;
+  padding: 0;
+  background: none;
+  clip-path: none;
+  isolation: auto;
+}
+
+.line-styles,
+.header-panel {
+  padding-top: var(--spacers-padding-md);
+}
+
+/* Its title and first column flush with Row 1 and the Row Metrics title. */
+.line-styles {
+  padding-left: var(--spacers-padding-md);
+}
+
+.line-styles .block-title {
+  margin-bottom: var(--spacers-padding-md);
+}
+
+/* Output's title on the same line as the others. */
+.output-block {
+  padding-top: var(--spacers-padding-md);
+}
+
+.output-title {
+  display: block;
+  height: auto;
+  text-align: left;
+}
+
+/* The rule between Line Styles and Header: down the middle of the gutter,
+   from the rule under Row Metrics to the bottom of the page. */
+.header-panel::before {
+  content: '';
+  position: absolute;
+  top: calc(-1 * var(--spacers-padding-md));
+  bottom: 0;
+  left: calc(var(--grid-gutter) / -2 - var(--border-thick) / 2);
+  width: var(--border-thick);
+  background: var(--color-steel);
+}
+
+/* Line Styles as a ruled panel: a rule over the line names, and a rule
+   between each pair of columns running from it to the bottom of the page.
+   Each column's underline climbs at 45° to meet the rule on its right where
+   that meets the top one, so name, underline and rules frame one cell.
+
+   Every rule sits half a gutter from what's either side of it: columns a
+   gutter apart, the last column's half-gutter running on to the rule
+   between Line Styles and Header, Header's contents half a gutter past it. */
+.line-styles {
+  --cell-gap: var(--grid-gutter);
+  /* From the top rule down to the names' cap height. */
+  --cell-top: calc(var(--cell-gap) / 2);
+
+  display: flex;
+  flex-direction: column;
+  padding-right: 0;
+}
+
+/* Header and Output padded alike on both sides, so each sits the same
+   distance from the rules either side of it. Output takes two columns to
+   have room for that, Header three. */
+.header-panel,
+.output-block {
+  padding-inline: var(--spacers-padding-md);
+}
+
+.header-panel {
+  grid-column: span 3;
+}
+
+.output-block {
+  grid-column: span 2;
+}
+
+/* A rule over the names and one under the controls, half a gap below them:
+   both from the window's left edge to the rule beside Header, drawn as a
+   border image so their overhang takes no room. */
+.line-columns {
+  gap: var(--cell-gap);
+  padding-bottom: calc(var(--cell-gap) / 2);
+  border-block: var(--border-thick) solid transparent;
+  border-image: linear-gradient(var(--color-steel) 0 0) 1 / var(--border-thick) 0 /
+    0 calc(var(--cell-gap) / 2) 0 100vw;
+}
+
+.line-column {
+  position: relative;
+}
+
+/* The underline now rises from under the name to the top rule, and runs
+   half a gap past the column to meet the rule on its right. */
+.line-styles .line-column-head {
+  --rise: calc(var(--cell-top) + 1cap + var(--gap) + var(--rule));
+}
+
+.line-styles .line-column-name {
+  margin-top: var(--cell-top);
+}
+
+.line-styles .line-column-rule {
+  margin-right: calc(var(--cell-gap) / -2);
+  background: var(--color-steel);
+}
+
+/* A rule under Row Metrics' title and controls, across the window, spaced
+   as Line Styles' is: a padding below the title and controls, then the
+   rule, then half a gutter down to the capitals of the row titles. */
+.metrics-block .sheet-header {
+  padding-bottom: var(--spacers-padding-md);
+  border-bottom: var(--border-thick) solid transparent;
+  border-image: linear-gradient(var(--color-steel) 0 0) 1 / 0 0 var(--border-thick) 0 / 0 100vw;
+}
+
+/* Half a gutter from the rule to the row titles' capitals, as in Line
+   Styles. A row title sits on its frame's top edge, its capitals starting
+   about 4 px into the editor, so the gap is that much less. */
+.metrics-block {
+  row-gap: calc(var(--grid-gutter) / 2 - 4px);
+}
+
+/* The rule between Header and Output, like the one between Line Styles and
+   Header: down the middle of the gutter, from the rule under Row Metrics to
+   the bottom of the page. */
+.output-block {
+  position: relative;
+}
+
+.output-block::before {
+  content: '';
+  position: absolute;
+  top: calc(-1 * var(--spacers-padding-md));
+  bottom: 0;
+  left: calc(var(--grid-gutter) / -2 - var(--border-thick) / 2);
+  width: var(--border-thick);
+  background: var(--color-steel);
+}
+
+/* At the page's edges, the margin alone: nothing here draws a block's
+   edge, so a block's own padding would only double it. Content sits a
+   gutter from the window, as it sits a gutter from its neighbours. */
+.metrics-block {
+  padding-inline: 0;
+}
+
+.line-styles {
+  padding-left: 0;
+}
+
+.output-block {
+  padding-right: 0;
+}
+
+.sheet-actions.is-inbound {
+  margin-right: 0;
 }

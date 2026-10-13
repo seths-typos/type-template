@@ -121,7 +121,7 @@ export function createLineStylesPanel(options: LineStylesPanelOptions): HTMLElem
     rule.setAttribute('aria-hidden', 'true');
 
     const head = document.createElement('div');
-    head.className = 'ui-sm line-column-head';
+    head.className = 'heading-h3 line-column-head';
     head.append(heading, rule);
 
     const weight = createStopSlider(
