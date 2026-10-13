@@ -2518,6 +2518,8 @@ body {
   margin-top: auto;
   padding-top: var(--spacers-padding-md);
   color: var(--ink);
+  /* A step up from the body's regular: medium, the heaviest loaded. */
+  font-weight: var(--weight-ui-medium);
   text-transform: uppercase;
   text-decoration: none;
   text-decoration-thickness: var(--border-base);
@@ -2532,4 +2534,89 @@ body {
 .credit-link:focus-visible {
   outline: var(--border-base) solid var(--ink);
   outline-offset: 3px;
+}
+
+/* ── Active rows ──────────────────────────────────────── */
+
+/* A row in use is a solid field of the blue, everything on it inked in
+   white and text on a white fill in the blue. Rows past the count keep the
+   plain outline. Either way the field's top edge is the frame's top line
+   and the title sits where it always does, centred on that line. */
+.editor:not(.is-inactive) {
+  --ink: var(--color-white);
+  --ink-contrast: var(--color-black);
+  --paper: var(--color-black);
+}
+
+/* The outer shape the blue too, so there's no outline round the field. */
+.editor:not(.is-inactive)::before {
+  background: var(--paper);
+}
+
+/* On an active row the title rides across the field's top edge, in the
+   blue on the page's colour, a notch cut down into the field under it,
+   bevelled both sides. The notch is the title's ::before, from the
+   field's top edge down --row-notch, its bevels sloping in from the
+   title box's edges. */
+.editor:not(.is-inactive) .frame-title {
+  background: none;
+  color: var(--color-black);
+}
+
+.editor .frame-title::before {
+  content: '';
+  position: absolute;
+  /* From the field's top edge: the title's middle is half a frame below
+     it, on the frame line's centre. */
+  top: calc(50% - var(--frame) / 2);
+  /* Its bevels start where an inactive row's line stops — the edges of
+     the title's box — and a little further out, an optical allowance so
+     the slopes don't read as crowding the title. */
+  left: calc(-1 * var(--spacing-1));
+  right: calc(-1 * var(--spacing-1));
+  z-index: -1;
+  height: var(--row-notch);
+  background: var(--color-bg);
+  clip-path: polygon(
+    0 0,
+    100% 0,
+    calc(100% - var(--row-notch)) 100%,
+    var(--row-notch) 100%
+  );
+}
+
+/* Every row's contents start half a gutter below the notch's floor, active
+   or not, so nothing moves when a row switches on. */
+.editor.frame {
+  --row-notch: 16px;
+
+  padding-top: calc(var(--frame-top) + var(--frame) + var(--row-notch) + var(--grid-gutter) / 2);
+}
+
+/* The blue fades in as a row switches on, and out as it switches off,
+   with the dimming. The notch is always there under the title, clear on
+   an inactive row, and fades with it, so the field never shows through
+   the title mid-fade. */
+.editor::before,
+.editor::after {
+  transition:
+    opacity 300ms ease-out,
+    background-color 300ms ease-out;
+}
+
+.editor .frame-title::before {
+  opacity: 0;
+  transition: opacity 300ms ease-out;
+}
+
+.editor:not(.is-inactive) .frame-title::before {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .editor::before,
+  .editor::after,
+  .editor .frame-title::before {
+    transition: none;
+  }
 }
