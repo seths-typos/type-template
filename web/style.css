@@ -950,19 +950,24 @@ body {
   gap: var(--spacers-padding-sm);
 }
 
-/* An ink button cut like the choice switch: bottom-left and top-right
-   corners on the diagonal, as if a box seen from one side. On hover the
-   cuts move to the other two corners, the box seen from the other side.
+/* An outlined button cut like the choice switch: bottom-left and top-right
+   corners on the diagonal. The button is ink, clipped to that shape; its
+   ::before lays paper over it, inset by the border width, so ink shows only
+   as the outline and the label.
 
-   Every corner is two points in the polygon: apart by --cut where the corner
-   is cut, together where it's square. Both states have the same eight
-   points, so the shape morphs between them: one pair of cuts closes as the
-   other opens, and halfway all four corners are cut a little, the box
-   turning through face-on. */
+   On hover the paper shrinks away into the bottom-right corner, the ink
+   filling in behind it from the top left, and the label turns to the
+   contrast colour. Pressed, it shrinks a little. */
 .action-button {
   --cut: var(--spacing-2);
+  --border: var(--border-thick);
+  /* The inner cut's distance from the edges: a 45° edge moved in by
+     --border lands (√2 − 1) × --border further along. */
+  --inner-cut: calc(var(--cut) + var(--border) * 0.414);
 
   appearance: none;
+  position: relative;
+  isolation: isolate;
   display: inline-flex;
   flex-direction: column;
   align-items: center;
@@ -970,15 +975,12 @@ body {
   height: 32px;
   padding: 0 var(--spacing-4);
   border: 0;
-  border-radius: var(--corner-xs);
   background: var(--ink);
-  color: var(--ink-contrast);
+  color: var(--ink);
   clip-path: polygon(
-    0 0,
     0 0,
     calc(100% - var(--cut)) 0,
     100% var(--cut),
-    100% 100%,
     100% 100%,
     var(--cut) 100%,
     0 calc(100% - var(--cut))
@@ -987,7 +989,27 @@ body {
   text-transform: uppercase;
   white-space: nowrap;
   cursor: pointer;
-  transition: clip-path 220ms ease-in-out;
+  transition:
+    color 200ms ease-out,
+    scale 100ms ease-out;
+}
+
+/* The paper inside the outline. */
+.action-button::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--paper);
+  clip-path: polygon(
+    var(--border) var(--border),
+    calc(100% - var(--inner-cut)) var(--border),
+    calc(100% - var(--border)) var(--inner-cut),
+    calc(100% - var(--border)) calc(100% - var(--border)),
+    var(--inner-cut) calc(100% - var(--border)),
+    var(--border) calc(100% - var(--inner-cut))
+  );
+  transition: clip-path 300ms ease-in-out;
 }
 
 /* The label set again at the hover weight, unseen and no height, so the
@@ -1001,33 +1023,34 @@ body {
   font-weight: var(--weight-ui-medium);
 }
 
-.action-button:hover {
+.action-button:is(:hover, :focus-visible) {
+  color: var(--ink-contrast);
   font-weight: var(--weight-ui-medium);
+  outline: none;
+}
+
+/* Every point drawn into the bottom-right corner. */
+.action-button:is(:hover, :focus-visible)::before {
   clip-path: polygon(
-    0 var(--cut),
-    var(--cut) 0,
-    100% 0,
-    100% 0,
-    100% calc(100% - var(--cut)),
-    calc(100% - var(--cut)) 100%,
-    0 100%,
-    0 100%
+    calc(100% - var(--border)) calc(100% - var(--border)),
+    calc(100% - var(--border)) calc(100% - var(--border)),
+    calc(100% - var(--border)) calc(100% - var(--border)),
+    calc(100% - var(--border)) calc(100% - var(--border)),
+    calc(100% - var(--border)) calc(100% - var(--border)),
+    calc(100% - var(--border)) calc(100% - var(--border))
   );
+  transition-duration: 200ms;
+}
+
+.action-button:active {
+  scale: 0.9;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .action-button {
+  .action-button,
+  .action-button::before {
     transition: none;
   }
-}
-
-/* clip-path would cut an outline, so focus is a ring inside, as on the
-   choice switch. */
-.action-button:focus-visible {
-  outline: none;
-  box-shadow:
-    inset 0 0 0 3px var(--ink),
-    inset 0 0 0 calc(3px + var(--border-base)) var(--ink-contrast);
 }
 
 /* ── Sheet preview ────────────────────────────────────── */
