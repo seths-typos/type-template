@@ -1,5 +1,20 @@
 import { drawSheetToCanvas } from '../src/render/canvas/index.js';
-import type { PreviewSheet } from './sheet-preview.js';
+import type { PageSetup, PreviewSheet } from './sheet-preview.js';
+
+const PAPER_NAMES: Record<PageSetup['size'], string> = { letter: 'Letter', a4: 'A4' };
+const ORIENTATION_NAMES: Record<PageSetup['orientation'], string> = {
+  portrait: 'Portrait',
+  landscape: 'Landscape',
+};
+
+/** What the sheet is set on, for the table beside it. */
+function pageRows(page: PageSetup): [string, string][] {
+  return [
+    ['Orientation', ORIENTATION_NAMES[page.orientation]],
+    ['Paper', PAPER_NAMES[page.size]],
+    ['Margin', `${page.margin} pt`],
+  ];
+}
 
 export interface PreviewDialog {
   element: HTMLDialogElement;
@@ -19,6 +34,9 @@ export function createPreviewDialog(): PreviewDialog {
   const dialog = document.createElement('dialog');
   dialog.className = 'sheet-preview';
   dialog.setAttribute('aria-label', 'Sheet preview');
+  // Focus lands on the panel itself when it opens, not on Close, which
+  // would otherwise show as focused — in its hover colour — straight away.
+  dialog.tabIndex = -1;
 
   // Styled as the page's action buttons.
   const close = document.createElement('button');
@@ -36,7 +54,20 @@ export function createPreviewDialog(): PreviewDialog {
   const message = document.createElement('p');
   message.className = 'body-md sheet-preview-message';
 
-  dialog.append(close, stage);
+  // Beside the sheet, on its left: the page setup it's on, a row each.
+  const details = document.createElement('table');
+  details.className = 'sheet-preview-details';
+  const caption = document.createElement('caption');
+  caption.className = 'visually-hidden';
+  caption.textContent = 'Page setup';
+  const detailRows = document.createElement('tbody');
+  details.append(caption, detailRows);
+
+  const body = document.createElement('div');
+  body.className = 'sheet-preview-body';
+  body.append(details, stage);
+
+  dialog.append(close, body);
 
   let shown: PreviewSheet | null = null;
 
@@ -108,12 +139,31 @@ export function createPreviewDialog(): PreviewDialog {
         shown = null;
         message.textContent = content.message;
         stage.replaceChildren(message);
+        details.hidden = true;
       } else {
         shown = content;
         stage.replaceChildren(canvas);
+        detailRows.replaceChildren(
+          ...pageRows(content.page).map(([name, value]) => {
+            const row = document.createElement('tr');
+            const th = document.createElement('th');
+            th.scope = 'row';
+            th.className = 'ui-sm';
+            th.textContent = name;
+            const td = document.createElement('td');
+            td.className = 'body-md';
+            td.textContent = value;
+            row.append(th, td);
+            return row;
+          }),
+        );
+        details.hidden = false;
       }
 
-      if (!dialog.open) dialog.showModal();
+      if (!dialog.open) {
+        dialog.showModal();
+        dialog.focus();
+      }
       draw();
       window.addEventListener('resize', onResize);
       // Lay it out above the screen first, so adding the class slides it

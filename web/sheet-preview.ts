@@ -1,7 +1,20 @@
-import { buildSheet, resolveConfig } from '../src/index.js';
+import { DEFAULTS, buildSheet, resolveConfig } from '../src/index.js';
 import type { LineType, Sheet, SheetConfig, SheetInput } from '../src/index.js';
 import type { DrawOptions } from '../src/render/ops.js';
 import { emptyHeaderText, type HeaderText } from './header-panel.js';
+import type { Orientation, PagePreset } from '../src/index.js';
+
+/** The paper the sheet is set on. */
+export interface PageSetup {
+  size: PagePreset;
+  orientation: Orientation;
+  /** pt, the same on all four sides. */
+  margin: number;
+}
+
+export function defaultPageSetup(): PageSetup {
+  return { size: 'letter', orientation: 'landscape', margin: DEFAULTS.page.margins.top };
+}
 
 export interface PreviewSheet {
   sheet: Sheet;
@@ -10,6 +23,8 @@ export interface PreviewSheet {
   options: DrawOptions;
   /** For renderers that name a font: the PDF sets Helvetica, Arial's twin. */
   fontFamily: string;
+  /** The page setup it was made on, as the user chose it. */
+  page: PageSetup;
 }
 
 /** Header text: 10 pt Arial. */
@@ -23,7 +38,7 @@ export const HEADER_FONT = 'Arial, Helvetica, sans-serif';
 export const HEADER_HEIGHT = 24;
 
 /**
- * The printed sheet: landscape, `inputs.length` rows filling the page, each
+ * The printed sheet: on `page`, `inputs.length` rows filling it, each
  * row drawn from its own input, with no metric labels.
  *
  * The engine takes one set of metrics for the whole sheet, so this builds a
@@ -40,6 +55,7 @@ export const HEADER_HEIGHT = 24;
 export function previewSheet(
   inputs: SheetInput[],
   headerText: HeaderText = emptyHeaderText(),
+  page: PageSetup = defaultPageSetup(),
 ): PreviewSheet {
   const rowCount = inputs.length;
   if (rowCount === 0) throw new Error('A sheet needs at least one row.');
@@ -52,7 +68,12 @@ export function previewSheet(
   const built = inputs.map((input, index) => {
     const config = resolveConfig({
       ...input,
-      page: { ...input.page, orientation: 'landscape' },
+      page: {
+        ...input.page,
+        size: page.size,
+        orientation: page.orientation,
+        margins: { top: page.margin, right: page.margin, bottom: page.margin, left: page.margin },
+      },
       metrics: { ...input.metrics, mode: 'rowCount', rowCount },
       labels: { enabled: false },
       header,
@@ -78,5 +99,6 @@ export function previewSheet(
     config,
     options: { header: HEADER_TEXT },
     fontFamily: HEADER_FONT,
+    page: { ...page },
   };
 }
