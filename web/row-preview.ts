@@ -9,15 +9,15 @@ import type { LineSegment, LineStyle, MetricLine, SheetConfig } from '../src/ind
  * shows the left end of a row only — lines run off its right edge. Its width
  * is set by whoever places it, matched to its controls; this is the fallback.
  */
-export const CARD = { width: 90, height: 176 };
+export const CARD = { width: 90, height: 142 };
 
 /**
  * The row band always fills this span, whatever the metrics. On the sheet
  * every row band is the same height, so the card scales to match. Half-pixel
- * values keep 1 px lines crisp. Centred in the card, with 29.5 px of card
+ * values keep 1 px lines crisp. Centred in the card, with 12.5 px of card
  * above and below.
  */
-export const BAND = { top: 29.5, bottom: 146.5 };
+export const BAND = { top: 12.5, bottom: 129.5 };
 
 const ORDER: MetricLine[] = ['ascender', 'capHeight', 'xHeight', 'baseline', 'descender'];
 

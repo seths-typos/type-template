@@ -8,17 +8,17 @@
    - Color: semantic colours, aliasing Core.
    - Responsive: sizes with Large and Small modes. Large is the default;
      Small applies under [data-size="small"]. No breakpoint is chosen yet. */
-@import url('https://fonts.googleapis.com/css2?family=Michroma&family=Special+Gothic:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Special+Gothic+Expanded+One&family=Special+Gothic:wght@400;500&display=swap');
 
 /* ── Core ─────────────────────────────────────────────── */
 :root {
   --color-black: #132322;
   --color-near-black: #474848;
   --color-grey: #999999;
-  --color-white: #fbfbf9;
+  --color-white: #FDFDFA;
   --color-red: #cb0106;
   --color-green: #b7cdc0;
-  --color-teal: #01655a;
+  --color-teal: #035f55;
   --color-blue: #75a7be;
   --color-blue-light: #cee2e9;
   /* Local, not yet in Figma: trying it as the background. */
@@ -56,8 +56,8 @@
   --border-base: 1px;
   --border-thick: 2px;
 
-  --font-family-display: "Michroma", "Eurostile", system-ui, sans-serif;
-  --font-family-heading: "Michroma", "Eurostile", system-ui, sans-serif;
+  --font-family-display: "Special Gothic Expanded One", "Eurostile", system-ui, sans-serif;
+  --font-family-heading: "Special Gothic Expanded One", "Eurostile", system-ui, sans-serif;
   --font-family-body: "Special Gothic", "Helvetica Neue", system-ui, sans-serif;
   --font-family-ui: "Special Gothic", "Helvetica Neue", system-ui, sans-serif;
 
@@ -72,7 +72,7 @@
 
 /* ── Color ────────────────────────────────────────────── */
 :root {
-  --color-bg: var(--color-black);
+  --color-bg: var(--color-mist);
   --color-bg-contrast: var(--color-white);
   --color-text-ondark: var(--color-white);
   --color-text-onlight: var(--color-black);
@@ -91,7 +91,7 @@
   /* Local, not yet in Figma: remapped onto the minor-third scale, keeping
      the hierarchy. h2 (the page title) sits two steps below h1. */
   --type-heading-h1: var(--font-size-7);
-  --type-heading-h2: var(--font-size-5);
+  --type-heading-h2: var(--font-size-4);
   --type-heading-h3: var(--font-size-1);
   --type-body-md: var(--font-size-1);
   --type-body-sm: var(--font-size-n1);
@@ -123,7 +123,7 @@
   --type-display-1: var(--font-size-7);
   /* Local, as above: each a step below Large. */
   --type-heading-h1: var(--font-size-6);
-  --type-heading-h2: var(--font-size-4);
+  --type-heading-h2: var(--font-size-3);
   --type-heading-h3: var(--font-size-n1);
 
   --spacers-padding-sm: var(--spacing-3);

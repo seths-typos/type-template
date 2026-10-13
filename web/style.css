@@ -6,7 +6,7 @@
 body {
   margin: 0;
   padding: var(--spacers-padding-md);
-  background: var(--color-mist);
+  background: var(--color-bg);
 }
 
 /* One row's editor: its number above its preview card, centred on it. */
@@ -40,7 +40,7 @@ body {
   overflow: hidden;
   /* An inset outline, not a border: the SVG is drawn to the card's exact
      size, and a border would shrink the box it has to fit in. */
-  outline: var(--border-thick) solid var(--color-black);
+  outline: var(--border-thick) solid var(--ink, var(--color-black));
   outline-offset: calc(-1 * var(--border-thick));
 }
 
@@ -430,6 +430,38 @@ body {
   );
 }
 
+/* A row editor's frame is cut at the bottom-right corner too: three bevelled
+   corners, only the top-left square. */
+.editor.frame::before {
+  clip-path: polygon(
+    0 0,
+    calc(100% - var(--bevel) - var(--joint)) 0,
+    calc(100% - var(--bevel) + var(--joint-d)) var(--joint-d),
+    calc(100% - var(--joint-d)) calc(var(--bevel) - var(--joint-d)),
+    100% calc(var(--bevel) + var(--joint)),
+    100% calc(100% - var(--bevel) - var(--joint)),
+    calc(100% - var(--joint-d)) calc(100% - var(--bevel) + var(--joint-d)),
+    calc(100% - var(--bevel) + var(--joint-d)) calc(100% - var(--joint-d)),
+    calc(100% - var(--bevel) - var(--joint)) 100%,
+    calc(var(--bevel) + var(--joint)) 100%,
+    calc(var(--bevel) - var(--joint-d)) calc(100% - var(--joint-d)),
+    var(--joint-d) calc(100% - var(--bevel) + var(--joint-d)),
+    0 calc(100% - var(--bevel) - var(--joint))
+  );
+}
+
+.editor.frame::after {
+  clip-path: polygon(
+    0 0,
+    calc(100% - var(--inner-bevel)) 0,
+    100% var(--inner-bevel),
+    100% calc(100% - var(--inner-bevel)),
+    calc(100% - var(--inner-bevel)) 100%,
+    var(--inner-bevel) 100%,
+    0 calc(100% - var(--inner-bevel))
+  );
+}
+
 /* The title, set into the frame's top line: a short lead of line, a gap,
    the title, a gap, then the line runs on. Its background is what breaks
    the line; trimmed to the capitals, it centres on the line by them. */
@@ -469,7 +501,7 @@ body {
   display: flex;
   flex-direction: column;
   width: fit-content;
-  gap: var(--spacers-padding-sm);
+  gap: var(--spacers-padding-xs);
 }
 
 /* The row editors, all six side by side on one line. They keep their
@@ -564,6 +596,145 @@ body {
 .editor:disabled *,
 .row-section:disabled * {
   cursor: default;
+}
+
+/* ── Row Metrics block ────────────────────────────────── */
+
+/* The title, the sheet's controls and the row editors on a teal field, its
+   four corners cut on the diagonal and softened. Everything on it inks in
+   white; text on a white fill takes the teal.
+
+   The title isn't on the teal: it sits in a notch cut into the top edge,
+   bevelled on both sides, dark on the page's own colour. */
+.metrics-block {
+  --ink: var(--color-white);
+  --ink-contrast: var(--color-teal);
+  --paper: var(--color-teal);
+  /* The notch the title sits in, cut into the top edge. */
+  --notch-depth: 40px;
+  /* The corner cuts, 1.6 times the title's notch. */
+  --bevel: calc(var(--notch-depth) * 1.6);
+  /* Each place a bevel meets a side is rounded to --soft. polygon() has no
+     arcs, so a corner is three points on its arc: where it leaves the one
+     edge (--soft-t back along it), its middle, and where it joins the other
+     (--soft-d along the diagonal on each axis). The middle sits --soft-m1
+     and --soft-m2 off the corner's two axes. All of them are a 45° turn's
+     arc of radius --soft: tan 22.5°, 1 − cos 45°, and the arc's midpoint
+     (sec 22.5° − 1) along the bisector. */
+  --soft: 8px;
+  --soft-t: calc(var(--soft) * 0.4142);
+  --soft-d: calc(var(--soft) * 0.2929);
+  --soft-m1: calc(var(--soft) * 0.0315);
+  --soft-m2: calc(var(--soft) * 0.0761);
+
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacers-padding-md);
+  padding: var(--spacers-padding-md);
+  /* More under the rows and beside them, so the bevels clear their
+     frames. */
+  padding-inline: var(--spacers-padding-lg);
+  padding-bottom: var(--spacers-padding-lg);
+  background: var(--paper);
+  clip-path: polygon(
+    /* top left */
+    0 calc(var(--bevel) + var(--soft-t)),
+    var(--soft-m2) calc(var(--bevel) + var(--soft-m1)),
+    var(--soft-d) calc(var(--bevel) - var(--soft-d)),
+    calc(var(--bevel) - var(--soft-d)) var(--soft-d),
+    calc(var(--bevel) + var(--soft-m1)) var(--soft-m2),
+    calc(var(--bevel) + var(--soft-t)) 0,
+    /* top right */
+    calc(100% - var(--bevel) - var(--soft-t)) 0,
+    calc(100% - var(--bevel) - var(--soft-m1)) var(--soft-m2),
+    calc(100% - var(--bevel) + var(--soft-d)) var(--soft-d),
+    calc(100% - var(--soft-d)) calc(var(--bevel) - var(--soft-d)),
+    calc(100% - var(--soft-m2)) calc(var(--bevel) + var(--soft-m1)),
+    100% calc(var(--bevel) + var(--soft-t)),
+    /* bottom right */
+    100% calc(100% - var(--bevel) - var(--soft-t)),
+    calc(100% - var(--soft-m2)) calc(100% - var(--bevel) - var(--soft-m1)),
+    calc(100% - var(--soft-d)) calc(100% - var(--bevel) + var(--soft-d)),
+    calc(100% - var(--bevel) + var(--soft-d)) calc(100% - var(--soft-d)),
+    calc(100% - var(--bevel) - var(--soft-m1)) calc(100% - var(--soft-m2)),
+    calc(100% - var(--bevel) - var(--soft-t)) 100%,
+    /* bottom left */
+    calc(var(--bevel) + var(--soft-t)) 100%,
+    calc(var(--bevel) + var(--soft-m1)) calc(100% - var(--soft-m2)),
+    calc(var(--bevel) - var(--soft-d)) calc(100% - var(--soft-d)),
+    var(--soft-d) calc(100% - var(--bevel) + var(--soft-d)),
+    var(--soft-m2) calc(100% - var(--bevel) - var(--soft-m1)),
+    0 calc(100% - var(--bevel) - var(--soft-t))
+  );
+}
+
+/* The title is out of the flow, in its notch, so the controls are pushed
+   over to the right themselves, and kept as clear of the top-right bevel as
+   the title is of the top-left. */
+.metrics-block .sheet-controls {
+  margin-left: auto;
+  margin-right: var(--bevel);
+}
+
+/* The notch: the page's colour, wide at the top edge and narrowing at 45° to
+   a floor --d down, its contents centred in it and inked as on the page.
+   Its corners are softened as the block's are. The two where the slopes
+   leave the top edge round the teal's corner, so the notch reaches --soft-t
+   further out on each side to fill in behind those curves. */
+.metrics-block .sheet-title {
+  --ink: var(--color-black);
+  --ink-contrast: var(--color-mist);
+  --paper: var(--color-bg);
+  --s: var(--soft-t);
+
+  position: absolute;
+  top: 0;
+  box-sizing: border-box;
+  height: var(--d);
+  padding-inline: calc(var(--s) + var(--d) + var(--spacing-3));
+  background: var(--paper);
+  color: var(--ink);
+  clip-path: polygon(
+    /* left: off the top edge, then down onto the floor */
+    0 0,
+    calc(var(--s) - var(--soft-m1)) var(--soft-m2),
+    calc(var(--s) + var(--soft-d)) var(--soft-d),
+    calc(var(--s) + var(--d) - var(--soft-d)) calc(var(--d) - var(--soft-d)),
+    calc(var(--s) + var(--d) + var(--soft-m1)) calc(var(--d) - var(--soft-m2)),
+    calc(var(--s) + var(--d) + var(--soft-t)) var(--d),
+    /* right: off the floor, then up onto the top edge */
+    calc(100% - var(--s) - var(--d) - var(--soft-t)) var(--d),
+    calc(100% - var(--s) - var(--d) - var(--soft-m1)) calc(var(--d) - var(--soft-m2)),
+    calc(100% - var(--s) - var(--d) + var(--soft-d)) calc(var(--d) - var(--soft-d)),
+    calc(100% - var(--s) - var(--soft-d)) var(--soft-d),
+    calc(100% - var(--s) + var(--soft-m1)) var(--soft-m2),
+    100% 0
+  );
+}
+
+/* Just past the top-left bevel. */
+.metrics-block .sheet-title {
+  --d: var(--notch-depth);
+
+  left: calc(var(--bevel) + var(--spacers-padding-lg) - var(--s));
+  display: grid;
+  place-items: center;
+  text-box: trim-both cap alphabetic;
+}
+
+/* On the block the controls' names sit to their left rather than above,
+   centred on the slider's track and the toggle, to keep the header short. */
+.metrics-block .sheet-control {
+  flex-direction: row;
+  align-items: flex-start;
+  gap: var(--spacers-padding-sm);
+}
+
+.metrics-block .sheet-control-name {
+  /* Capitals centred on the 24px of the thumb and the toggle. */
+  margin-top: calc(12px - 0.5cap);
+  text-box: trim-both cap alphabetic;
 }
 
 /* ── Sheet controls ───────────────────────────────────── */

@@ -68,7 +68,7 @@ sheetControls.append(
     applyRowCount(true);
   }),
   createChoiceToggle<RowMetrics>(
-    'Row metrics',
+    'Values across rows',
     [
       { value: 'same', label: 'Same' },
       { value: 'different', label: 'Different' },
@@ -158,7 +158,12 @@ const footer = document.createElement('div');
 footer.className = 'sheet-footer';
 footer.append(lineStyles, actions);
 
-panel.append(header, rowEditors, footer);
+// The title, the sheet's controls and the rows, on their own field.
+const metricsBlock = document.createElement('div');
+metricsBlock.className = 'metrics-block';
+metricsBlock.append(header, rowEditors);
+
+panel.append(metricsBlock, footer);
 
 // Line Styles spans four row editors. A row editor's width comes from its
 // contents, so it's measured, and again whenever it changes.

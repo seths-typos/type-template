@@ -59,7 +59,8 @@ export function createPreviewDialog(): PreviewDialog {
 
     drawSheetToCanvas(canvas.getContext('2d')!, sheet, config, {
       scale: fit * dpr,
-      background: '#ffffff',
+      // The page's paper colour, as the row previews show it.
+      background: getComputedStyle(dialog).getPropertyValue('--color-white').trim(),
     });
   }
 
