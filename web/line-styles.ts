@@ -19,7 +19,7 @@ export type LineStyles = Record<StyledLine, LineChoice>;
 export const STYLED_LINES: { type: StyledLine; name: string }[] = [
   { type: 'ascender', name: 'Ascender' },
   { type: 'capHeight', name: 'Cap height' },
-  { type: 'xHeight', name: 'X-height' },
+  { type: 'xHeight', name: 'x-height' },
   { type: 'baseline', name: 'Baseline' },
   { type: 'descender', name: 'Descender' },
   { type: 'slant', name: 'Slant' },
@@ -121,7 +121,7 @@ export function createLineStylesPanel(options: LineStylesPanelOptions): HTMLElem
     rule.setAttribute('aria-hidden', 'true');
 
     const head = document.createElement('div');
-    head.className = 'ui-sm line-column-head';
+    head.className = 'heading-h3 line-column-head';
     head.append(heading, rule);
 
     const weight = createStopSlider(
