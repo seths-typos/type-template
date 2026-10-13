@@ -60,4 +60,14 @@ describe('previewSheet', () => {
     expect(slants(0)).toBeGreaterThan(0);
     expect(slants(1)).toBe(0);
   });
+
+  it('reserves the header only when it has text, and sets it at 10 pt', () => {
+    const plain = previewSheet([input(row())]);
+    const titled = previewSheet([input(row())], { left: '', center: 'brief', right: '' });
+
+    expect(plain.config.header.enabled).toBe(false);
+    expect(titled.config.header.enabled).toBe(true);
+    expect(titled.sheet.rows[0]!.top).toBeGreaterThan(plain.sheet.rows[0]!.top);
+    expect(titled.options.header?.size).toBe(10);
+  });
 });

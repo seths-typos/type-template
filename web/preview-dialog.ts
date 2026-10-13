@@ -43,7 +43,7 @@ export function createPreviewDialog(): PreviewDialog {
   /** Fit the page to the stage, drawn sharp at the screen's pixel density. */
   function draw(): void {
     if (!shown) return;
-    const { sheet, config } = shown;
+    const { sheet, config, options, fontFamily } = shown;
     // Room for the paper's outline, drawn outside it.
     const room = 2 * OUTLINE;
     const fit = Math.min(
@@ -58,6 +58,8 @@ export function createPreviewDialog(): PreviewDialog {
     canvas.height = Math.round(sheet.page.height * fit * dpr);
 
     drawSheetToCanvas(canvas.getContext('2d')!, sheet, config, {
+      ...options,
+      fontFamily,
       scale: fit * dpr,
       // The page's paper colour, as the row previews show it.
       background: getComputedStyle(dialog).getPropertyValue('--color-white').trim(),

@@ -9,12 +9,12 @@ import type { PreviewSheet } from './sheet-preview.js';
  * stylesheet shows only it, on a page of its size with no margins — the
  * sheet carries its own. Taken off the page again once the dialog closes.
  */
-export function printSheet({ sheet, config }: PreviewSheet): void {
+export function printSheet({ sheet, config, options, fontFamily }: PreviewSheet): void {
   const { width, height } = sheet.page;
 
   const holder = document.createElement('div');
   holder.className = 'print-sheet';
-  holder.innerHTML = sheetToSvg(sheet, config);
+  holder.innerHTML = sheetToSvg(sheet, config, { ...options, fontFamily });
 
   // @page can't take a custom property, so the size is written in.
   const page = document.createElement('style');
@@ -32,8 +32,8 @@ export function printSheet({ sheet, config }: PreviewSheet): void {
 }
 
 /** Save the sheet as a PDF, downloaded as `practice-sheet.pdf`. */
-export async function saveSheetPdf({ sheet, config }: PreviewSheet): Promise<void> {
-  const bytes = await renderSheetPdf(sheet, config);
+export async function saveSheetPdf({ sheet, config, options }: PreviewSheet): Promise<void> {
+  const bytes = await renderSheetPdf(sheet, config, options);
   const url = URL.createObjectURL(new Blob([bytes as BlobPart], { type: 'application/pdf' }));
 
   const link = document.createElement('a');

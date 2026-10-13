@@ -1,5 +1,6 @@
+import { createHeaderPanel, emptyHeaderText } from './header-panel.js';
 import { createLineStylesPanel, defaultLineStyles } from './line-styles.js';
-import { printSheet, saveSheetPdf } from './output.js';
+import { saveSheetPdf } from './output.js';
 import { createPreviewDialog } from './preview-dialog.js';
 import { copyRowState, createRowEditor, newRowState } from './row-editor.js';
 import { rowInput } from './row-input.js';
@@ -21,6 +22,8 @@ const sheet = {
   rows: Array.from({ length: MAX_ROWS }, newRowState),
   /** How each line is drawn, the same in every row. */
   lines: defaultLineStyles(),
+  /** Optional text across the top of the page. */
+  header: emptyHeaderText(),
 };
 
 const editors = sheet.rows.map((state, i) =>
@@ -109,7 +112,7 @@ function printable(): PreviewSheet | null {
     }
     inputs.push(input);
   }
-  return previewSheet(inputs);
+  return previewSheet(inputs, sheet.header);
 }
 
 /** Run `action` on the sheet, if it can be made. */
@@ -118,27 +121,52 @@ const withSheet = (action: (content: PreviewSheet) => unknown) => () => {
   if (content) void action(content);
 };
 
-// What to do with the finished sheet. Download Config waits on the config's
-// file format.
-const actions = document.createElement('div');
-actions.className = 'sheet-actions';
-const ACTIONS: { label: string; run?: () => void }[] = [
-  { label: 'Preview', run: withSheet((content) => preview.open(content)) },
-  { label: 'Print', run: withSheet(printSheet) },
-  { label: 'Save to PDF', run: withSheet(saveSheetPdf) },
-  { label: 'Download Config' },
-];
-for (const { label, run } of ACTIONS) {
+function actionButton(label: string, run?: () => void, variant?: string): HTMLButtonElement {
   const button = document.createElement('button');
   button.type = 'button';
-  button.className = 'action-button';
+  button.className = variant ? `action-button ${variant}` : 'action-button';
   button.textContent = label;
   // Read by the stylesheet to hold the width of the label at its hover
   // weight.
   button.dataset.label = label;
   if (run) button.addEventListener('click', run);
-  actions.append(button);
+  return button;
 }
+
+// The sheet's actions. Bringing a config in sits at the top; what goes out
+// sits in the Output block at the end of the settings that feed it — the PDF
+// first and largest, the preview and the config under it. Upload Config and
+// Save Config wait on the config's file format. Printing is from the PDF for
+// now.
+const inbound = document.createElement('div');
+inbound.className = 'sheet-actions is-inbound';
+inbound.append(actionButton('Upload Config'));
+
+const outputTitle = document.createElement('h2');
+outputTitle.className = 'heading-h2 output-title';
+outputTitle.id = 'output-title';
+outputTitle.textContent = 'Output';
+const secondary = document.createElement('div');
+secondary.className = 'output-secondary';
+secondary.append(
+  actionButton('Preview', withSheet((content) => preview.open(content)), 'is-secondary'),
+  actionButton('Save Config', undefined, 'is-secondary'),
+);
+const outputActions = document.createElement('div');
+outputActions.className = 'output-actions';
+outputActions.append(actionButton('Save to PDF', withSheet(saveSheetPdf), 'is-primary'), secondary);
+const outbound = document.createElement('section');
+outbound.className = 'output-block';
+outbound.setAttribute('aria-labelledby', 'output-title');
+outbound.append(outputTitle, outputActions);
+
+// Above everything: the app's name centred, Upload Config on the right.
+const appTitle = document.createElement('h1');
+appTitle.className = 'heading-h1 app-title';
+appTitle.textContent = 'Sheet-o-matic';
+const topBar = document.createElement('header');
+topBar.className = 'app-header';
+topBar.append(appTitle, inbound);
 
 const rowEditors = document.createElement('div');
 rowEditors.className = 'row-editors';
@@ -152,18 +180,18 @@ const lineStyles = createLineStylesPanel({
   },
 });
 
-// Under the rows: Line Styles, then the actions centred in the space left
-// beside it.
-const footer = document.createElement('div');
-footer.className = 'sheet-footer';
-footer.append(lineStyles, actions);
-
 // The title, the sheet's controls and the rows, on their own field.
 const metricsBlock = document.createElement('div');
 metricsBlock.className = 'block metrics-block';
 metricsBlock.append(header, rowEditors);
 
-panel.append(metricsBlock, footer);
+// Under the rows: Line Styles, Header filling what's left, and Output at the
+// far right.
+const footer = document.createElement('div');
+footer.className = 'sheet-footer';
+footer.append(lineStyles, createHeaderPanel(sheet.header), outbound);
+
+panel.append(topBar, metricsBlock, footer);
 
 // Line Styles spans four row editors. A row editor's width comes from its
 // contents, so it's measured, and again whenever it changes.

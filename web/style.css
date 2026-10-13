@@ -604,13 +604,20 @@ body {
    corners cut on the diagonal and softened, and its title in a notch cut
    into the top edge. Everything on it inks in white; text on a white fill
    takes the block's colour. An outlined block draws only the shape's edge. */
+:root {
+  /* A block's notch and corner cuts, here so what lines up with a block
+     can read them too. The corner cuts are 1.6 times the notch. */
+  --block-notch-depth: 40px;
+  --block-bevel: calc(var(--block-notch-depth) * 1.6);
+}
+
 .block {
   --ink: var(--color-white);
   --ink-contrast: var(--paper);
   /* The notch the title sits in, cut into the top edge. */
-  --notch-depth: 40px;
-  /* The corner cuts, 1.6 times the title's notch. */
-  --bevel: calc(var(--notch-depth) * 1.6);
+  --notch-depth: var(--block-notch-depth);
+  /* The corner cuts. */
+  --bevel: var(--block-bevel);
   /* Where a bevel meets a side, rounded to this radius. */
   --soft: 8px;
   /* The same rounding for the notch, which works it out from these. */
@@ -838,6 +845,113 @@ body {
   /* Capitals centred on the 24px of the thumb and the toggle. */
   margin-top: calc(12px - 0.5cap);
   text-box: trim-both cap alphabetic;
+}
+
+/* ── Header ───────────────────────────────────────────── */
+
+/* Under the rows: Line Styles, then Header filling the rest of the line. */
+.sheet-footer {
+  display: flex;
+  align-items: stretch;
+  align-self: stretch;
+  gap: var(--spacers-padding-md);
+}
+
+/* Header, an outlined block like Line Styles beside it. Nothing sits
+   beside its title either, so its contents start below the notch. */
+.header-panel {
+  flex: 1 1 auto;
+  /* Room for its notch where every block's sits — the corner cut, the
+     wider padding, the notch itself — and the far corner cut beyond it. */
+  min-width: 390px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacers-padding-md);
+  padding-top: calc(var(--notch-depth) + var(--spacers-padding-md));
+}
+
+/* Under the notch, over the fields. */
+.header-panel-info {
+  margin: 0;
+  color: var(--color-black);
+}
+
+/* A name, then its field, the names in a column of their own. */
+.header-fields {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  align-items: center;
+  gap: var(--spacers-padding-xs) var(--spacers-padding-sm);
+}
+
+.header-field-name {
+  color: var(--color-black);
+  text-box: trim-both cap alphabetic;
+}
+
+/* A text field as an underline: no box, a faint rule beneath, the block's
+   colour washing in on hover. On focus a full-strength rule draws across
+   under it from the left. */
+.header-field {
+  --field-rule: var(--border-base);
+  --field-rule-color: rgb(from var(--ink) r g b / 0.4);
+  --field-hover: rgb(from var(--ink) r g b / 0.08);
+
+  position: relative;
+  min-width: 0;
+}
+
+.header-field-input {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+  padding: var(--spacing-2) var(--spacing-2);
+  border: none;
+  border-bottom: var(--field-rule) solid var(--field-rule-color);
+  border-radius: 0;
+  background: transparent;
+  color: var(--color-black);
+  /* The tint's top corners cut on the diagonal; the rule along the bottom
+     runs square to both ends. */
+  clip-path: polygon(
+    var(--spacing-2) 0,
+    calc(100% - var(--spacing-2)) 0,
+    100% var(--spacing-2),
+    100% 100%,
+    0 100%,
+    0 var(--spacing-2)
+  );
+  transition: background-color 150ms ease-out;
+}
+
+.header-field-input:hover {
+  background: var(--field-hover);
+}
+
+.header-field-input:focus {
+  outline: none;
+}
+
+.header-field-border {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: var(--border-thick);
+  background: var(--ink);
+  transition: width 300ms ease-out;
+}
+
+.header-field-input:focus ~ .header-field-border {
+  width: 100%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .header-field-input,
+  .header-field-border {
+    transition: none;
+  }
 }
 
 /* ── Sheet controls ───────────────────────────────────── */
@@ -1229,33 +1343,88 @@ body {
 /* ── Sheet actions ────────────────────────────────────── */
 
 /* Under the rows, as wide as they are: Line Styles, then the actions. */
-.sheet-footer {
-  display: flex;
+/* The top of the page: the app's name centred over the rows, Upload
+   Config on the right, ending where the Row Metrics block's top edge meets
+   its bevel. Equal outer columns keep the name on the centre whatever the
+   button's width. */
+.app-header {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
   align-self: stretch;
-  gap: var(--spacers-padding-md);
+  gap: var(--spacers-margin-lg);
 }
 
-/* Beside Line Styles, taking the rest of the line, the buttons centred in
-   it both ways. */
+.app-title {
+  grid-column: 2;
+  margin: 0;
+  color: var(--ink);
+}
+
 .sheet-actions {
-  flex: 1 1 auto;
   display: flex;
   align-items: center;
-  justify-content: center;
   gap: var(--spacers-padding-sm);
 }
 
-/* An outlined button cut like the choice switch: bottom-left and top-right
-   corners on the diagonal. The button is ink, clipped to that shape; its
-   ::before lays paper over it, inset by the border width, so ink shows only
-   as the outline and the label.
+.sheet-actions.is-inbound {
+  justify-self: end;
+  margin-right: var(--block-bevel);
+}
 
-   On hover the paper shrinks away into the bottom-right corner, the ink
-   filling in behind it from the top left, and the label turns to the
-   contrast colour. Pressed, it shrinks a little. */
+/* Output: the actions that send the sheet out, at the end of the line.
+   No field of its own, just its title over the buttons, so it takes only
+   the room they need. Save to PDF leads, filled; the preview and the
+   config sit under it, outlined in teal. */
+.output-block {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  padding-bottom: var(--spacers-padding-md);
+}
+
+/* Set as the notched titles are: capitals centred in a band as deep as a
+   notch from the top of the row, so it shares a baseline with Header's. */
+.output-title {
+  display: grid;
+  align-content: center;
+  height: var(--block-notch-depth);
+  margin: 0;
+  color: var(--color-black);
+  text-align: center;
+  text-box: trim-both cap alphabetic;
+}
+
+/* The buttons under the title, starting level with the first line inside
+   the blocks beside them: a notch's depth, then the blocks' padding, from
+   the top. One stack, evenly spaced; Save to PDF leads by its fill alone. */
+.output-actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacers-padding-xs);
+  margin-top: var(--spacers-padding-md);
+}
+
+.output-secondary {
+  display: contents;
+}
+
+/* A black button cut like the choice switch: bottom-left and top-right
+   corners on the diagonal, its label light. The button is teal, clipped to
+   that shape; its ::before lays the black over it.
+
+   On hover the black shrinks away into the bottom-right corner, the teal
+   filling in behind it from the top left. Pressed, it shrinks a little.
+
+   --border insets the black, which would leave the teal showing as an
+   outline at rest; at 0 the black covers it all. */
 .action-button {
   --cut: var(--spacing-2);
-  --border: var(--border-thick);
+  --border: 0px;
+  --fill: var(--color-black);
+  --fill-hover: var(--color-teal);
+  --label: var(--color-mist);
+  --label-hover: var(--label);
   /* The inner cut's distance from the edges: a 45° edge moved in by
      --border lands (√2 − 1) × --border further along. */
   --inner-cut: calc(var(--cut) + var(--border) * 0.414);
@@ -1270,8 +1439,8 @@ body {
   height: 32px;
   padding: 0 var(--spacing-4);
   border: 0;
-  background: var(--ink);
-  color: var(--ink);
+  background: var(--fill-hover);
+  color: var(--label);
   clip-path: polygon(
     0 0,
     calc(100% - var(--cut)) 0,
@@ -1289,13 +1458,13 @@ body {
     scale 100ms ease-out;
 }
 
-/* The paper inside the outline. */
+/* The black over the teal. */
 .action-button::before {
   content: '';
   position: absolute;
   inset: 0;
   z-index: -1;
-  background: var(--paper);
+  background: var(--fill);
   clip-path: polygon(
     var(--border) var(--border),
     calc(100% - var(--inner-cut)) var(--border),
@@ -1319,7 +1488,7 @@ body {
 }
 
 .action-button:is(:hover, :focus-visible) {
-  color: var(--ink-contrast);
+  color: var(--label-hover);
   font-weight: var(--weight-ui-medium);
   outline: none;
 }
@@ -1346,6 +1515,17 @@ body {
   .action-button::before {
     transition: none;
   }
+}
+
+/* The lead action keeps the plain button's black fill, so it stands out
+   from the outlined ones beside it. */
+/* The others: outlined in teal on the page, filling teal on hover. The
+   outline is the hover colour showing round the inset fill. */
+.action-button.is-secondary {
+  --border: var(--border-thick);
+  --fill: var(--color-bg);
+  --label: var(--color-black);
+  --label-hover: var(--color-mist);
 }
 
 /* ── Sheet preview ────────────────────────────────────── */
