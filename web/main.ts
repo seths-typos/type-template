@@ -179,7 +179,7 @@ outputActions.append(
   outputRule(),
   outputCell(actionButton('Save to PDF', withSheet(saveSheetPdf), 'is-primary is-word-stacked')),
   outputRule(),
-  outputCell(actionButton('Save Config', undefined, 'is-primary')),
+  outputCell(actionButton('Save Config', undefined, 'is-primary is-word-stacked')),
 );
 const outbound = document.createElement('section');
 outbound.className = 'output-block';
@@ -226,11 +226,11 @@ metricsBlock.append(header, rowEditors);
 // far right.
 const footer = document.createElement('div');
 footer.className = 'sheet-footer';
-// Header over Page Setup in the middle columns, a rule between them.
+// Page Setup over Header in the middle columns, a rule between them.
 footer.append(
   lineStyles,
-  createHeaderPanel(sheet.header),
   createPageSetupPanel(sheet.page),
+  createHeaderPanel(sheet.header),
   outbound,
 );
 

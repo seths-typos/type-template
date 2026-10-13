@@ -2620,3 +2620,161 @@ body {
     transition: none;
   }
 }
+
+/* Every action button one size: three quarters of a page column wide, in
+   Upload Config's near-square. Output's take theirs from their part of the
+   column, which is a column wide; a part too short for its button grows
+   to hold it, the row with it, rather than shrinking the button. */
+.output-cell {
+  container-type: inline-size;
+  min-height: auto;
+}
+
+.output-cell .action-button {
+  width: 75cqw;
+}
+
+/* ── Round actions ────────────────────────────────────── */
+
+/* Upload Config and Output's actions as circles, still three quarters of a
+   column across: a disc of the blue inside a 3px ring of the black. The
+   button is the black, clipped round; ::before is the blue, a ring's width
+   smaller. Under the pointer the blue closes to nothing at the centre, the
+   black filling in from the ring. */
+.sheet-actions.is-inbound .action-button,
+.output-cell .action-button {
+  --border: 3px;
+
+  aspect-ratio: 1;
+  border-radius: 50%;
+  clip-path: circle(50%);
+}
+
+.sheet-actions.is-inbound .action-button::before,
+.output-cell .action-button::before {
+  clip-path: circle(calc(50% - var(--border)) at 50% 50%);
+}
+
+.sheet-actions.is-inbound .action-button:is(:hover, :focus-visible)::before,
+.output-cell .action-button:is(:hover, :focus-visible)::before {
+  clip-path: circle(0% at 50% 50%);
+}
+
+/* 16% smaller: 0.75 × 0.84 of a column across. */
+.sheet-actions.is-inbound .action-button {
+  width: calc((100cqi - 11 * var(--grid-gutter)) / 12 * 0.63);
+}
+
+.output-cell .action-button {
+  width: 63cqw;
+}
+
+/* The ring twice as thick. */
+.sheet-actions.is-inbound .action-button,
+.output-cell .action-button {
+  --border: 6px;
+}
+
+/* ── Condensed foot ───────────────────────────────────── */
+
+/* The bottom row only as tall as it needs: everything at the page's foot
+   half a gutter from it, as Output's actions are; the credit half a gutter
+   under Line Styles' rule; Header's fields closer. */
+.line-styles {
+  padding-bottom: calc(var(--grid-gutter) / 2);
+}
+
+.credit-link {
+  padding-top: calc(var(--grid-gutter) / 2);
+}
+
+.page-setup {
+  padding-bottom: calc(var(--grid-gutter) / 2);
+}
+
+.header-field-input {
+  padding-block: var(--spacing-1);
+}
+
+/* No rule between Row Metrics' head and its rows, nor over Line Styles'
+   names: the spacing alone divides them. Line Styles keeps its rule under
+   the controls. */
+.metrics-block .sheet-header {
+  border-bottom: 0;
+  border-image: none;
+}
+
+.line-columns {
+  border-top: 0;
+  border-image-width: 0 0 var(--border-thick) 0;
+}
+
+/* ── One bottom padding ───────────────────────────────── */
+
+/* Every block's last content sits a padding-md above the rule or the page
+   foot beneath it, as Row Metrics' rows do above their rule: Line Styles'
+   swatches above its rule, the credit above the foot, Header's fields
+   above Page Setup's rule, Page Setup's margin above the foot. The credit
+   sits a padding-md under the rule, as the titles do. */
+.line-columns {
+  padding-bottom: var(--spacers-padding-md);
+}
+
+.line-styles,
+.page-setup {
+  padding-bottom: var(--spacers-padding-md);
+}
+
+.credit-link {
+  padding-top: var(--spacers-padding-md);
+}
+
+/* Output's actions end half a gutter above the foot, then sit centred in
+   their parts; the last part's lower half makes the rest up to the
+   padding-md. */
+
+/* ── Title to first content ───────────────────────────── */
+
+/* From a title's band to the capitals of what comes first under it, the
+   same in every block: Line Styles' padding-md and half a gutter, 36 px.
+   Row Metrics reaches its row titles over the header's bottom padding and
+   the block's row gap; Header reaches its first field's name, which sits
+   about 9 px into its row. */
+.metrics-block .sheet-header {
+  padding-bottom: calc(var(--grid-gutter) / 2);
+}
+
+.header-panel {
+  gap: calc(var(--spacers-padding-md) + var(--grid-gutter) / 2 - 9px);
+}
+
+/* ── Page Setup over Header ───────────────────────────── */
+
+/* Page Setup first, a row gap under the rule below the rows; Header under
+   it, the rule between them on Header's top now, running across the gutter
+   to column 12's rule. The rules down column 8's edge follow: Page Setup's
+   from the rule above the row, Header's from its own top rule. */
+.page-setup {
+  grid-row: 1;
+  padding-top: 0;
+  border-top: 0;
+  border-image: none;
+}
+
+.header-panel {
+  grid-row: 2;
+  padding-top: var(--spacers-padding-md);
+  padding-bottom: var(--spacers-padding-md);
+  border-top: var(--border-thick) solid transparent;
+  border-image: linear-gradient(var(--color-steel) 0 0) 1 / var(--border-thick) 0 0 0 /
+    0 var(--grid-gutter) 0 0;
+}
+
+.page-setup::before {
+  top: calc(-1 * var(--spacers-padding-md));
+}
+
+.header-panel::before {
+  content: '';
+  top: calc(-1 * var(--border-thick));
+}
