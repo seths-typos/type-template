@@ -27,7 +27,9 @@ export const DEFAULTS = {
   header: {
     enabled: false,
     height: 54,
-    text: '',
+    left: '',
+    center: '',
+    right: '',
   },
   metrics: {
     mode: 'capHeight' as MetricsMode,

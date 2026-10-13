@@ -154,7 +154,7 @@ function createControl(field: FieldSpec, kind: ControlKind, value: string): Cont
   }
 
   // Header text is the only multi-line field.
-  const input = document.createElement(field.path === 'header.text' ? 'textarea' : 'input');
+  const input = document.createElement(field.path.startsWith('header.') ? 'textarea' : 'input');
   input.value = value;
 
   return input as Control;

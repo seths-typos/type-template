@@ -44,7 +44,7 @@ describe('controlKind', () => {
     expect(kindOf('metrics.capHeight')).toBe('number');
     expect(kindOf('metrics.rowCount')).toBe('number');
     expect(kindOf('header.enabled')).toBe('boolean');
-    expect(kindOf('header.text')).toBe('text');
+    expect(kindOf('header.left')).toBe('text');
     expect(kindOf('lines.baseline.color')).toBe('color');
     expect(kindOf('lines.baseline.dash')).toBe('dash');
   });

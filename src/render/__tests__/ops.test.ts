@@ -117,11 +117,11 @@ describe('drawOps — visibility', () => {
 
 describe('drawOps — header', () => {
   // Labels are text ops too, so switch them off to isolate the header.
-  function withHeader(text: string): SheetConfig {
+  function withHeader(left: string, center = '', right = ''): SheetConfig {
     const config = fixedMetricsConfig();
     config.labels.enabled = false;
     config.header.enabled = true;
-    config.header.text = text;
+    Object.assign(config.header, { left, center, right });
     return config;
   }
 
@@ -144,6 +144,22 @@ describe('drawOps — header', () => {
     // Block top is at y 36, first baseline one font size below it.
     expect(line!.y).toBeCloseTo(48, 10);
     expect(line!.size).toBe(12);
+  });
+
+  it('sets the centre text on the block centre and the right at its right edge', () => {
+    const drawn = texts(withHeader('', 'centre', 'right'));
+
+    // The block runs from x 36, 720 pt wide.
+    expect(drawn.map(({ text, x, align }) => ({ text, x, align }))).toEqual([
+      { text: 'centre', x: 396, align: 'center' },
+      { text: 'right', x: 756, align: 'right' },
+    ]);
+  });
+
+  it('puts all three on the same baseline', () => {
+    const drawn = texts(withHeader('left', 'centre', 'right'));
+
+    expect(new Set(drawn.map((op) => op.y)).size).toBe(1);
   });
 
   it('advances by the line height for each further line', () => {

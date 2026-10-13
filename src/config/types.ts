@@ -38,7 +38,10 @@ export interface HeaderConfig {
   enabled: boolean;
   /** pt, reserved below the top margin */
   height: number;
-  text: string;
+  /** Free text set at the block's left edge, centre and right edge. */
+  left: string;
+  center: string;
+  right: string;
 }
 
 export type MetricsMode = 'capHeight' | 'rowCount';

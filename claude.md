@@ -34,7 +34,7 @@ The rebuilt front end narrows what the user controls. The engine's wider surface
 4. Preview, then print through the browser's print dialog or download the PDF. Both are offered.
 5. Optionally download the config as JSON. A downloaded config can be loaded back in to restore the sheet.
 
-**Header text is dropped from the UX for now** (2026-10-10). The engine keeps its `header` config; the front end just doesn't offer it.
+**Header text** is optional, three slots set across the top of the printed page: left, centre and right, each free text in 10 pt Arial (the PDF sets Helvetica, Arial's metric twin; pdf-lib's standard fonts need no embedding). The header block is reserved only when a slot has text, 24 pt below the top margin, taken from the rows' height. Restored 2026-10-12 after being dropped on 2026-10-10.
 
 **Italic angle** is degrees from vertical, as Glyphs enters it: 0 is upright, positive leans right, and a typical italic is 8–15. Decided 2026-10-10 over a protractor convention (90 = upright). Valid range is strictly between −90 and 90. Note RoboFont/UFO count the other way (right-leaning is negative), so importing from a UFO would flip the sign.
 
@@ -80,7 +80,7 @@ Use these terms exactly. Do not invent synonyms.
 | **row pitch** | total metric height + row gap. Derived. |
 | **slant lines** | Diagonal guides for italic/oblique work. Angle measured **from vertical**. |
 | **label** | A letter set in the left margin naming a metric line — B, C, X by default. |
-| **header** | Optional block at top of page for free text (title, brief, date). |
+| **header** | Optional block at top of page for free text (title, brief, date), set left, centre and right. |
 
 Not used: "body height", "bounding box", "em box". These mean different things in different contexts. Do not use them.
 
@@ -152,7 +152,9 @@ interface SheetConfig {
   header: {
     enabled: boolean;
     height: number;   // pt, reserved below top margin
-    text: string;     // free text for now
+    left: string;     // free text at the left edge; \n starts a new line
+    center: string;   // free text, centred
+    right: string;    // free text at the right edge
   };
 
   metrics: {

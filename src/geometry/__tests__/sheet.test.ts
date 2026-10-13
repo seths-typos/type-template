@@ -23,7 +23,7 @@ describe('buildSheet — available area', () => {
   it('reserves the header below the top margin', () => {
     const config = fixedMetricsConfig();
     config.header.enabled = true;
-    config.header.text = 'Type Cooker brief';
+    config.header.left = 'Type Cooker brief';
 
     const sheet = buildSheet(config);
 
@@ -34,7 +34,9 @@ describe('buildSheet — available area', () => {
       y: 36,
       width: 720,
       height: 54,
-      text: 'Type Cooker brief',
+      left: 'Type Cooker brief',
+      center: '',
+      right: '',
     });
   });
 

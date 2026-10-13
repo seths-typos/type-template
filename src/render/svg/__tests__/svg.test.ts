@@ -37,10 +37,21 @@ describe('sheetToSvg', () => {
   });
 
   it('escapes text', () => {
-    const config = { ...baseConfig(), header: { enabled: true, height: 54, text: 'A < B & "C"' } };
+    const config = { ...baseConfig(), header: { enabled: true, height: 54, left: 'A < B & "C"', center: '', right: '' } };
     const svg = sheetToSvg(buildSheet(config), config);
 
     expect(svg).toContain('A &lt; B &amp; "C"');
     expect(svg).not.toContain('A < B');
+  });
+
+  it('anchors centred and right-aligned text by its middle and end', () => {
+    const config = {
+      ...baseConfig(),
+      header: { enabled: true, height: 54, left: '', center: 'c', right: 'r' },
+    };
+    const svg = sheetToSvg(buildSheet(config), config);
+
+    expect(svg).toContain('text-anchor="middle"');
+    expect(svg).toContain('text-anchor="end"');
   });
 });

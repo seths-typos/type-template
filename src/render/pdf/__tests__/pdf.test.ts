@@ -84,7 +84,7 @@ describe('renderSheetPdf', () => {
     const titled = baseConfig();
     titled.labels.enabled = false;
     titled.header.enabled = true;
-    titled.header.text = 'Type Cooker brief';
+    titled.header.left = 'Type Cooker brief';
 
     const without = await contentStream(await renderSheetPdf(buildSheet(plain), plain));
     const withText = await contentStream(await renderSheetPdf(buildSheet(titled), titled));
@@ -97,7 +97,7 @@ describe('renderSheetPdf', () => {
     const config = baseConfig();
     config.labels.enabled = false;
     config.header.enabled = true;
-    config.header.text = 'brief';
+    config.header.left = 'brief';
 
     const content = await contentStream(await renderSheetPdf(buildSheet(config), config));
 
@@ -110,7 +110,7 @@ describe('renderSheetPdf', () => {
     const config = baseConfig();
     config.labels.enabled = false;
     config.header.enabled = true;
-    config.header.text = 'brief\ndate';
+    config.header.left = 'brief\ndate';
 
     const content = await contentStream(await renderSheetPdf(buildSheet(config), config));
 

@@ -55,7 +55,9 @@ export const FIELDS: FieldSpec[] = [
 
   { path: 'header.enabled', type: 'boolean', default: show(header.enabled), notes: 'reserve a block at the top' },
   { path: 'header.height', type: 'number', unit: 'pt', default: show(header.height), notes: '>= 0; taken below the top margin' },
-  { path: 'header.text', type: 'string', default: show(header.text), notes: 'free text; \\n starts a new line' },
+  { path: 'header.left', type: 'string', default: show(header.left), notes: 'free text at the left edge; \\n starts a new line' },
+  { path: 'header.center', type: 'string', default: show(header.center), notes: 'free text, centred; \\n starts a new line' },
+  { path: 'header.right', type: 'string', default: show(header.right), notes: 'free text at the right edge; \\n starts a new line' },
 
   { path: 'metrics.mode', type: 'enum', default: show(metrics.mode), options: METRIC_MODES, notes: 'which of the two is the input; the other is computed' },
   { path: 'metrics.capHeight', type: 'number', unit: 'pt', default: show(metrics.capHeight), notes: '> 0; the reference metric. Computed in rowCount mode' },

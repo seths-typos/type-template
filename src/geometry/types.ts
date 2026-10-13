@@ -47,7 +47,10 @@ export interface HeaderBlock {
   y: number;
   width: number;
   height: number;
-  text: string;
+  /** Text for the block's left edge, centre and right edge. */
+  left: string;
+  center: string;
+  right: string;
 }
 
 export interface Rect {

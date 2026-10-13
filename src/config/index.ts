@@ -123,7 +123,9 @@ function resolveHeader(raw: unknown, issues: Issues): HeaderConfig {
   return {
     enabled: boolean(header.enabled, fallback.enabled, 'header.enabled', issues),
     height: number(header.height, fallback.height, 'header.height', issues, { atLeast: 0 }),
-    text: text(header.text, fallback.text, 'header.text', issues),
+    left: text(header.left, fallback.left, 'header.left', issues),
+    center: text(header.center, fallback.center, 'header.center', issues),
+    right: text(header.right, fallback.right, 'header.right', issues),
   };
 }
 

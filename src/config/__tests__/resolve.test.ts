@@ -75,7 +75,7 @@ describe('resolveConfig — defaults apply field by field', () => {
   it('leaves untouched sections alone', () => {
     const config = resolveConfig({ header: { enabled: true } });
 
-    expect(config.header).toEqual({ enabled: true, height: 54, text: '' });
+    expect(config.header).toEqual({ enabled: true, height: 54, left: '', center: '', right: '' });
     expect(config.slant.enabled).toBe(false);
   });
 });

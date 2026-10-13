@@ -33,8 +33,8 @@ export interface DrawText {
   y: number;
   size: number;
   color: Rgb;
-  /** What `x` is: the text's left edge, or its right edge. */
-  align: 'left' | 'right';
+  /** What `x` is: the text's left edge, its centre, or its right edge. */
+  align: 'left' | 'center' | 'right';
   /**
    * What `y` is: the text's own baseline, or the vertical centre of its
    * capitals. Resolving 'center' needs font metrics, so each renderer does it
@@ -100,7 +100,9 @@ function styleFor(type: LineType, config: SheetConfig): LineStyle {
 }
 
 /**
- * Header text, top-aligned in the reserved block, one op per line.
+ * Header text, top-aligned in the reserved block: the left text at its left
+ * edge, the centre text on its centre, the right text at its right edge. One
+ * op per line, the three sharing baselines.
  *
  * Text longer than the block is drawn anyway rather than silently dropped —
  * overflow is config's problem to catch, not something to hide here.
@@ -108,21 +110,30 @@ function styleFor(type: LineType, config: SheetConfig): LineStyle {
 function headerOps(sheet: Sheet, style: HeaderTextStyle): DrawText[] {
   const { header } = sheet;
 
-  if (!header || header.text === '') return [];
+  if (!header) return [];
 
   const color = parseHexColor(style.color);
+  const slots = [
+    { text: header.left, x: header.x, align: 'left' },
+    { text: header.center, x: header.x + header.width / 2, align: 'center' },
+    { text: header.right, x: header.x + header.width, align: 'right' },
+  ] as const;
 
-  return header.text.split('\n').map((text, index) => ({
-    kind: 'text' as const,
-    text,
-    x: header.x,
-    // First baseline sits one font size below the top of the block.
-    y: header.y + style.size + index * style.lineHeight,
-    size: style.size,
-    color,
-    align: 'left' as const,
-    anchor: 'baseline' as const,
-  }));
+  return slots.flatMap(({ text, x, align }) =>
+    text === ''
+      ? []
+      : text.split('\n').map((line, index) => ({
+          kind: 'text' as const,
+          text: line,
+          x,
+          // First baseline sits one font size below the top of the block.
+          y: header.y + style.size + index * style.lineHeight,
+          size: style.size,
+          color,
+          align,
+          anchor: 'baseline' as const,
+        })),
+  );
 }
 
 /**

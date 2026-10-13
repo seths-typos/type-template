@@ -60,7 +60,7 @@ function draw(page: Page, op: DrawOp, font: Font | undefined, flip: (y: number) 
   const capHeight = font ? font.heightAtSize(op.size, { descender: false }) : op.size;
 
   page.drawText(op.text, {
-    x: op.align === 'right' ? op.x - width : op.x,
+    x: op.align === 'right' ? op.x - width : op.align === 'center' ? op.x - width / 2 : op.x,
     y: op.anchor === 'center' ? flip(op.y) - capHeight / 2 : flip(op.y),
     size: op.size,
     font,

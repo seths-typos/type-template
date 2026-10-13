@@ -50,7 +50,8 @@ function element(op: DrawOp, fontFamily: string): string {
   // 'central' centres on the em box where the PDF renderer centres on cap
   // height, as the canvas renderer does, so a label sits a hair differently.
   const baseline = op.anchor === 'center' ? ' dominant-baseline="central"' : '';
-  const anchor = op.align === 'right' ? ' text-anchor="end"' : '';
+  const anchor =
+    op.align === 'right' ? ' text-anchor="end"' : op.align === 'center' ? ' text-anchor="middle"' : '';
   return (
     `<text x="${op.x}" y="${op.y}" font-size="${op.size}" font-family="${attr(fontFamily)}" ` +
     `fill="${toCss(op.color)}"${anchor}${baseline}>${text(op.text)}</text>`

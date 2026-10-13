@@ -77,7 +77,9 @@ function headerBlock(
     y: margins.top,
     width: page.width - margins.left - margins.right,
     height: config.header.height,
-    text: config.header.text,
+    left: config.header.left,
+    center: config.header.center,
+    right: config.header.right,
   };
 }
 

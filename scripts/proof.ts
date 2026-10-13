@@ -18,7 +18,8 @@ const variants: Record<string, SheetInput> = {
   'header-and-slant': {
     header: {
       enabled: true,
-      text: 'Type Cooker brief\nweight: bold   contrast: low   width: condensed',
+      left: 'Type Cooker brief\nweight: bold   contrast: low   width: condensed',
+      right: 'date',
     },
     slant: { enabled: true, angle: 12 },
   },

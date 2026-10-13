@@ -91,7 +91,7 @@ describe('drawSheetToCanvas', () => {
   it('draws header text at the top of the reserved block', () => {
     const config = baseConfig();
     config.header.enabled = true;
-    config.header.text = 'brief';
+    config.header.left = 'brief';
     config.labels.enabled = false;
 
     const [text] = ofType(render(config), 'fillText');
