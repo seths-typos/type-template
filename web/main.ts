@@ -193,11 +193,6 @@ footer.append(lineStyles, createHeaderPanel(sheet.header), outbound);
 
 panel.append(topBar, metricsBlock, footer);
 
-// Line Styles spans four row editors. A row editor's width comes from its
-// contents, so it's measured, and again whenever it changes.
-new ResizeObserver(([entry]) => {
-  panel.style.setProperty('--editor-width', `${entry!.borderBoxSize[0]!.inlineSize}px`);
-}).observe(editors[0]!.element);
 document.querySelector('#app')!.append(panel, preview.element);
 
 applyMetrics();

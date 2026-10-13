@@ -5,7 +5,6 @@
 
 body {
   margin: 0;
-  padding: var(--spacers-padding-md);
   background: var(--color-bg);
 }
 
@@ -62,8 +61,8 @@ body {
   --paper: var(--color-mist);
   /* The value field, from the button's right edge: the value, then the unit
      cap. */
-  --field-value: 48px;
-  --field-unit: 31px;
+  --field-value: 38px;
+  --field-unit: 24px;
   --drawer: calc(var(--field-value) + var(--field-unit));
 
   position: relative;
@@ -92,6 +91,7 @@ body {
    then nudged 2px below centre. */
 .metric-toggle-name {
   position: relative;
+  white-space: nowrap;
   cursor: pointer;
   /* A quick double click toggles twice; don't select the name as well. */
   user-select: none;
@@ -331,14 +331,25 @@ body {
   --ink-contrast: var(--color-mist);
   --paper: var(--color-mist);
 
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: var(--spacers-padding-md);
-  width: fit-content;
-  padding: var(--spacers-padding-md);
-  border-radius: var(--corner-xs);
+  /* The page grid: --grid-columns columns between --grid-margin margins,
+     --grid-gutter apart. Everything below spans whole columns, and widens
+     and narrows with the window. Designed at a 13" MacBook Air's 1470 px;
+     below 1440 px it stops narrowing and the page scrolls across. */
+  display: grid;
+  grid-template-columns: repeat(var(--grid-columns), minmax(0, 1fr));
+  column-gap: var(--grid-gutter);
+  row-gap: var(--spacers-padding-md);
+  box-sizing: border-box;
+  min-width: 1440px;
+  padding: var(--spacers-padding-md) var(--grid-margin);
   background: var(--paper);
+}
+
+/* Each row of the page across all twelve columns. */
+.app-header,
+.metrics-block,
+.sheet-footer {
+  grid-column: 1 / -1;
 }
 
 /* One row's editor: its preview, then the controls that drive it, framed
@@ -500,19 +511,23 @@ body {
 .metric-controls {
   display: flex;
   flex-direction: column;
-  width: fit-content;
+  align-self: stretch;
   gap: var(--spacers-padding-xs);
 }
 
 /* The row editors, all six side by side on one line. They keep their
    width rather than squeeze to fit; a narrow window scrolls. */
+/* The six row editors, two page columns each, a gutter apart. */
 .row-editors {
-  display: flex;
-  gap: var(--spacers-padding-md);
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: var(--grid-gutter);
 }
 
-.row-editors > * {
-  flex: none;
+/* A row editor's frame fits its contents a little closer than other frames,
+   so a row fits two page columns. */
+.editor.frame {
+  padding-inline: calc(var(--spacing-3) + var(--frame));
 }
 
 /* Rows and their Metrics sections are fieldsets, to be disabled in one
@@ -820,6 +835,10 @@ body {
 .metrics-block {
   --paper: var(--color-teal);
 
+  /* The rows sit close to the sides; the corner cuts clear them above and
+     below. */
+  padding-inline: var(--spacers-padding-md);
+
   display: flex;
   flex-direction: column;
   gap: var(--spacers-padding-md);
@@ -850,20 +869,28 @@ body {
 /* ── Header ───────────────────────────────────────────── */
 
 /* Under the rows: Line Styles, then Header filling the rest of the line. */
+/* Under the rows, on the page's own columns: Line Styles across seven,
+   Header across four, Output in the last. */
 .sheet-footer {
-  display: flex;
-  align-items: stretch;
-  align-self: stretch;
-  gap: var(--spacers-padding-md);
+  display: grid;
+  grid-template-columns: subgrid;
+}
+
+.line-styles {
+  grid-column: span 7;
+}
+
+.header-panel {
+  grid-column: span 4;
+}
+
+.output-block {
+  grid-column: span 1;
 }
 
 /* Header, an outlined block like Line Styles beside it. Nothing sits
    beside its title either, so its contents start below the notch. */
 .header-panel {
-  flex: 1 1 auto;
-  /* Room for its notch where every block's sits — the corner cut, the
-     wider padding, the notch itself — and the far corner cut beyond it. */
-  min-width: 390px;
   display: flex;
   flex-direction: column;
   gap: var(--spacers-padding-md);
@@ -1201,21 +1228,19 @@ body {
 /* Line Styles, an outlined block. Nothing sits beside its title, so the
    columns start below the notch. */
 .line-styles {
-
-  flex: none;
   padding-top: calc(var(--notch-depth) + var(--spacers-padding-md));
-  box-sizing: border-box;
-  /* Four row editors and the gaps between them. --editor-width is measured
-     and set inline; until it is, the block fits its contents. */
-  width: calc(4 * var(--editor-width) + 3 * var(--spacers-padding-md));
-  min-width: max-content;
 }
 
 /* A column for each line, all one width. */
 .line-columns {
   display: grid;
-  grid-template-columns: repeat(6, minmax(max-content, 1fr));
-  gap: var(--spacers-padding-md);
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: var(--spacers-padding-sm);
+}
+
+/* Solid / Dashed set a little closer, to fit a column at the design width. */
+.line-column .choice-option {
+  padding-inline: var(--spacing-2);
 }
 
 /* The line's name, the line, then its controls, each the column's width. */
@@ -1377,7 +1402,6 @@ body {
    the room they need. Save to PDF leads, filled; the preview and the
    config sit under it, outlined in teal. */
 .output-block {
-  flex: none;
   display: flex;
   flex-direction: column;
   padding-bottom: var(--spacers-padding-md);
@@ -1407,6 +1431,11 @@ body {
 
 .output-secondary {
   display: contents;
+}
+
+/* Set a little closer than other buttons, to fit one page column. */
+.output-actions .action-button {
+  padding-inline: var(--spacing-2);
 }
 
 /* A black button cut like the choice switch: bottom-left and top-right
