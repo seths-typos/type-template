@@ -92,10 +92,10 @@ export function createLineStylesPanel(options: LineStylesPanelOptions): HTMLElem
   const { styles, onChange } = options;
 
   const panel = document.createElement('section');
-  panel.className = 'line-styles frame';
+  panel.className = 'block is-outlined line-styles';
 
-  const title = document.createElement('h3');
-  title.className = 'heading-h3 frame-title';
+  const title = document.createElement('h2');
+  title.className = 'heading-h2 block-title';
   title.textContent = 'Line Styles';
 
   const columns = document.createElement('div');

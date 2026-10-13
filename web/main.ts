@@ -57,7 +57,7 @@ const panel = document.createElement('div');
 panel.className = 'rows';
 
 const title = document.createElement('h2');
-title.className = 'heading-h2 sheet-title';
+title.className = 'heading-h2 sheet-title block-title';
 title.textContent = 'Row Metrics';
 
 const sheetControls = document.createElement('div');
@@ -160,7 +160,7 @@ footer.append(lineStyles, actions);
 
 // The title, the sheet's controls and the rows, on their own field.
 const metricsBlock = document.createElement('div');
-metricsBlock.className = 'metrics-block';
+metricsBlock.className = 'block metrics-block';
 metricsBlock.append(header, rowEditors);
 
 panel.append(metricsBlock, footer);

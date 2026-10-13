@@ -62,7 +62,7 @@ export function createStopSlider(
   valueText();
 
   // The stop labels. The slider already announces its value, so these are
-  // for the eye only.
+  // for the eye only — and the pointer: clicking one moves the slider there.
   const labels = document.createElement('div');
   labels.className = 'ui-xs stop-slider-stops';
   labels.setAttribute('aria-hidden', 'true');
@@ -72,6 +72,12 @@ export function createStopSlider(
     const span = document.createElement('span');
     span.textContent = stop.label;
     span.style.setProperty('--i', String(i));
+    span.addEventListener('click', () => {
+      if (input.disabled || Number(input.value) === stop.value) return;
+      input.value = String(stop.value);
+      // As if the slider had been dragged there.
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+    });
     labels.append(span);
 
     const tick = document.createElement('span');

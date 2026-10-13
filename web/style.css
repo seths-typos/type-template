@@ -598,75 +598,224 @@ body {
   cursor: default;
 }
 
-/* ── Row Metrics block ────────────────────────────────── */
+/* ── Blocks ───────────────────────────────────────────── */
 
-/* The title, the sheet's controls and the row editors on a teal field, its
-   four corners cut on the diagonal and softened. Everything on it inks in
-   white; text on a white fill takes the teal.
-
-   The title isn't on the teal: it sits in a notch cut into the top edge,
-   bevelled on both sides, dark on the page's own colour. */
-.metrics-block {
+/* A block: a field of colour (--paper, set by each block) with its four
+   corners cut on the diagonal and softened, and its title in a notch cut
+   into the top edge. Everything on it inks in white; text on a white fill
+   takes the block's colour. An outlined block draws only the shape's edge. */
+.block {
   --ink: var(--color-white);
-  --ink-contrast: var(--color-teal);
-  --paper: var(--color-teal);
+  --ink-contrast: var(--paper);
   /* The notch the title sits in, cut into the top edge. */
   --notch-depth: 40px;
   /* The corner cuts, 1.6 times the title's notch. */
   --bevel: calc(var(--notch-depth) * 1.6);
-  /* Each place a bevel meets a side is rounded to --soft. polygon() has no
-     arcs, so a corner is three points on its arc: where it leaves the one
-     edge (--soft-t back along it), its middle, and where it joins the other
-     (--soft-d along the diagonal on each axis). The middle sits --soft-m1
-     and --soft-m2 off the corner's two axes. All of them are a 45° turn's
-     arc of radius --soft: tan 22.5°, 1 − cos 45°, and the arc's midpoint
-     (sec 22.5° − 1) along the bisector. */
+  /* Where a bevel meets a side, rounded to this radius. */
   --soft: 8px;
+  /* The same rounding for the notch, which works it out from these. */
   --soft-t: calc(var(--soft) * 0.4142);
   --soft-d: calc(var(--soft) * 0.2929);
   --soft-m1: calc(var(--soft) * 0.0315);
   --soft-m2: calc(var(--soft) * 0.0761);
+  /* An outlined block's edge. */
+  --edge: var(--border-thick);
 
   position: relative;
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacers-padding-md);
+  isolation: isolate;
+  box-sizing: border-box;
   padding: var(--spacers-padding-md);
-  /* More under the rows and beside them, so the bevels clear their
-     frames. */
+  /* More beside and under the contents, so the bevels clear them. */
   padding-inline: var(--spacers-padding-lg);
   padding-bottom: var(--spacers-padding-lg);
   background: var(--paper);
-  clip-path: polygon(
+  color: var(--ink);
+  clip-path: var(--block-shape);
+}
+
+/* The block's shape, worked out on each element that uses it from its own
+   --shape-bevel and --shape-soft, so an outlined block's inner shape can be
+   the same outline drawn smaller.
+
+   polygon() has no arcs, so each softened corner is three points on its
+   arc: where it leaves the one edge (tan 22.5° × radius back along it), its
+   middle (sec 22.5° − 1 along the bisector, here split onto the two axes),
+   and where it joins the diagonal (1 − cos 45° on each axis). */
+.block,
+.block::after {
+  --block-shape: polygon(
     /* top left */
-    0 calc(var(--bevel) + var(--soft-t)),
-    var(--soft-m2) calc(var(--bevel) + var(--soft-m1)),
-    var(--soft-d) calc(var(--bevel) - var(--soft-d)),
-    calc(var(--bevel) - var(--soft-d)) var(--soft-d),
-    calc(var(--bevel) + var(--soft-m1)) var(--soft-m2),
-    calc(var(--bevel) + var(--soft-t)) 0,
+    0 calc(var(--shape-bevel) + var(--shape-soft) * 0.4142),
+    calc(var(--shape-soft) * 0.0761) calc(var(--shape-bevel) + var(--shape-soft) * 0.0315),
+    calc(var(--shape-soft) * 0.2929) calc(var(--shape-bevel) - var(--shape-soft) * 0.2929),
+    calc(var(--shape-bevel) - var(--shape-soft) * 0.2929) calc(var(--shape-soft) * 0.2929),
+    calc(var(--shape-bevel) + var(--shape-soft) * 0.0315) calc(var(--shape-soft) * 0.0761),
+    calc(var(--shape-bevel) + var(--shape-soft) * 0.4142) 0,
     /* top right */
-    calc(100% - var(--bevel) - var(--soft-t)) 0,
-    calc(100% - var(--bevel) - var(--soft-m1)) var(--soft-m2),
-    calc(100% - var(--bevel) + var(--soft-d)) var(--soft-d),
-    calc(100% - var(--soft-d)) calc(var(--bevel) - var(--soft-d)),
-    calc(100% - var(--soft-m2)) calc(var(--bevel) + var(--soft-m1)),
-    100% calc(var(--bevel) + var(--soft-t)),
+    calc(100% - var(--shape-bevel) - var(--shape-soft) * 0.4142) 0,
+    calc(100% - var(--shape-bevel) - var(--shape-soft) * 0.0315) calc(var(--shape-soft) * 0.0761),
+    calc(100% - var(--shape-bevel) + var(--shape-soft) * 0.2929) calc(var(--shape-soft) * 0.2929),
+    calc(100% - var(--shape-soft) * 0.2929) calc(var(--shape-bevel) - var(--shape-soft) * 0.2929),
+    calc(100% - var(--shape-soft) * 0.0761) calc(var(--shape-bevel) + var(--shape-soft) * 0.0315),
+    100% calc(var(--shape-bevel) + var(--shape-soft) * 0.4142),
     /* bottom right */
-    100% calc(100% - var(--bevel) - var(--soft-t)),
-    calc(100% - var(--soft-m2)) calc(100% - var(--bevel) - var(--soft-m1)),
-    calc(100% - var(--soft-d)) calc(100% - var(--bevel) + var(--soft-d)),
-    calc(100% - var(--bevel) + var(--soft-d)) calc(100% - var(--soft-d)),
-    calc(100% - var(--bevel) - var(--soft-m1)) calc(100% - var(--soft-m2)),
-    calc(100% - var(--bevel) - var(--soft-t)) 100%,
+    100% calc(100% - var(--shape-bevel) - var(--shape-soft) * 0.4142),
+    calc(100% - var(--shape-soft) * 0.0761) calc(100% - var(--shape-bevel) - var(--shape-soft) * 0.0315),
+    calc(100% - var(--shape-soft) * 0.2929) calc(100% - var(--shape-bevel) + var(--shape-soft) * 0.2929),
+    calc(100% - var(--shape-bevel) + var(--shape-soft) * 0.2929) calc(100% - var(--shape-soft) * 0.2929),
+    calc(100% - var(--shape-bevel) - var(--shape-soft) * 0.0315) calc(100% - var(--shape-soft) * 0.0761),
+    calc(100% - var(--shape-bevel) - var(--shape-soft) * 0.4142) 100%,
     /* bottom left */
-    calc(var(--bevel) + var(--soft-t)) 100%,
-    calc(var(--bevel) + var(--soft-m1)) calc(100% - var(--soft-m2)),
-    calc(var(--bevel) - var(--soft-d)) calc(100% - var(--soft-d)),
-    var(--soft-d) calc(100% - var(--bevel) + var(--soft-d)),
-    var(--soft-m2) calc(100% - var(--bevel) - var(--soft-m1)),
-    0 calc(100% - var(--bevel) - var(--soft-t))
+    calc(var(--shape-bevel) + var(--shape-soft) * 0.4142) 100%,
+    calc(var(--shape-bevel) + var(--shape-soft) * 0.0315) calc(100% - var(--shape-soft) * 0.0761),
+    calc(var(--shape-bevel) - var(--shape-soft) * 0.2929) calc(100% - var(--shape-soft) * 0.2929),
+    calc(var(--shape-soft) * 0.2929) calc(100% - var(--shape-bevel) + var(--shape-soft) * 0.2929),
+    calc(var(--shape-soft) * 0.0761) calc(100% - var(--shape-bevel) - var(--shape-soft) * 0.0315),
+    0 calc(100% - var(--shape-bevel) - var(--shape-soft) * 0.4142)
   );
+}
+
+.block {
+  --shape-bevel: var(--bevel);
+  --shape-soft: var(--soft);
+}
+
+/* Outlined: the block is --edge-color, and ::after lays the page's colour over it,
+   inset by the edge, leaving the edge showing. The inner shape's cut is
+   smaller by edge × (2 − √2), so the diagonals are as thick as the sides,
+   and its rounding tighter by the edge, so the curves run parallel. */
+.block.is-outlined {
+  --ink: var(--color-teal);
+  --ink-contrast: var(--color-mist);
+  --paper: var(--color-bg);
+  /* The edge's colour. The same as the ink inside, for now; kept apart so
+     the two can differ. */
+  --edge-color: var(--ink);
+  /* Heavier than the rules inside, to hold the shape. */
+  --edge: calc(var(--border-thick) * 2);
+
+  background: var(--edge-color);
+  /* Text in black: only the lines and fills take the ink. */
+  color: var(--color-black);
+}
+
+.is-outlined .sheet-control,
+.is-outlined .choice-option {
+  color: var(--color-black);
+}
+
+/* The slider's handle in black too, with the text rather than the lines. */
+.is-outlined .stop-slider-input::-webkit-slider-thumb {
+  background: var(--color-black);
+}
+
+.is-outlined .stop-slider-input::-moz-range-thumb {
+  background: var(--color-black);
+}
+
+.block.is-outlined::after {
+  --shape-bevel: calc(var(--bevel) - var(--edge) * 0.5858);
+  --shape-soft: calc(var(--soft) - var(--edge));
+
+  content: '';
+  position: absolute;
+  inset: var(--edge);
+  z-index: -1;
+  background: var(--paper);
+  clip-path: var(--block-shape);
+}
+
+/* The title's notch, just past the top-left bevel: the page's colour, wide
+   at the top edge and narrowing at 45° to a floor --d down, the title
+   centred in it and inked as on the page. Its corners are softened as the
+   block's are. The two where the slopes leave the top edge round the
+   block's corner, so the notch reaches --soft-t further out on each side to
+   fill in behind those curves.
+
+   The shape is --notch-shape: slopes leaving the top edge --ns in from
+   either end of the element, and a floor --nd down. */
+.block-title,
+.block-title::before {
+  --notch-shape: polygon(
+    /* left: off the top edge, then down onto the floor */
+    calc(var(--ns) - var(--soft-t)) 0,
+    calc(var(--ns) - var(--soft-m1)) var(--soft-m2),
+    calc(var(--ns) + var(--soft-d)) var(--soft-d),
+    calc(var(--ns) + var(--nd) - var(--soft-d)) calc(var(--nd) - var(--soft-d)),
+    calc(var(--ns) + var(--nd) + var(--soft-m1)) calc(var(--nd) - var(--soft-m2)),
+    calc(var(--ns) + var(--nd) + var(--soft-t)) var(--nd),
+    /* right: off the floor, then up onto the top edge */
+    calc(100% - var(--ns) - var(--nd) - var(--soft-t)) var(--nd),
+    calc(100% - var(--ns) - var(--nd) - var(--soft-m1)) calc(var(--nd) - var(--soft-m2)),
+    calc(100% - var(--ns) - var(--nd) + var(--soft-d)) calc(var(--nd) - var(--soft-d)),
+    calc(100% - var(--ns) - var(--soft-d)) var(--soft-d),
+    calc(100% - var(--ns) + var(--soft-m1)) var(--soft-m2),
+    calc(100% - var(--ns) + var(--soft-t)) 0
+  );
+}
+
+.block-title {
+  --ink: var(--color-black);
+  --ink-contrast: var(--color-mist);
+  --paper: var(--color-bg);
+  --s: var(--soft-t);
+  --d: var(--notch-depth);
+  --ns: var(--s);
+  --nd: var(--d);
+
+  position: absolute;
+  top: 0;
+  left: calc(var(--bevel) + var(--spacers-padding-lg) - var(--s));
+  box-sizing: border-box;
+  display: grid;
+  place-items: center;
+  height: var(--d);
+  margin: 0;
+  padding-inline: calc(var(--s) + var(--d) + var(--spacing-3));
+  background: var(--paper);
+  color: var(--ink);
+  text-box: trim-both cap alphabetic;
+  clip-path: var(--notch-shape);
+}
+
+/* In an outlined block the notch has an edge too. The title becomes that
+   edge — the notch grown outward by --edge: its floor that much lower, its
+   slopes edge × √2 further out along the top — and ::before is the notch
+   itself on top, in the page's colour. The title box widens by the same
+   amount each side, so the notch stays where it was. */
+.is-outlined .block-title {
+  --grow: calc(var(--edge) * 1.4142);
+  --nd: calc(var(--d) + var(--edge));
+
+  left: calc(var(--bevel) + var(--spacers-padding-lg) - var(--s) - var(--grow));
+  height: calc(var(--d) + var(--edge));
+  padding-inline: calc(var(--grow) + var(--s) + var(--d) + var(--spacing-3));
+  padding-bottom: var(--edge);
+  background: var(--edge-color);
+  /* So the notch, at z-index -1, stays over this rather than under it. */
+  isolation: isolate;
+}
+
+.is-outlined .block-title::before {
+  --ns: calc(var(--s) + var(--grow));
+  --nd: var(--d);
+
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--paper);
+  clip-path: var(--notch-shape);
+}
+
+/* Row Metrics: the title, the sheet's controls and the row editors, on
+   teal. */
+.metrics-block {
+  --paper: var(--color-teal);
+
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacers-padding-md);
 }
 
 /* The title is out of the flow, in its notch, so the controls are pushed
@@ -675,52 +824,6 @@ body {
 .metrics-block .sheet-controls {
   margin-left: auto;
   margin-right: var(--bevel);
-}
-
-/* The notch: the page's colour, wide at the top edge and narrowing at 45° to
-   a floor --d down, its contents centred in it and inked as on the page.
-   Its corners are softened as the block's are. The two where the slopes
-   leave the top edge round the teal's corner, so the notch reaches --soft-t
-   further out on each side to fill in behind those curves. */
-.metrics-block .sheet-title {
-  --ink: var(--color-black);
-  --ink-contrast: var(--color-mist);
-  --paper: var(--color-bg);
-  --s: var(--soft-t);
-
-  position: absolute;
-  top: 0;
-  box-sizing: border-box;
-  height: var(--d);
-  padding-inline: calc(var(--s) + var(--d) + var(--spacing-3));
-  background: var(--paper);
-  color: var(--ink);
-  clip-path: polygon(
-    /* left: off the top edge, then down onto the floor */
-    0 0,
-    calc(var(--s) - var(--soft-m1)) var(--soft-m2),
-    calc(var(--s) + var(--soft-d)) var(--soft-d),
-    calc(var(--s) + var(--d) - var(--soft-d)) calc(var(--d) - var(--soft-d)),
-    calc(var(--s) + var(--d) + var(--soft-m1)) calc(var(--d) - var(--soft-m2)),
-    calc(var(--s) + var(--d) + var(--soft-t)) var(--d),
-    /* right: off the floor, then up onto the top edge */
-    calc(100% - var(--s) - var(--d) - var(--soft-t)) var(--d),
-    calc(100% - var(--s) - var(--d) - var(--soft-m1)) calc(var(--d) - var(--soft-m2)),
-    calc(100% - var(--s) - var(--d) + var(--soft-d)) calc(var(--d) - var(--soft-d)),
-    calc(100% - var(--s) - var(--soft-d)) var(--soft-d),
-    calc(100% - var(--s) + var(--soft-m1)) var(--soft-m2),
-    100% 0
-  );
-}
-
-/* Just past the top-left bevel. */
-.metrics-block .sheet-title {
-  --d: var(--notch-depth);
-
-  left: calc(var(--bevel) + var(--spacers-padding-lg) - var(--s));
-  display: grid;
-  place-items: center;
-  text-box: trim-both cap alphabetic;
 }
 
 /* On the block the controls' names sit to their left rather than above,
@@ -874,6 +977,9 @@ body {
 
 .stop-slider-stops > span {
   opacity: 0.55;
+  /* Clicking a label moves the slider to it. */
+  cursor: pointer;
+  user-select: none;
 }
 
 .stop-slider-stops > .is-current {
@@ -978,15 +1084,17 @@ body {
 
 /* ── Line styles ──────────────────────────────────────── */
 
-/* Line Styles, framed and titled like a row editor. */
+/* Line Styles, an outlined block. Nothing sits beside its title, so the
+   columns start below the notch. */
 .line-styles {
+
   flex: none;
+  padding-top: calc(var(--notch-depth) + var(--spacers-padding-md));
   box-sizing: border-box;
   /* Four row editors and the gaps between them. --editor-width is measured
      and set inline; until it is, the block fits its contents. */
   width: calc(4 * var(--editor-width) + 3 * var(--spacers-padding-md));
   min-width: max-content;
-  color: var(--ink);
 }
 
 /* A column for each line, all one width. */
@@ -1024,22 +1132,35 @@ body {
 }
 
 /* The rule along the bottom of the cell, turning up at its right end on
-   the diagonal to finish level with the name's cap height: a 45° rise as
-   wide as it is tall.
+   the diagonal: a 45° rise that finishes level with the name's cap height,
+   ending square to its own direction.
 
-   One shape, so the turn has no seam. A 45° band a rule thick spans
-   rule × √2 across; its inner edge meets the level run's top rule × (√2 − 1)
-   short of the outer corner. */
+   One shape, so the turn has no seam. The bend is rounded: its centre line
+   on --bend, the inside edge half a rule tighter and the outside half a
+   rule looser, so the rule keeps its thickness round the turn. Each arc is
+   five points. The square end's two corners sit half a rule either side of
+   the line's end, along the diagonal's normal: rule × √2⁄2 in from the
+   right edge at the top, and down from the top at the right edge. */
 .line-column-rule {
+  --bend: 6px;
+
   grid-area: 1 / 1;
   height: var(--rise);
   background: var(--ink);
   clip-path: polygon(
     0 calc(100% - var(--rule)),
-    calc(100% - var(--rise) - var(--rule) * 0.4142) calc(100% - var(--rule)),
-    calc(100% - var(--rule) * 1.4142) 0,
-    100% 0,
-    calc(100% - var(--rise)) 100%,
+    calc(100% - var(--rise) + var(--rule) * 0.5 - var(--bend) * 0.4142) calc(100% - var(--rule)),
+    calc(100% - var(--rise) + var(--rule) * 0.4025 - var(--bend) * 0.2191) calc(100% - var(--rule) * 0.9904 - var(--bend) * 0.0192),
+    calc(100% - var(--rise) + var(--rule) * 0.3087 - var(--bend) * 0.0315) calc(100% - var(--rule) * 0.9619 - var(--bend) * 0.0761),
+    calc(100% - var(--rise) + var(--rule) * 0.2222 + var(--bend) * 0.1414) calc(100% - var(--rule) * 0.9157 - var(--bend) * 0.1685),
+    calc(100% - var(--rise) + var(--rule) * 0.1464 + var(--bend) * 0.2929) calc(100% - var(--rule) * 0.8536 - var(--bend) * 0.2929),
+    calc(100% - var(--rule) * 0.7071) 0,
+    100% calc(var(--rule) * 0.7071),
+    calc(100% - var(--rise) + var(--rule) * 0.8536 + var(--bend) * 0.2929) calc(100% - var(--rule) * 0.1464 - var(--bend) * 0.2929),
+    calc(100% - var(--rise) + var(--rule) * 0.7778 + var(--bend) * 0.1414) calc(100% - var(--rule) * 0.0843 - var(--bend) * 0.1685),
+    calc(100% - var(--rise) + var(--rule) * 0.6913 - var(--bend) * 0.0315) calc(100% - var(--rule) * 0.0381 - var(--bend) * 0.0761),
+    calc(100% - var(--rise) + var(--rule) * 0.5975 - var(--bend) * 0.2191) calc(100% - var(--rule) * 0.0096 - var(--bend) * 0.0192),
+    calc(100% - var(--rise) + var(--rule) * 0.5 - var(--bend) * 0.4142) 100%,
     0 100%
   );
 }
@@ -1064,24 +1185,27 @@ body {
   padding: 0 var(--spacers-padding-xs);
 }
 
-/* A plain square of colour. Picked, it takes an ink rule with a band of the
-   page between the rule and the colour. The rule is always there, clear
-   until picked, so picking doesn't shift anything. */
+/* A square of colour in an ink rule, so even a colour close to the
+   block's own stands out. Picked, it carries a white tick. */
 .swatch {
   appearance: none;
   box-sizing: border-box;
   width: 24px;
   height: 24px;
   margin: 0;
-  border: var(--border-thick) solid transparent;
+  border: var(--border-thick) solid var(--ink);
   border-radius: var(--corner-xs);
   background: var(--swatch);
   cursor: pointer;
 }
 
+/* The tick is drawn over the colour. A data URI can't read a custom
+   property, so its white is --color-white written in. */
 .swatch:checked {
-  border-color: var(--ink);
-  box-shadow: inset 0 0 0 3px var(--paper);
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M5 10.5l3.5 3.5L15 7' fill='none' stroke='%23fbfef9' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")
+      center / 100% no-repeat,
+    var(--swatch);
 }
 
 .swatch:focus-visible {
