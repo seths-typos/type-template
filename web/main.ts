@@ -1,3 +1,4 @@
+import { mountGridOverlay } from './grid-overlay.js';
 import { createHeaderPanel, emptyHeaderText } from './header-panel.js';
 import { createLineStylesPanel, defaultLineStyles } from './line-styles.js';
 import { saveSheetPdf } from './output.js';
@@ -197,3 +198,7 @@ document.querySelector('#app')!.append(panel, preview.element);
 
 applyMetrics();
 applyRowCount();
+
+// Shift+G shows the page grid, read live from the grid tokens. Development
+// only; it isn't in a build.
+if (import.meta.env.DEV) mountGridOverlay();
