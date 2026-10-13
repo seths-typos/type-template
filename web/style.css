@@ -2508,3 +2508,28 @@ body {
 .rows {
   --title-band: 24px;
 }
+
+/* ── Credit ───────────────────────────────────────────── */
+
+/* At the bottom left of the page, in the foot of the Line Styles column:
+   pushed down to the bottom of the row, a plain text link in capitals. */
+.credit-link {
+  align-self: flex-start;
+  margin-top: auto;
+  padding-top: var(--spacers-padding-md);
+  color: var(--ink);
+  text-transform: uppercase;
+  text-decoration: none;
+  text-decoration-thickness: var(--border-base);
+  text-underline-offset: 0.2em;
+}
+
+/* Underlined only under the pointer. */
+.credit-link:hover {
+  text-decoration: underline;
+}
+
+.credit-link:focus-visible {
+  outline: var(--border-base) solid var(--ink);
+  outline-offset: 3px;
+}

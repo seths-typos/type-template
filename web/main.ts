@@ -208,6 +208,15 @@ const lineStyles = createLineStylesPanel({
   },
 });
 
+// Who made it, in the empty foot of the Line Styles column.
+const credit = document.createElement('a');
+credit.className = 'body-sm credit-link';
+credit.href = 'https://www.instagram.com/seths_typos/';
+credit.target = '_blank';
+credit.rel = 'noopener';
+credit.textContent = "One of Seth's Typos";
+lineStyles.append(credit);
+
 // The title, the sheet's controls and the rows, on their own field.
 const metricsBlock = document.createElement('div');
 metricsBlock.className = 'block metrics-block';
