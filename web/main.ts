@@ -1,12 +1,14 @@
 import { mountGridOverlay } from './grid-overlay.js';
 import { createHeaderPanel, emptyHeaderText } from './header-panel.js';
+import { createPageSetupPanel } from './page-setup.js';
 import { createLineStylesPanel, defaultLineStyles } from './line-styles.js';
 import { saveSheetPdf } from './output.js';
 import { createPreviewDialog } from './preview-dialog.js';
 import { copyRowState, createRowEditor, newRowState } from './row-editor.js';
 import { rowInput } from './row-input.js';
 import { MAX_ROWS, createChoiceToggle, createRowCountSlider } from './sheet-controls.js';
-import { previewSheet, type PreviewSheet } from './sheet-preview.js';
+import { defaultPageSetup, previewSheet, type PreviewSheet } from './sheet-preview.js';
+import { ConfigError } from '../src/index.js';
 
 type RowMetrics = 'same' | 'different';
 
@@ -25,6 +27,8 @@ const sheet = {
   lines: defaultLineStyles(),
   /** Optional text across the top of the page. */
   header: emptyHeaderText(),
+  /** The paper: its size, orientation and margin. */
+  page: defaultPageSetup(),
 };
 
 const editors = sheet.rows.map((state, i) =>
@@ -113,7 +117,14 @@ function printable(): PreviewSheet | null {
     }
     inputs.push(input);
   }
-  return previewSheet(inputs, sheet.header);
+  try {
+    return previewSheet(inputs, sheet.header, sheet.page);
+  } catch (error) {
+    // The one page-wide value that can leave no room: the margin.
+    if (!(error instanceof ConfigError)) throw error;
+    preview.open({ message: 'The margin leaves no room for the rows. Try a smaller one.' });
+    return null;
+  }
 }
 
 /** Run `action` on the sheet, if it can be made. */
@@ -141,7 +152,7 @@ function actionButton(label: string, run?: () => void, variant?: string): HTMLBu
 // now.
 const inbound = document.createElement('div');
 inbound.className = 'sheet-actions is-inbound';
-inbound.append(actionButton('Upload Config'));
+inbound.append(actionButton('Upload Config', undefined, 'is-secondary'));
 
 const outputTitle = document.createElement('h2');
 outputTitle.className = 'heading-h2 output-title';
@@ -155,19 +166,26 @@ secondary.append(
 );
 const outputActions = document.createElement('div');
 outputActions.className = 'output-actions';
-outputActions.append(actionButton('Save to PDF', withSheet(saveSheetPdf), 'is-primary'), secondary);
+outputActions.append(
+  secondary.firstElementChild!,
+  actionButton('Save to PDF', withSheet(saveSheetPdf), 'is-secondary'),
+  secondary,
+);
 const outbound = document.createElement('section');
 outbound.className = 'output-block';
 outbound.setAttribute('aria-labelledby', 'output-title');
+// Its name is for screen readers; the buttons say what it is.
+outputTitle.className = 'visually-hidden';
 outbound.append(outputTitle, outputActions);
 
-// Above everything: the app's name centred, Upload Config on the right.
+// Above everything: Upload Config on the left, the app's name centred, and
+// the actions that send the sheet out on the right.
 const appTitle = document.createElement('h1');
 appTitle.className = 'heading-h1 app-title';
 appTitle.textContent = 'Sheet-o-matic';
 const topBar = document.createElement('header');
 topBar.className = 'app-header';
-topBar.append(appTitle, inbound);
+topBar.append(inbound, appTitle, outbound);
 
 const rowEditors = document.createElement('div');
 rowEditors.className = 'row-editors';
@@ -181,6 +199,7 @@ const lineStyles = createLineStylesPanel({
   },
 });
 
+
 // The title, the sheet's controls and the rows, on their own field.
 const metricsBlock = document.createElement('div');
 metricsBlock.className = 'block metrics-block';
@@ -190,9 +209,18 @@ metricsBlock.append(header, rowEditors);
 // far right.
 const footer = document.createElement('div');
 footer.className = 'sheet-footer';
-footer.append(lineStyles, createHeaderPanel(sheet.header), outbound);
+// Page Setup over Header in the four columns between Line Styles and Output.
+footer.append(lineStyles, createPageSetupPanel(sheet.page), createHeaderPanel(sheet.header));
 
-panel.append(topBar, metricsBlock, footer);
+// Who made it, under the bottom row at the right.
+const credit = document.createElement('a');
+credit.className = 'body-sm credit-link';
+credit.href = 'https://www.instagram.com/seths_typos/';
+credit.target = '_blank';
+credit.rel = 'noopener';
+credit.textContent = "One of Seth's Typos";
+
+panel.append(topBar, metricsBlock, footer, credit);
 
 document.querySelector('#app')!.append(panel, preview.element);
 

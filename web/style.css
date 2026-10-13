@@ -664,7 +664,9 @@ body {
    middle (sec 22.5° − 1 along the bisector, here split onto the two axes),
    and where it joins the diagonal (1 − cos 45° on each axis). */
 .block,
-.block::after {
+.block::after,
+.sheet-footer::before,
+.sheet-footer::after {
   --block-shape: polygon(
     /* top left */
     0 calc(var(--shape-bevel) + var(--shape-soft) * 0.4142),
@@ -1650,4 +1652,567 @@ body {
   .print-sheet svg {
     display: block;
   }
+}
+
+/* ── On the grid ──────────────────────────────────────── */
+
+/* Content on the columns, the blocks' fields and outlines reaching past
+   them. Row Metrics reaches its padding out into the margin both sides, so
+   its rows span two columns each exactly; Line Styles reaches out on the
+   left, so its first column starts on column 1. Both blocks' outer edges
+   then sit the same distance from the window. */
+.metrics-block {
+  margin-inline: calc(-1 * var(--spacers-padding-md));
+}
+
+.line-styles {
+  margin-left: calc(-1 * var(--spacers-padding-md));
+  padding-left: var(--spacers-padding-md);
+}
+
+/* Still ending where Row Metrics' top edge meets its bevel, which moved
+   out with the block. */
+.sheet-actions.is-inbound {
+  margin-right: calc(var(--block-bevel) - var(--spacers-padding-md));
+}
+
+/* ── Page Setup ───────────────────────────────────────── */
+
+/* Header over Page Setup in columns 8–11, a gutter apart, both outlined
+   blocks with notched titles. */
+.footer-middle {
+  grid-column: span 4;
+  display: flex;
+  flex-direction: column;
+  gap: var(--grid-gutter);
+}
+
+.page-setup {
+  padding-top: calc(var(--notch-depth) + var(--spacers-padding-md));
+}
+
+/* Its controls in two columns, names then toggles, so the toggles line up,
+   both one width with their options sharing it. */
+.page-setup-controls {
+  display: grid;
+  grid-template-columns: max-content max-content;
+  gap: var(--spacers-margin-sm) var(--spacers-padding-sm);
+}
+
+.page-setup .sheet-control {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: subgrid;
+  align-items: center;
+}
+
+.page-setup .sheet-control-name {
+  text-box: trim-both cap alphabetic;
+}
+
+.page-setup .choice-option {
+  flex: 1;
+}
+
+/* Margin: built as the row editors' value fields are — an ink box with
+   its top-right corner cut, the value in a well of the page's colour, the
+   unit small in the contrast colour at its right end. */
+.page-setup-margin-field {
+  box-sizing: border-box;
+  display: flex;
+  align-items: stretch;
+  justify-self: start;
+  height: 24px;
+  border: var(--border-thick) solid var(--ink);
+  border-radius: var(--corner-xs) 0 var(--corner-xs) var(--corner-xs);
+  background: var(--ink);
+  clip-path: polygon(
+    0 0,
+    calc(100% - var(--spacing-2)) 0,
+    100% var(--spacing-2),
+    100% 100%,
+    0 100%
+  );
+}
+
+.page-setup-margin-input {
+  box-sizing: border-box;
+  width: 40px;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  border: none;
+  border-radius: var(--corner-xs);
+  background: var(--paper);
+  color: var(--color-black);
+  text-align: center;
+  appearance: textfield;
+}
+
+.page-setup-margin-input::-webkit-inner-spin-button,
+.page-setup-margin-input::-webkit-outer-spin-button {
+  appearance: none;
+  margin: 0;
+}
+
+.page-setup-margin-input:focus {
+  outline: none;
+}
+
+.page-setup-margin-input:focus-visible {
+  box-shadow: inset 0 0 0 var(--border-base) var(--ink);
+}
+
+.page-setup-margin-input[aria-invalid='true'] {
+  box-shadow: inset 0 0 0 var(--border-thick) var(--color-red);
+}
+
+.page-setup-margin-unit {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  color: var(--ink-contrast);
+  font-size: calc(24px * 0.29);
+  line-height: 1;
+  text-box: trim-both cap alphabetic;
+}
+
+/* ── Preview: page setup beside the sheet ─────────────── */
+
+/* The page setup in a table on the left, top-aligned with the sheet and
+   Close; a rule along the top of each row and none between columns. */
+.sheet-preview-body {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: var(--grid-gutter);
+  height: 100%;
+}
+
+.sheet-preview-details[hidden] + .sheet-preview-stage {
+  grid-column: 1 / -1;
+}
+
+.sheet-preview-details {
+  align-self: start;
+  min-width: 14rem;
+  border-collapse: collapse;
+  color: var(--ink);
+}
+
+.sheet-preview-details tr {
+  border-top: var(--border-thick) solid var(--ink);
+}
+
+.sheet-preview-details th,
+.sheet-preview-details td {
+  padding: var(--spacers-padding-xs) 0;
+  text-align: left;
+  font-weight: inherit;
+}
+
+.sheet-preview-details td {
+  padding-left: var(--grid-gutter);
+}
+
+.sheet-preview-stage {
+  align-items: start;
+  padding-top: var(--border-thick);
+  box-sizing: border-box;
+}
+
+.sheet-preview-close {
+  top: var(--spacers-padding-lg);
+}
+
+.sheet-preview:focus {
+  outline: none;
+}
+
+/* ── Credit ───────────────────────────────────────────── */
+
+/* At the bottom left, in the foot of the Line Styles block: pushed down to
+   its bottom, a text link in capitals, medium, underlined under the
+   pointer. */
+.line-styles {
+  display: flex;
+  flex-direction: column;
+}
+
+.credit-link {
+  align-self: flex-start;
+  margin-top: auto;
+  padding-top: var(--spacers-padding-md);
+  color: var(--color-black);
+  font-weight: var(--weight-ui-medium);
+  text-transform: uppercase;
+  text-decoration: none;
+  text-decoration-thickness: var(--border-base);
+  text-underline-offset: 0.2em;
+}
+
+.credit-link:hover {
+  text-decoration: underline;
+}
+
+.credit-link:focus-visible {
+  outline: var(--border-base) solid var(--color-black);
+  outline-offset: 3px;
+}
+
+/* ── Number of rows in one row ────────────────────────── */
+
+/* No numbers under the track: the current one set in the handle, in the
+   contrast colour. The stop labels move up over the track, every one but
+   the current hidden, and let clicks through to the slider. */
+.metrics-block .stop-slider-stops {
+  position: absolute;
+  inset: 0 0 auto;
+  height: var(--thumb);
+  margin: 0;
+  line-height: var(--thumb);
+  pointer-events: none;
+}
+
+.metrics-block .stop-slider-stops > span {
+  visibility: hidden;
+}
+
+.metrics-block .stop-slider-stops > .is-current {
+  visibility: visible;
+  opacity: 1;
+  color: var(--ink-contrast);
+}
+
+/* ── No outlines ──────────────────────────────────────── */
+
+/* Line Styles, Header and Page Setup without their outlines: the edge, and
+   the notch's with it, clear. Their titles keep their places. */
+.block.is-outlined {
+  --edge-color: transparent;
+}
+
+/* The underline under each line's name plain: no bend, no climb, just the
+   rule along the bottom of the cell. */
+.line-column-rule {
+  clip-path: inset(calc(100% - var(--rule)) 0 0 0);
+}
+
+/* ── Organization from ad-exp-2 ───────────────────────── */
+
+/* The bottom row in two bands: Line Styles down both in columns 1–7, Page
+   Setup over Header in 8–11, Output down both in 12. Without outlines the
+   blocks' contents sit on the columns, and every title is set in the flow,
+   flush left with what's under it. */
+.sheet-footer {
+  grid-template-rows: auto 1fr;
+  row-gap: var(--grid-gutter);
+}
+
+.line-styles {
+  grid-row: 1 / span 2;
+  padding-right: 0;
+}
+
+.page-setup,
+.header-panel {
+  grid-column: 8 / span 4;
+  padding-inline: 0;
+}
+
+.page-setup {
+  grid-row: 1;
+}
+
+.header-panel {
+  grid-row: 2;
+}
+
+.output-block {
+  grid-column: 12;
+  grid-row: 1 / span 2;
+}
+
+/* No outlines, so no notches: the shapes go, the titles join the flow. */
+.block.is-outlined,
+.block.is-outlined .block-title {
+  clip-path: none;
+}
+
+.block.is-outlined::after,
+.is-outlined .block-title::before {
+  content: none;
+}
+
+.is-outlined .block-title {
+  position: static;
+  display: block;
+  height: auto;
+  margin: 0;
+  padding: 0;
+  background: none;
+  isolation: auto;
+}
+
+.line-styles,
+.page-setup,
+.header-panel {
+  padding-top: var(--spacers-padding-md);
+}
+
+.line-styles .block-title {
+  margin-bottom: var(--spacers-padding-md);
+}
+
+/* Page Setup: its toggles stacked to the right of its title. */
+.page-setup {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+/* Header: its note on the title's line, to the right. */
+.header-panel-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--spacers-padding-sm);
+}
+
+.header-panel-top .header-panel-info {
+  max-width: none;
+  text-align: right;
+}
+
+/* Output: Preview, Save to PDF, Save Config spread evenly down the column. */
+.output-block {
+  padding-block: var(--spacers-padding-md);
+}
+
+.output-actions {
+  flex: 1 1 auto;
+  justify-content: space-evenly;
+  margin-top: 0;
+}
+
+/* ── Actions to the top, setup side by side ───────────── */
+
+/* The top bar: Upload Config at the left, the name centred, Preview, Save
+   to PDF and Save Config in a row at the right. */
+.sheet-actions.is-inbound {
+  grid-column: 1;
+  justify-self: start;
+  margin-right: 0;
+}
+
+.app-header .output-block {
+  grid-column: 3;
+  grid-row: 1;
+  justify-self: end;
+  display: block;
+  padding: 0;
+}
+
+.app-header .output-actions {
+  flex-direction: row;
+  align-items: center;
+  gap: var(--spacers-padding-sm);
+}
+
+.app-header .output-secondary {
+  display: contents;
+}
+
+/* The bottom row one band: Line Styles in columns 1–7, Page Setup in 8–9,
+   Header in 10–12. */
+.sheet-footer {
+  grid-template-rows: auto;
+}
+
+.line-styles {
+  grid-row: 1;
+}
+
+.page-setup {
+  grid-column: 8 / span 2;
+  grid-row: 1;
+  /* Two columns is narrow: the title over its controls, each control's name
+     over it. */
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: var(--spacers-padding-md);
+}
+
+.header-panel {
+  grid-column: 10 / span 3;
+  grid-row: 1;
+}
+
+.page-setup-controls {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacers-padding-sm);
+}
+
+.page-setup .sheet-control {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--spacers-margin-xs);
+}
+
+.header-panel-top {
+  flex-wrap: wrap;
+}
+
+/* A teal rule between Line Styles and Page Setup, and between Page Setup
+   and Header: down the middle of each gutter, the full height of the row,
+   so each sits half a gutter from the content either side. */
+.page-setup::before,
+.header-panel::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: calc(var(--grid-gutter) / -2 - var(--border-thick) / 2);
+  width: var(--border-thick);
+  background: var(--color-teal);
+}
+
+/* Page Setup's toggles fill its column, their options sharing the width,
+   as Solid / Dashed fill each Line Styles column. The Margin field keeps
+   its own width, flush left. */
+.page-setup-controls,
+.page-setup .sheet-control {
+  align-self: stretch;
+}
+
+.page-setup .sheet-control {
+  align-items: stretch;
+}
+
+.page-setup .choice {
+  width: 100%;
+}
+
+.page-setup .sheet-control-name,
+.page-setup-margin-field {
+  align-self: flex-start;
+}
+
+/* The rules on the column edges — column 8's and column 10's left edges,
+   where Page Setup and Header start — and a gutter of space either side:
+   what's left of each rule ends a gutter before it on the grid already,
+   and what's right of it starts a gutter in. */
+.page-setup::before,
+.header-panel::before {
+  left: calc(var(--border-thick) / -2);
+}
+
+.page-setup,
+.header-panel {
+  padding-left: var(--grid-gutter);
+}
+
+/* The rules lean left at both ends, as Row Metrics' corners are cut: for
+   the last --rule-bevel at top and bottom each runs at 45° up, or down, and
+   to the left, reaching the row's top and foot a bevel's width left of the
+   column edge.
+
+   One shape for the whole rule, so the turns have no seams: a 2px band
+   along the bend, its edges offset half a rule either side of the centre
+   line. On the diagonals that offset is rule × √2⁄2 along each axis, and
+   where a diagonal meets the upright the edges cross rule × (√2 − 1)⁄2
+   above or below the bend. The box is a bevel wider than the rule, out to
+   the left; the centre line runs down its right side at --rule-bevel. */
+.page-setup::before,
+.header-panel::before {
+  --rule-bevel: var(--block-bevel);
+  --t: var(--border-thick);
+
+  left: calc(-1 * var(--rule-bevel));
+  width: calc(var(--rule-bevel) + var(--t) / 2);
+  clip-path: polygon(
+    0 0,
+    calc(var(--t) * 0.7071) 0,
+    calc(var(--rule-bevel) + var(--t) / 2) calc(var(--rule-bevel) - var(--t) * 0.2071),
+    calc(var(--rule-bevel) + var(--t) / 2) calc(100% - var(--rule-bevel) + var(--t) * 0.2071),
+    calc(var(--t) * 0.7071) 100%,
+    0 100%,
+    0 calc(100% - var(--t) * 0.7071),
+    calc(var(--rule-bevel) - var(--t) / 2) calc(100% - var(--rule-bevel) - var(--t) * 0.2071),
+    calc(var(--rule-bevel) - var(--t) / 2) calc(var(--rule-bevel) + var(--t) * 0.2071),
+    0 calc(var(--t) * 0.7071)
+  );
+}
+
+/* ── The bottom row outlined ──────────────────────────── */
+
+/* Line Styles, Page Setup and Header in one outline, the shape of Row
+   Metrics' field: its corners cut a block bevel at 45° and softened, its
+   sides out in the margin with Row Metrics' so the two stack. Drawn as
+   Row Metrics' would be outlined: ::before the shape in teal, ::after the
+   page's colour a rule smaller on top of it. The rules between the blocks
+   stay, their diagonals meeting this one's top and bottom edges. */
+.sheet-footer {
+  --edge: var(--border-thick);
+
+  position: relative;
+  isolation: isolate;
+}
+
+.sheet-footer::before,
+.sheet-footer::after {
+  content: '';
+  position: absolute;
+  inset: 0 calc(-1 * var(--spacers-padding-md));
+  z-index: -1;
+  clip-path: var(--block-shape);
+}
+
+.sheet-footer::before {
+  --shape-bevel: var(--block-bevel);
+  --shape-soft: 8px;
+
+  background: var(--color-teal);
+}
+
+.sheet-footer::after {
+  --shape-bevel: calc(var(--block-bevel) - var(--edge) * 0.5858);
+  --shape-soft: calc(8px - var(--edge));
+
+  inset: var(--edge) calc(var(--edge) - var(--spacers-padding-md));
+  background: var(--color-bg);
+}
+
+/* Room inside the outline: the titles clear its top corners' cuts, and
+   the last controls its bottom ones. */
+.line-styles,
+.page-setup,
+.header-panel {
+  padding-top: var(--spacers-padding-lg);
+  padding-bottom: var(--spacers-padding-lg);
+}
+
+/* The credit under the outline, at the right, ending on the grid. */
+.rows > .credit-link {
+  grid-column: 1 / -1;
+  justify-self: end;
+  margin: 0;
+  padding: 0;
+}
+
+/* Line Styles' contents as far in from the outline's left side as its title
+   is from its top: a padding-lg. */
+.line-styles {
+  padding-left: var(--spacers-padding-lg);
+}
+
+/* The top bar's buttons a step heavier — medium — and all one width, the
+   widest label's. */
+.app-header .action-button {
+  /* Upload Config's width, the widest label, in em so it follows the
+     label's size. */
+  width: 10.6em;
+  font-weight: var(--weight-ui-medium);
 }
