@@ -19,7 +19,7 @@ export type LineStyles = Record<StyledLine, LineChoice>;
 export const STYLED_LINES: { type: StyledLine; name: string }[] = [
   { type: 'ascender', name: 'Ascender' },
   { type: 'capHeight', name: 'Cap height' },
-  { type: 'xHeight', name: 'X-height' },
+  { type: 'xHeight', name: 'x-height' },
   { type: 'baseline', name: 'Baseline' },
   { type: 'descender', name: 'Descender' },
   { type: 'slant', name: 'Slant' },

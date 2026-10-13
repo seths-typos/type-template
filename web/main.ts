@@ -1,12 +1,14 @@
 import { mountGridOverlay } from './grid-overlay.js';
 import { createHeaderPanel, emptyHeaderText } from './header-panel.js';
+import { createPageSetupPanel } from './page-setup.js';
 import { createLineStylesPanel, defaultLineStyles } from './line-styles.js';
 import { saveSheetPdf } from './output.js';
 import { createPreviewDialog } from './preview-dialog.js';
 import { copyRowState, createRowEditor, newRowState } from './row-editor.js';
+import { ConfigError } from '../src/index.js';
 import { rowInput } from './row-input.js';
 import { MAX_ROWS, createChoiceToggle, createRowCountSlider } from './sheet-controls.js';
-import { previewSheet, type PreviewSheet } from './sheet-preview.js';
+import { defaultPageSetup, previewSheet, type PreviewSheet } from './sheet-preview.js';
 
 type RowMetrics = 'same' | 'different';
 
@@ -25,6 +27,8 @@ const sheet = {
   lines: defaultLineStyles(),
   /** Optional text across the top of the page. */
   header: emptyHeaderText(),
+  /** The paper: its size and orientation. */
+  page: defaultPageSetup(),
 };
 
 const editors = sheet.rows.map((state, i) =>
@@ -113,7 +117,14 @@ function printable(): PreviewSheet | null {
     }
     inputs.push(input);
   }
-  return previewSheet(inputs, sheet.header);
+  try {
+    return previewSheet(inputs, sheet.header, sheet.page);
+  } catch (error) {
+    // The one page-wide value that can leave no room: the margin.
+    if (!(error instanceof ConfigError)) throw error;
+    preview.open({ message: 'The margin leaves no room for the rows. Try a smaller one.' });
+    return null;
+  }
 }
 
 /** Run `action` on the sheet, if it can be made. */
@@ -147,18 +158,34 @@ const outputTitle = document.createElement('h2');
 outputTitle.className = 'heading-h2 output-title';
 outputTitle.id = 'output-title';
 outputTitle.textContent = 'Output';
-const secondary = document.createElement('div');
-secondary.className = 'output-secondary';
-secondary.append(
-  actionButton('Preview', withSheet((content) => preview.open(content)), 'is-secondary'),
-  actionButton('Save Config', undefined, 'is-secondary'),
-);
+// A rule between each action and the next.
+const outputRule = () => {
+  const rule = document.createElement('hr');
+  rule.className = 'output-rule';
+  return rule;
+};
+// Each action centred in an equal share of its part of the column.
+const outputCell = (button: HTMLButtonElement) => {
+  const cell = document.createElement('div');
+  cell.className = 'output-cell';
+  cell.append(button);
+  return cell;
+};
+// The column in three equal parts, rules between.
 const outputActions = document.createElement('div');
-outputActions.className = 'output-actions';
-outputActions.append(actionButton('Save to PDF', withSheet(saveSheetPdf), 'is-primary'), secondary);
+outputActions.className = 'output-actions is-column';
+outputActions.append(
+  outputCell(actionButton('Preview', withSheet((content) => preview.open(content)), 'is-primary')),
+  outputRule(),
+  outputCell(actionButton('Save to PDF', withSheet(saveSheetPdf), 'is-primary is-word-stacked')),
+  outputRule(),
+  outputCell(actionButton('Save Config', undefined, 'is-primary')),
+);
 const outbound = document.createElement('section');
 outbound.className = 'output-block';
 outbound.setAttribute('aria-labelledby', 'output-title');
+// Its name is for screen readers; the buttons say what it is.
+outputTitle.className = 'visually-hidden';
 outbound.append(outputTitle, outputActions);
 
 // Above everything: the app's name centred, Upload Config on the right.
@@ -190,7 +217,13 @@ metricsBlock.append(header, rowEditors);
 // far right.
 const footer = document.createElement('div');
 footer.className = 'sheet-footer';
-footer.append(lineStyles, createHeaderPanel(sheet.header), outbound);
+// Header over Page Setup in the middle columns, a rule between them.
+footer.append(
+  lineStyles,
+  createHeaderPanel(sheet.header),
+  createPageSetupPanel(sheet.page),
+  outbound,
+);
 
 panel.append(topBar, metricsBlock, footer);
 

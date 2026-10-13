@@ -12,7 +12,10 @@
 
 /* ── Core ─────────────────────────────────────────────── */
 :root {
-  --color-black: #132322;
+  --color-black: #1251c0;
+  /* Local, not yet in Figma: the black --color-black was before it turned
+     blue, for a button under the pointer. */
+  --color-ink-black: #132322;
   --color-near-black: #474848;
   --color-grey: #dcdbdc;
   --color-white: #fbfef9;
