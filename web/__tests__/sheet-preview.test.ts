@@ -70,4 +70,31 @@ describe('previewSheet', () => {
     expect(titled.sheet.rows[0]!.top).toBeGreaterThan(plain.sheet.rows[0]!.top);
     expect(titled.options.header?.size).toBe(10);
   });
+
+  it('sets the sheet on the page setup it is given', () => {
+    const { sheet } = previewSheet([input(row())], undefined, {
+      size: 'a4',
+      orientation: 'portrait',
+      margin: 36,
+    });
+
+    expect(sheet.page.width).toBeCloseTo(595.28, 1);
+    expect(sheet.page.height).toBeCloseTo(841.89, 1);
+  });
+
+  it('defaults to Letter, landscape', () => {
+    const { sheet } = previewSheet([input(row())]);
+
+    expect([sheet.page.width, sheet.page.height]).toEqual([792, 612]);
+  });
+
+  it('sets every margin to the page setup\'s one value', () => {
+    const { config } = previewSheet([input(row())], undefined, {
+      size: 'letter',
+      orientation: 'landscape',
+      margin: 54,
+    });
+
+    expect(config.page.margins).toEqual({ top: 54, right: 54, bottom: 54, left: 54 });
+  });
 });
