@@ -21,7 +21,6 @@ Local only. `npm run dev`. Nothing is hosted.
 The rebuilt front end narrows what the user controls. The engine's wider surface stays; the UX just doesn't expose all of it.
 
 **Fixed by the UX, not chosen by the user:**
-- **Orientation** is always landscape.
 - **Row count** is 1–6.
 - **Row height** — the total metric height, highest metric line to lowest — is determined by the row count alone. The user never sets a cap height or a row height in points.
 - **Rows are evenly spaced.** The row gap value is not decided yet.
@@ -31,8 +30,13 @@ The rebuilt front end narrows what the user controls. The engine's wider surface
 1. Choose the number of rows (1–6).
 2. Edit the row metrics. Either every row shares one set of metrics, or each row has its own.
 3. Optionally change line styles: weight, dash and colour.
-4. Preview, then print through the browser's print dialog or download the PDF. Both are offered.
-5. Optionally download the config as JSON. A downloaded config can be loaded back in to restore the sheet.
+4. Optionally set up the page and add header text.
+5. Preview, then save the PDF. Printing is from the PDF; the browser-print path (`render/svg/`, `printSheet`) is built but has no button.
+6. Optionally save the config as JSON. A saved config can be uploaded again to restore the sheet. Neither button is wired yet.
+
+**Page Setup** is the user's: orientation (portrait or landscape), paper (Letter or A4) and one margin in points for all four sides. It defaults to Letter, landscape, 36 pt — the engine's own defaults. A margin that leaves the rows no room is caught when the sheet is made, and the preview says so. Decided 2026-10-13, replacing the fixed landscape of 2026-10-10.
+
+**Art direction** is the "panel" direction from the `ad-exp-2` branch (2026-10-13): a grey ground, blue ink, steel rules dividing a 12-column grid, filled blue rows. `ad-exp-1` keeps the teal direction it grew from.
 
 **Header text** is optional, three slots set across the top of the printed page: left, centre and right, each free text in 10 pt Arial (the PDF sets Helvetica, Arial's metric twin; pdf-lib's standard fonts need no embedding). The header block is reserved only when a slot has text, 24 pt below the top margin, taken from the rows' height. Restored 2026-10-12 after being dropped on 2026-10-10.
 
