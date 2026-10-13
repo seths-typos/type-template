@@ -2,6 +2,7 @@
   "name": "type-template",
   "version": "0.0.0",
   "private": true,
+  "license": "MIT",
   "description": "Printable practice sheet generator for type design and calligraphy",
   "type": "module",
   "scripts": {
