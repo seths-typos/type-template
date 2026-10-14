@@ -1421,6 +1421,15 @@ body {
   margin-right: var(--block-bevel);
 }
 
+/* What Upload Config takes, set to its left and ending against it. */
+.sheet-actions-note {
+  max-width: 22em;
+  margin: 0;
+  color: var(--ink);
+  line-height: 1.3;
+  text-align: right;
+}
+
 /* Output: the actions that send the sheet out, at the end of the line.
    No field of its own, just its title over the buttons, so it takes only
    the room they need. Save to PDF leads, filled; the preview and the
@@ -2773,4 +2782,120 @@ body {
 .header-panel::before {
   content: '';
   top: calc(-1 * var(--border-thick));
+}
+
+/* Upload Config: a small panel in the page's blue on mist. A dashed drop
+   area with the file picker in it, or a font's masters to choose from; its
+   Cancel or Back at the bottom right. */
+.upload-dialog {
+  --ink: var(--color-black);
+  --ink-contrast: var(--color-mist);
+
+  box-sizing: border-box;
+  width: min(34rem, 100vw - 2 * var(--grid-margin));
+  /* As tall as its contents, centred: its top at the window's middle, its
+     bottom left free, then raised by half its height. Safari's own dialog
+     style pins a modal to all four edges and stretches it to the window. */
+  inset: 50% 0 auto;
+  height: auto;
+  margin: 0 auto;
+  translate: 0 -50%;
+  padding: var(--spacers-padding-md);
+  border: var(--border-thick) solid var(--ink);
+  background: var(--color-mist);
+  color: var(--ink);
+}
+
+.upload-dialog[open] {
+  display: grid;
+  gap: var(--spacers-margin-sm);
+}
+
+.upload-dialog::backdrop {
+  background: rgb(from var(--color-black) r g b / 0.4);
+}
+
+.upload-dialog [hidden] {
+  display: none;
+}
+
+.upload-dialog-title,
+.upload-dialog-text,
+.upload-dialog-error,
+.upload-dialog-note {
+  margin: 0;
+}
+
+.upload-dialog-text,
+.upload-dialog-error,
+.upload-dialog-note {
+  line-height: 1.4;
+}
+
+.upload-dialog-view {
+  display: grid;
+  gap: var(--spacers-margin-sm);
+}
+
+.upload-dialog-error {
+  color: var(--color-red);
+}
+
+.upload-dialog-error:empty {
+  display: none;
+}
+
+/* Filled, the label turned light, while a file is held over it. */
+.upload-zone {
+  display: grid;
+  justify-items: center;
+  gap: var(--spacers-margin-sm);
+  padding: var(--spacers-padding-md);
+  border: var(--border-thick) dashed var(--ink);
+  transition: background-color 150ms ease-out;
+}
+
+.upload-zone.is-over {
+  background: rgb(from var(--ink) r g b / 0.12);
+}
+
+.upload-zone-text,
+.upload-zone-or {
+  margin: 0;
+}
+
+.upload-zone-pickers {
+  display: flex;
+  gap: var(--spacers-margin-sm);
+}
+
+.upload-dialog-choices {
+  display: grid;
+  gap: var(--spacers-margin-sm);
+}
+
+/* A master: its name, then its metrics, the whole line a button. Filled
+   under the pointer, as the active rows are. */
+.upload-dialog-choice {
+  appearance: none;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--spacers-padding-sm);
+  padding: var(--spacers-padding-xs) var(--spacing-3);
+  border: var(--border-base) solid var(--ink);
+  background: transparent;
+  color: var(--ink);
+  text-align: left;
+  cursor: pointer;
+}
+
+.upload-dialog-choice:is(:hover, :focus-visible) {
+  background: var(--ink);
+  color: var(--ink-contrast);
+  outline: none;
+}
+
+.upload-dialog-footer {
+  justify-self: end;
 }

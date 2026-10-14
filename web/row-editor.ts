@@ -1,4 +1,4 @@
-import { DEFAULT_FONT_UNITS, resolveConfig } from '../src/index.js';
+import { resolveConfig } from '../src/index.js';
 import type { FontUnitMetrics, MetricLine, SheetConfig } from '../src/index.js';
 import { METRIC_TOGGLES, createMetricToggle, type MetricToggle } from './button.js';
 import type { LineStyles } from './line-styles.js';
@@ -6,23 +6,7 @@ import { renderRowPreview } from './row-preview.js';
 import { rowInput, type RowState } from './row-input.js';
 
 export type { RowState };
-
-export function newRowState(): RowState {
-  return {
-    units: { ...DEFAULT_FONT_UNITS },
-    visible: { ascender: true, capHeight: true, xHeight: true, baseline: true, descender: true },
-    // The engine has no default angle, so the italic angle starts at 30°.
-    slant: { enabled: true, angle: 30 },
-  };
-}
-
-export function copyRowState(state: RowState): RowState {
-  return {
-    units: { ...state.units },
-    visible: { ...state.visible },
-    slant: { ...state.slant },
-  };
-}
+export { copyRowState, newRowState } from './row-input.js';
 
 export interface RowEditorOptions {
   /** 1-based, as the user counts them. */

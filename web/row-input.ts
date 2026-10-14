@@ -1,4 +1,4 @@
-import { ConfigError, fontUnitsToPercent, resolveConfig } from '../src/index.js';
+import { ConfigError, DEFAULT_FONT_UNITS, fontUnitsToPercent, resolveConfig } from '../src/index.js';
 import type { FontUnitMetrics, MetricLine, SheetInput } from '../src/index.js';
 import { toLineStyle, type LineStyles } from './line-styles.js';
 import { metricOrderErrors } from './metric-order.js';
@@ -14,6 +14,23 @@ export type RowState = {
   visible: Record<MetricLine, boolean>;
   slant: { enabled: boolean; angle: number | null };
 };
+
+export function newRowState(): RowState {
+  return {
+    units: { ...DEFAULT_FONT_UNITS },
+    visible: { ascender: true, capHeight: true, xHeight: true, baseline: true, descender: true },
+    // The engine has no default angle, so the italic angle starts at 30°.
+    slant: { enabled: true, angle: 30 },
+  };
+}
+
+export function copyRowState(state: RowState): RowState {
+  return {
+    units: { ...state.units },
+    visible: { ...state.visible },
+    slant: { ...state.slant },
+  };
+}
 
 /**
  * The row as engine input, recording any problems against their fields.

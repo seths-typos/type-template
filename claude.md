@@ -32,7 +32,14 @@ The rebuilt front end narrows what the user controls. The engine's wider surface
 3. Optionally change line styles: weight, dash and colour.
 4. Optionally set up the page and add header text.
 5. Preview, then save the PDF. Printing is from the PDF; the browser-print path (`render/svg/`, `printSheet`) is built but has no button.
-6. Optionally save the config as JSON. A saved config can be uploaded again to restore the sheet. Neither button is wired yet.
+6. Optionally save the config as JSON. A saved config can be uploaded again to restore the sheet.
+
+**Upload Config** opens a modal (`web/upload-dialog.ts`) with a drop area and a Choose File picker. A .ufo or .glyphspackage is a folder, read through its `fontinfo.plist`; on macOS both are packages the picker offers as one file, which Chrome sends zipped, so a zip — or a .ufoz — is opened to that file (`web/import/zip.ts`). A folder dropped as a folder works too. Decided 2026-10-13, after a separate Choose Folder button proved unneeded. It takes a saved config or a font source, the file told apart by its contents (`web/import/read-upload.ts`). A config (`web/sheet-file.ts`, JSON marked `"app": "sheet-o-matic"`) replaces the whole sheet, every value checked first. A font's metrics go into row 1, and so every row when Values Across Rows is Same. Read from:
+- **Glyphs 3 or later** — `.glyphs`, or a `.glyphspackage`'s `fontinfo.plist`. Glyphs 2 files are refused. Masters' `metricValues` pair with the font's `metrics` list by position; a missing `pos` is 0.
+- **UFO** — its `fontinfo.plist`. Italic angle sign flipped.
+- **Not OTF/TTF** (or TTC, WOFF): their stored metrics don't reliably match the design, so they are refused, pointing to the source. Decided 2026-10-13.
+
+A line the font lacks, or has out of the editor's order (an ascender on the cap height), comes in switched off; a 0 counts as missing. No italic angle or 0 switches slant off. A font with no cap height is refused. With several masters whose metrics differ, the user picks one; identical masters aren't asked about. Decided 2026-10-13.
 
 **Page Setup** is the user's: orientation (portrait or landscape), paper (Letter or A4) and one margin in points for all four sides. It defaults to Letter, landscape, 36 pt — the engine's own defaults. A margin that leaves the rows no room is caught when the sheet is made, and the preview says so. Decided 2026-10-13, replacing the fixed landscape of 2026-10-10.
 
@@ -50,7 +57,6 @@ The rebuilt front end narrows what the user controls. The engine's wider surface
 
 **Open:**
 - The row gap value, and whether it scales with row count. Deferred — use the current default until decided.
-- Where loading a JSON config sits in the flow (an entry point before step 1, or available anywhere).
 
 ## Tech stack
 
