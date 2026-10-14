@@ -2,7 +2,10 @@ import { defineConfig } from 'vite';
 
 // The wireframe lives at /draft/. Without the slash Vite's HTML fallback
 // would serve the root page instead, so redirect it.
-export default defineConfig({
+export default defineConfig(({ command }) => ({
+  // The build is published on GitHub Pages under the repo's name; see
+  // .github/workflows/deploy.yml. The dev server stays at the root.
+  base: command === 'build' ? '/type-template/' : '/',
   plugins: [
     {
       name: 'draft-trailing-slash',
@@ -19,4 +22,4 @@ export default defineConfig({
       },
     },
   ],
-});
+}));
