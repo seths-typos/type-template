@@ -3024,79 +3024,30 @@ body {
   border-image-outset: 0 var(--grid-margin) 0 var(--spacers-padding-md);
 }
 
-/* ── Coloured panels ──────────────────────────────────── */
+/* ── Top bar and Output ───────────────────────────────── */
 
-/* The top bar and Output on --panel, the steel of the rules, their text
-   white. The round buttons turn over to match: a white disc with a steel
-   label; under the pointer, the light blue with a blue label — 6.4:1
-   against the steel, its label 5.3:1 on it. Each panel's blue runs out past its box with a border image —
-   the top bar's to the window's edges and down to the rule over the rows,
-   Output's from the rule on column 6's edge to the window's right edge,
-   up to Line Styles' rule. */
+/* The top bar and Output on the page's own grey, as the other blocks are:
+   no panel colour, their buttons the page's own. */
 .rows {
-  --panel: var(--color-steel);
-}
-
-.app-header,
-.output-block {
-  --fill: var(--color-white);
-  --label: var(--panel);
-  --fill-hover: var(--color-blue-light);
-  --label-hover: var(--color-black);
-
-  color: var(--color-white);
-}
-
-/* Slim: the band only --bar-pad above and below the bar, which Upload
-   Config's button sets the height of. The page's top padding and the gap
-   under the bar both close to it, and the blue runs out to fill them. */
-.rows {
-  /* Above and below each blue panel's buttons: the top bar's, and
-     Output's. */
+  /* Above and below the top bar, and above and below Output's buttons. */
   --bar-pad: var(--spacing-5);
   --output-pad: var(--spacing-4);
 
   padding-top: var(--bar-pad);
 }
 
+/* --bar-pad above and below the bar, which Upload Config's button sets the
+   height of: the page's top padding, and the gap under the bar closed to
+   it. */
 .app-header {
   margin-bottom: calc(var(--bar-pad) - var(--grid-gutter));
-  border-image: linear-gradient(var(--panel) 0 0) fill 0 / 0 /
-    var(--bar-pad) var(--grid-margin);
 }
 
-/* The name a step down, in proportion to the slimmer band. */
+/* The name a step down from the h1, in proportion to the bar. */
 .app-header .app-title {
   font-size: var(--font-size-6);
 }
 
-.app-header .app-title,
-.app-header .credit-link,
-.app-header .sheet-actions-note,
-.output-block .output-title {
-  color: var(--color-white);
-}
-
-.app-header .action-button,
-.output-block .action-button {
-  --fill: var(--color-white);
-  --label: var(--panel);
-  --fill-hover: var(--color-blue-light);
-  --label-hover: var(--color-black);
-}
-
-/* The credit at the left of the top bar, opposite Upload Config. */
-.app-header .credit-link {
-  grid-column: 1;
-  justify-self: start;
-  align-self: center;
-  margin: 0;
-  padding: 0;
-}
-
-.app-header .credit-link:focus-visible {
-  outline-color: var(--color-white);
-}
 
 /* Output in the box under Line Styles: its title, then the three actions
    beside it, each Upload Config's size. A size container, its buttons
@@ -3112,18 +3063,17 @@ body {
   gap: var(--spacers-margin-lg);
   grid-column: 6 / span 7;
   grid-row: 3;
-  /* --output-pad above and below its buttons: the blue runs up to Line
-     Styles' rule, which sits a padding-md above the box, so the box rises
-     by the difference. */
+  /* --output-pad from Line Styles' rule — a padding-md above the box, so
+     the box rises by the difference — and from the page's foot. */
   margin-top: calc(var(--output-pad) - var(--spacers-padding-md));
+  margin-right: 0;
   padding: 0 0 var(--output-pad) var(--spacers-padding-md);
   border: 0;
-  border-image: linear-gradient(var(--panel) 0 0) fill 0 / 0 /
-    var(--output-pad) var(--grid-margin) 0 0;
+  border-image: none;
 }
 
 /* The rule down column 6's edge carried on from Line Styles' to the page's
-   foot, up through the blue to Line Styles' rule. */
+   foot. */
 .output-block::before {
   content: '';
   position: absolute;
@@ -3178,3 +3128,44 @@ body {
   white-space: nowrap;
   line-height: 1;
 }
+
+/* Output's actions a margin-sm apart, and a margin-md after its title, so
+   they end short of column 11 and the credit's box keeps its two
+   columns. */
+.output-actions.is-column {
+  gap: var(--spacers-margin-sm);
+}
+
+.output-block {
+  gap: var(--spacers-margin-md);
+}
+
+/* The credit at the end of Output, centred across columns 11 and 12, a
+   steel rule down column 11's edge from Line Styles' rule to the page's
+   foot. Its
+   width is two columns and a gutter, measured from Output's own: seven
+   columns and six gutters, less Output's left padding. */
+.output-block .credit-link {
+  position: relative;
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+  width: calc((100% + var(--spacers-padding-md) - 6 * var(--grid-gutter)) / 7 * 2 + var(--grid-gutter));
+  flex-shrink: 0;
+  justify-content: center;
+  margin: 0 0 0 auto;
+  padding: 0;
+  text-align: center;
+}
+
+.output-block .credit-link::before {
+  content: '';
+  position: absolute;
+  top: calc(-1 * var(--output-pad));
+  bottom: calc(-1 * var(--output-pad));
+  left: calc(var(--border-thick) / -2);
+  width: var(--border-thick);
+  background: var(--color-steel);
+}
+

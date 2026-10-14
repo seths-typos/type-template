@@ -242,8 +242,7 @@ function render(): void {
   outbound.setAttribute('aria-labelledby', 'output-title');
   outbound.append(outputTitle, outputActions);
 
-  // Above everything: the credit on the left, the app's name centred,
-  // Upload Config on the right.
+  // Above everything: the app's name centred, Upload Config on the right.
   const appTitle = document.createElement('h1');
   appTitle.className = 'heading-h1 app-title';
   appTitle.textContent = 'Sheet-o-matic';
@@ -263,14 +262,14 @@ function render(): void {
     },
   });
 
-  // Who made it, at the left of the top bar, opposite Upload Config.
+  // Who made it, at the end of Output, past a rule.
   const credit = document.createElement('a');
   credit.className = 'body-sm credit-link';
   credit.href = 'https://www.instagram.com/seths_typos/';
   credit.target = '_blank';
   credit.rel = 'noopener';
   credit.textContent = "One of Seth's Typos";
-  topBar.prepend(credit);
+  outbound.append(credit);
 
   // The title, the sheet's controls and the rows, on their own field.
   const metricsBlock = document.createElement('div');
