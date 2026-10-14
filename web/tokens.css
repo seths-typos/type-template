@@ -26,6 +26,8 @@
   --color-steel: #464c59;
   --color-blue: #75a7be;
   --color-blue-light: #cee2e9;
+  /* Local, not yet in Figma: trying it behind the top bar and Output. */
+  --color-orange: #eb6534;
   /* Local, not yet in Figma: trying it as the background. */
   --color-mist: #f0f3f4;
 

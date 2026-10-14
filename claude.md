@@ -24,14 +24,14 @@ The rebuilt front end narrows what the user controls. The engine's wider surface
 - **Row count** is 1–6.
 - **Row height** — the total metric height, highest metric line to lowest — is determined by the row count alone. The user never sets a cap height or a row height in points.
 - **Rows are evenly spaced.** The row gap value is not decided yet.
-- **No metric labels.** The printed sheet and its preview leave out the B / C / X labels (`labels.enabled: false`). The engine keeps them for sheets made without the UX.
+- **Metric values, not letters.** The printed sheet and its preview label each drawn metric line with its own value in font units — row by row, as rows can differ — in the left margin, through `DrawOptions.labelText`. Page Setup's Show Metric Values toggle switches them off; on by default. The engine's B / C / X letters stay for sheets made without the UX. Decided 2026-10-13, replacing the no-labels rule.
 
 **Happy path:**
 1. Choose the number of rows (1–6).
 2. Edit the row metrics. Either every row shares one set of metrics, or each row has its own.
 3. Optionally change line styles: weight, dash and colour.
 4. Optionally set up the page and add header text.
-5. Preview, then save the PDF. Printing is from the PDF; the browser-print path (`render/svg/`, `printSheet`) is built but has no button.
+5. Preview, then print or save the PDF. Print goes through the browser's print dialog (`render/svg/`, `printSheet`): the sheet as SVG at its true size, on a page of its size with no margins.
 6. Optionally save the config as JSON. A saved config can be uploaded again to restore the sheet.
 
 **Upload Config** opens a modal (`web/upload-dialog.ts`) with a drop area and a Choose File picker. A .ufo or .glyphspackage is a folder, read through its `fontinfo.plist`; on macOS both are packages the picker offers as one file, which Chrome sends zipped, so a zip — or a .ufoz — is opened to that file (`web/import/zip.ts`). A folder dropped as a folder works too. Decided 2026-10-13, after a separate Choose Folder button proved unneeded. It takes a saved config or a font source, the file told apart by its contents (`web/import/read-upload.ts`). A config (`web/sheet-file.ts`, JSON marked `"app": "sheet-o-matic"`) replaces the whole sheet, every value checked first. A font's metrics go into row 1, and so every row when Values Across Rows is Same. Read from:
@@ -41,7 +41,7 @@ The rebuilt front end narrows what the user controls. The engine's wider surface
 
 A line the font lacks, or has out of the editor's order (an ascender on the cap height), comes in switched off; a 0 counts as missing. No italic angle or 0 switches slant off. A font with no cap height is refused. With several masters whose metrics differ, the user picks one; identical masters aren't asked about. Decided 2026-10-13.
 
-**Page Setup** is the user's: orientation (portrait or landscape), paper (Letter or A4) and one margin in points for all four sides. It defaults to Letter, landscape, 36 pt — the engine's own defaults. A margin that leaves the rows no room is caught when the sheet is made, and the preview says so. Decided 2026-10-13, replacing the fixed landscape of 2026-10-10.
+**Page Setup** is the user's: orientation (portrait or landscape), paper (Letter or A4), one margin in points for all four sides, and whether metric values are shown. It defaults to Letter, landscape, 36 pt — the engine's own defaults. A margin that leaves the rows no room is caught when the sheet is made, and the preview says so. Decided 2026-10-13, replacing the fixed landscape of 2026-10-10.
 
 **Art direction** is the "panel" direction from the `ad-exp-2` branch (2026-10-13): a grey ground, blue ink, steel rules dividing a 12-column grid, filled blue rows. `ad-exp-1` keeps the teal direction it grew from.
 
@@ -118,7 +118,7 @@ Must be fully testable without producing a PDF.
 
 No renderer knows about another. They share an ops builder, not each other (`render/svg/` borrows only the canvas renderer's `toCss` colour helper).
 
-**Label text is fixed, not configurable.** A type sheet always names the baseline, cap height and x-height — B, C and X, in `config/labels.ts`. Only their look (size, colour, gap, on/off) is config. Calligraphy mode will want its own set, chosen by mode rather than typed in.
+**Label text is fixed in config, not configurable.** A type sheet always names the baseline, cap height and x-height — B, C and X, in `config/labels.ts`. Only their look (size, colour, gap, on/off) is config. A renderer caller can replace the text row by row with `DrawOptions.labelText`, which is how the UX prints each line's value. Calligraphy mode will want its own set, chosen by mode rather than typed in.
 
 **Labels are the renderer's job.** Their anchor is the left end of the line they name, which geometry already gives; turning that into a placed glyph needs the font's metrics to right-align it into the margin and centre it on the line. Geometry stays measurement-free, and a canvas renderer measures its own the same way. A line that isn't drawn gets no label.
 
@@ -252,7 +252,7 @@ Placeholders. Refine after first printed proofs. Line colours and dash states co
 - **rowCount mode:** solve for cap height such that `rowCount` rows at the resulting pitch exactly fill the available height. rowGap stays fixed.
 - Available width = page width − left margin − right margin. All horizontal lines span it.
 - **verticalAlign:** `top` stacks from the top of the available area. `center` centers the block. `justify` distributes leftover space evenly between rows (only meaningful in capHeight mode).
-- **Slant lines** are clipped to the row band on all four sides — vertically to ascender line and descender line, horizontally to the row's left and right edges, so a leaning line is trimmed rather than running past the margin. They do not cross row gaps. First line starts at `inset` from the row's left edge; subsequent lines every `spacing` pt horizontally along the baseline. Generate lines until they exit the right edge of the row band.
+- **Slant lines** are clipped to the row band on all four sides — vertically to ascender line and descender line, horizontally to the row's left and right edges, so a leaning line is trimmed rather than running past the margin. They do not cross row gaps. One line is anchored on the baseline at `inset` from the row's left edge, and the rest every `spacing` pt either side of it, so the pattern fills the whole row; the lines at both ends are clipped at the edge. Changed 2026-10-13: lines used to start at the inset, leaving the left of the row bare.
 
 ## Do not
 

@@ -134,11 +134,18 @@ function readHeader(header: unknown, bad: Bad): HeaderText {
 
 function readPage(page: unknown, bad: Bad): PageSetup {
   if (!isObject(page)) bad('page');
-  const { size, orientation, margin } = page as Record<string, unknown>;
+  const { size, orientation, margin, values = true } = page as Record<string, unknown>;
   if (size !== 'letter' && size !== 'a4') bad('page.size');
   if (orientation !== 'portrait' && orientation !== 'landscape') bad('page.orientation');
   if (!isNumber(margin) || (margin as number) < 0) bad('page.margin');
-  return { size: size as PageSetup['size'], orientation: orientation as PageSetup['orientation'], margin: margin as number };
+  // Missing from configs saved before it was a setting: shown, the default.
+  if (typeof values !== 'boolean') bad('page.values');
+  return {
+    size: size as PageSetup['size'],
+    orientation: orientation as PageSetup['orientation'],
+    margin: margin as number,
+    values: values as boolean,
+  };
 }
 
 function isObject(value: unknown): value is Record<string, unknown> {

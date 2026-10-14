@@ -2646,40 +2646,6 @@ body {
   width: 75cqw;
 }
 
-/* ── Round actions ────────────────────────────────────── */
-
-/* Upload Config and Output's actions as circles, still three quarters of a
-   column across: a disc of the blue, no ring. The button is the black,
-   clipped round; ::before is the blue over all of it. Under the pointer the
-   blue closes to nothing at the centre, the black filling in from the edge. */
-.sheet-actions.is-inbound .action-button,
-.output-cell .action-button {
-  --border: 0px;
-
-  aspect-ratio: 1;
-  border-radius: 50%;
-  clip-path: circle(50%);
-}
-
-.sheet-actions.is-inbound .action-button::before,
-.output-cell .action-button::before {
-  clip-path: circle(calc(50% - var(--border)) at 50% 50%);
-}
-
-.sheet-actions.is-inbound .action-button:is(:hover, :focus-visible)::before,
-.output-cell .action-button:is(:hover, :focus-visible)::before {
-  clip-path: circle(0% at 50% 50%);
-}
-
-/* 16% smaller: 0.75 × 0.84 of a column across. */
-.sheet-actions.is-inbound .action-button {
-  width: calc((100cqi - 11 * var(--grid-gutter)) / 12 * 0.63);
-}
-
-.output-cell .action-button {
-  width: 63cqw;
-}
-
 /* ── Condensed foot ───────────────────────────────────── */
 
 /* The bottom row only as tall as it needs: everything at the page's foot
@@ -2898,4 +2864,317 @@ body {
 
 .upload-dialog-footer {
   justify-self: end;
+}
+
+/* ── Page Setup over Header; Line Styles over Output ───── */
+
+/* Three bands. Page Setup takes the first in columns 1–5 and Header the
+   other two under it, a rule between them from the window's edge. Line
+   Styles takes the first two in columns 6–12, Output the third, in the box
+   under Line Styles' rule; each block only as tall as it needs. A steel
+   rule runs down column 6's edge from the rule above the row.
+
+   Any height to spare — the left side running taller than the right —
+   goes to the last band, Output's, so its blue always starts at Line
+   Styles' rule rather than leaving Line Styles' box stretched below it. */
+.sheet-footer {
+  grid-template-rows: auto auto 1fr;
+}
+
+/* Page Setup and Header in a column of their own down the whole row,
+   Header taking whatever height Page Setup leaves. Each title stays a
+   padding-md under the rule above it, as every block's does; the spare
+   height goes between Header's fields, the last a padding-md above the
+   page's foot. */
+.footer-side {
+  display: grid;
+  grid-column: 1 / span 5;
+  grid-row: 1 / -1;
+  grid-template-columns: subgrid;
+  /* Page Setup as tall as it needs, Header the rest. Two equal halves would
+     each be as tall as the taller block, pushing the side — and with it
+     Output's band — taller than it has to be. */
+  grid-template-rows: auto 1fr;
+}
+
+.footer-side > .page-setup,
+.footer-side > .header-panel {
+  grid-row: auto;
+  grid-template-rows: 1fr;
+}
+
+.footer-side > .page-setup {
+  padding-bottom: var(--spacers-padding-md);
+}
+
+.footer-side .header-fields {
+  align-self: stretch;
+  align-content: space-between;
+}
+
+/* Page Setup's second row of controls a margin-md under the first. */
+.footer-side .page-setup-controls {
+  row-gap: var(--spacers-margin-md);
+}
+
+/* Header's note stays a margin-sm under its title; only its fields
+   spread. */
+.footer-side .header-panel-top {
+  justify-content: flex-start;
+  gap: var(--spacers-margin-sm);
+}
+
+/* Page Setup on the page's columns: its title across the first two, its
+   four controls across the other three, in two columns of two — each name
+   over its control. Orientation and Margins, then Paper and Show metric
+   values. */
+.page-setup {
+  display: grid;
+  grid-template-columns: subgrid;
+  grid-column: 1 / span 5;
+  grid-row: 1;
+  align-items: start;
+  gap: 0 var(--grid-gutter);
+  padding-left: 0;
+}
+
+.page-setup::before,
+.header-panel::before {
+  content: none;
+}
+
+.page-setup .block-title {
+  grid-column: 1 / span 2;
+}
+
+.page-setup-controls {
+  grid-column: 3 / span 3;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: auto auto;
+  grid-auto-flow: column;
+  gap: var(--spacers-margin-sm);
+}
+
+.page-setup .sheet-control {
+  display: grid;
+  grid-column: auto;
+  grid-template-columns: none;
+  justify-items: start;
+  align-items: start;
+  row-gap: var(--spacers-padding-xs);
+}
+
+/* The toggles one width, the widest's. */
+.page-setup .sheet-control:has(.choice) {
+  justify-items: stretch;
+}
+
+/* Header under Page Setup, a rule between them from the window's edge to
+   column 6's. Laid out as Page Setup is: its title over its note across
+   the first two columns, a field per place across the other three. */
+.header-panel {
+  display: grid;
+  grid-template-columns: subgrid;
+  align-items: start;
+  gap: 0 var(--grid-gutter);
+  grid-column: 1 / span 5;
+  grid-row: 2 / span 2;
+  padding: var(--spacers-padding-md) 0;
+  border-top: var(--border-thick) solid transparent;
+  border-image: linear-gradient(var(--color-steel) 0 0) 1 / var(--border-thick) 0 0 0 /
+    0 var(--grid-gutter) 0 var(--grid-margin);
+}
+
+.header-panel-top {
+  grid-column: 1 / span 2;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--spacers-padding-xs);
+}
+
+.header-panel-top .header-panel-info {
+  text-align: left;
+}
+
+.header-fields {
+  grid-column: 3 / span 3;
+}
+
+/* Line Styles on the right, the rule down its left edge; its own rules
+   run on to the window's right edge. */
+.line-styles {
+  position: relative;
+  grid-column: 6 / span 7;
+  grid-row: 1 / span 2;
+  padding-left: var(--spacers-padding-md);
+}
+
+.line-styles::before {
+  content: '';
+  position: absolute;
+  top: calc(-1 * var(--spacers-padding-md));
+  bottom: 0;
+  left: calc(var(--border-thick) / -2);
+  width: var(--border-thick);
+  background: var(--color-steel);
+}
+
+.line-columns {
+  border-image-outset: 0 var(--grid-margin) 0 var(--spacers-padding-md);
+}
+
+/* ── Coloured panels ──────────────────────────────────── */
+
+/* The top bar and Output on --panel, the steel of the rules, their text
+   white. The round buttons turn over to match: a white disc with a steel
+   label; under the pointer, the light blue with a blue label — 6.4:1
+   against the steel, its label 5.3:1 on it. Each panel's blue runs out past its box with a border image —
+   the top bar's to the window's edges and down to the rule over the rows,
+   Output's from the rule on column 6's edge to the window's right edge,
+   up to Line Styles' rule. */
+.rows {
+  --panel: var(--color-steel);
+}
+
+.app-header,
+.output-block {
+  --fill: var(--color-white);
+  --label: var(--panel);
+  --fill-hover: var(--color-blue-light);
+  --label-hover: var(--color-black);
+
+  color: var(--color-white);
+}
+
+/* Slim: the band only --bar-pad above and below the bar, which Upload
+   Config's button sets the height of. The page's top padding and the gap
+   under the bar both close to it, and the blue runs out to fill them. */
+.rows {
+  /* Above and below each blue panel's buttons: the top bar's, and
+     Output's. */
+  --bar-pad: var(--spacing-5);
+  --output-pad: var(--spacing-4);
+
+  padding-top: var(--bar-pad);
+}
+
+.app-header {
+  margin-bottom: calc(var(--bar-pad) - var(--grid-gutter));
+  border-image: linear-gradient(var(--panel) 0 0) fill 0 / 0 /
+    var(--bar-pad) var(--grid-margin);
+}
+
+/* The name a step down, in proportion to the slimmer band. */
+.app-header .app-title {
+  font-size: var(--font-size-6);
+}
+
+.app-header .app-title,
+.app-header .credit-link,
+.app-header .sheet-actions-note,
+.output-block .output-title {
+  color: var(--color-white);
+}
+
+.app-header .action-button,
+.output-block .action-button {
+  --fill: var(--color-white);
+  --label: var(--panel);
+  --fill-hover: var(--color-blue-light);
+  --label-hover: var(--color-black);
+}
+
+/* The credit at the left of the top bar, opposite Upload Config. */
+.app-header .credit-link {
+  grid-column: 1;
+  justify-self: start;
+  align-self: center;
+  margin: 0;
+  padding: 0;
+}
+
+.app-header .credit-link:focus-visible {
+  outline-color: var(--color-white);
+}
+
+/* Output in the box under Line Styles: its title, then the three actions
+   beside it, each Upload Config's size. A size container, its buttons
+   measured from its width — seven columns and six gutters, less its left
+   padding. (Not the footer: containment would cut it off from the page's
+   subgrid.) */
+.output-block {
+  position: relative;
+  container-type: inline-size;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--spacers-margin-lg);
+  grid-column: 6 / span 7;
+  grid-row: 3;
+  /* --output-pad above and below its buttons: the blue runs up to Line
+     Styles' rule, which sits a padding-md above the box, so the box rises
+     by the difference. */
+  margin-top: calc(var(--output-pad) - var(--spacers-padding-md));
+  padding: 0 0 var(--output-pad) var(--spacers-padding-md);
+  border: 0;
+  border-image: linear-gradient(var(--panel) 0 0) fill 0 / 0 /
+    var(--output-pad) var(--grid-margin) 0 0;
+}
+
+/* The rule down column 6's edge carried on from Line Styles' to the page's
+   foot, up through the blue to Line Styles' rule. */
+.output-block::before {
+  content: '';
+  position: absolute;
+  top: calc(-1 * var(--output-pad));
+  bottom: 0;
+  left: calc(var(--border-thick) / -2);
+  width: var(--border-thick);
+  background: var(--color-steel);
+}
+
+.output-title {
+  display: flex;
+  align-items: center;
+  height: auto;
+  min-height: var(--title-band);
+  margin: 0;
+  text-align: left;
+}
+
+.output-actions.is-column {
+  position: static;
+  container-type: normal;
+  grid-column: auto;
+  grid-row: auto;
+  flex-direction: row;
+  flex: none;
+  gap: var(--spacers-margin-md);
+  margin: 0;
+  padding: 0;
+}
+
+.output-actions.is-column::before,
+.output-rule {
+  display: none;
+}
+
+.output-cell {
+  container-type: normal;
+  flex: none;
+}
+
+/* Every action the bevelled rectangle again — the corners cut on the
+   diagonal, its label on one line — undoing the square and round shapes
+   Upload Config and Output's actions had. */
+.sheet-actions.is-inbound .action-button,
+.output-cell .action-button {
+  width: auto;
+  height: 32px;
+  max-height: none;
+  aspect-ratio: auto;
+  padding-inline: var(--spacing-4);
+  white-space: nowrap;
+  line-height: 1;
 }

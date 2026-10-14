@@ -2,7 +2,8 @@ import { createChoiceToggle } from './sheet-controls.js';
 import type { PageSetup } from './sheet-preview.js';
 
 /**
- * Page Setup: the paper the sheet prints on — its orientation and its size.
+ * Page Setup: the paper the sheet prints on — its orientation, its size and
+ * its margin — and whether each metric line's value is printed beside it.
  * Edits `page` in place.
  */
 export function createPageSetupPanel(page: PageSetup): HTMLElement {
@@ -27,6 +28,10 @@ export function createPageSetupPanel(page: PageSetup): HTMLElement {
         page.orientation = orientation;
       },
     ),
+  );
+
+  controls.append(
+    createMarginField(page),
     createChoiceToggle(
       'Paper',
       [
@@ -38,9 +43,18 @@ export function createPageSetupPanel(page: PageSetup): HTMLElement {
         page.size = size;
       },
     ),
+    createChoiceToggle(
+      'Show metric values',
+      [
+        { value: 'on', label: 'On' },
+        { value: 'off', label: 'Off' },
+      ],
+      page.values ? 'on' : 'off',
+      (shown) => {
+        page.values = shown === 'on';
+      },
+    ),
   );
-
-  controls.append(createMarginField(page));
 
   panel.append(title, controls);
   return panel;
@@ -49,7 +63,7 @@ export function createPageSetupPanel(page: PageSetup): HTMLElement {
 let nextId = 0;
 
 /**
- * Margin: one value in points for all four sides, a whole number of at
+ * Margins: one value in points for all four sides, a whole number of at
  * least 0. A value that isn't one is marked and left out, the last good
  * one standing.
  */
@@ -62,7 +76,7 @@ function createMarginField(page: PageSetup): HTMLElement {
   const label = document.createElement('label');
   label.className = 'ui-sm sheet-control-name';
   label.htmlFor = id;
-  label.textContent = 'Margin';
+  label.textContent = 'Margins';
 
   const input = document.createElement('input');
   input.className = 'body-md page-setup-margin-input';

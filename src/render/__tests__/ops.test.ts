@@ -233,6 +233,18 @@ describe('drawOps — metric line labels', () => {
     expect(labels(config).map((op) => op.text)).toContain('B');
   });
 
+  it('takes label text row by row in place of the letters', () => {
+    const config = fixedMetricsConfig();
+    const sheet = buildSheet(config);
+    const drawn = drawOps(sheet, config, {
+      labelText: [{ ascender: '800', baseline: '0' }, { capHeight: '700' }],
+    }).filter((op): op is DrawText => op.kind === 'text');
+
+    // Row 3 onwards has no entry, so no labels.
+    expect(drawn.map((op) => op.text)).toEqual(['800', '0', '700']);
+    expect(drawn[2]!.y).toBeCloseTo(sheet.rows[1]!.lines.find((l) => l.type === 'capHeight')!.start.y, 10);
+  });
+
   it('draws none when labels are disabled', () => {
     const config = fixedMetricsConfig();
     config.labels.enabled = false;

@@ -4,11 +4,12 @@ import { mastersAgree, type FontMaster } from './import/font-source.js';
 import { applyFontMetrics, readUpload } from './import/read-upload.js';
 import { createPageSetupPanel } from './page-setup.js';
 import { createLineStylesPanel, defaultLineStyles } from './line-styles.js';
-import { saveSheetPdf } from './output.js';
+import { printSheet, saveSheetPdf } from './output.js';
 import { createPreviewDialog } from './preview-dialog.js';
 import { copyRowState, createRowEditor, newRowState, type RowEditor } from './row-editor.js';
 import { ConfigError } from '../src/index.js';
-import { rowInput } from './row-input.js';
+import type { LabelText } from '../src/render/ops.js';
+import { rowInput, rowValues } from './row-input.js';
 import { MAX_ROWS, createChoiceToggle, createRowCountSlider } from './sheet-controls.js';
 import {
   SHEET_FILE_NAME,
@@ -65,8 +66,10 @@ const preview = createPreviewDialog();
  */
 function printable(): PreviewSheet | null {
   const inputs = [];
+  const values: LabelText[] = [];
   for (let i = 0; i < sheet.rowCount; i++) {
     const state = sheet.metrics === 'same' ? sheet.rows[0]! : sheet.rows[i]!;
+    values.push(rowValues(state));
     const input = rowInput(state, sheet.lines);
     if (!input) {
       // With shared metrics, row 1's values are the ones to fix.
@@ -77,7 +80,7 @@ function printable(): PreviewSheet | null {
     inputs.push(input);
   }
   try {
-    return previewSheet(inputs, sheet.header, sheet.page);
+    return previewSheet(inputs, sheet.header, sheet.page, values);
   } catch (error) {
     // The one page-wide value that can leave no room: the margin.
     if (!(error instanceof ConfigError)) throw error;
@@ -190,9 +193,9 @@ function render(): void {
   header.append(title, sheetControls);
 
   // The sheet's actions. Bringing a config or a font in sits at the top;
-  // what goes out sits in the Output block at the end of the settings that
-  // feed it — the PDF first and largest, the preview and the config under
-  // it. Printing is from the PDF for now.
+  // what goes out sits in the Output block: Preview, Print, Save to PDF and
+  // Save Config. Print goes through the browser's print dialog, the sheet
+  // at its true size.
   const inbound = document.createElement('div');
   inbound.className = 'sheet-actions is-inbound';
   // What it takes, beside it, so the button needn't be opened to find out.
@@ -208,8 +211,7 @@ function render(): void {
   const outputTitle = document.createElement('h2');
   outputTitle.id = 'output-title';
   outputTitle.textContent = 'Output';
-  // Its name is for screen readers; the buttons say what it is.
-  outputTitle.className = 'visually-hidden';
+  outputTitle.className = 'heading-h2 block-title output-title';
   // A rule between each action and the next.
   const outputRule = () => {
     const rule = document.createElement('hr');
@@ -229,16 +231,19 @@ function render(): void {
   outputActions.append(
     outputCell(actionButton('Preview', withSheet((content) => preview.open(content)), 'is-primary')),
     outputRule(),
-    outputCell(actionButton('Save to PDF', withSheet(saveSheetPdf), 'is-primary is-word-stacked')),
+    outputCell(actionButton('Print', withSheet(printSheet), 'is-primary')),
     outputRule(),
-    outputCell(actionButton('Save Config', saveConfig, 'is-primary is-word-stacked')),
+    outputCell(actionButton('Save to PDF', withSheet(saveSheetPdf), 'is-primary')),
+    outputRule(),
+    outputCell(actionButton('Save Config', saveConfig, 'is-primary')),
   );
   const outbound = document.createElement('section');
   outbound.className = 'output-block';
   outbound.setAttribute('aria-labelledby', 'output-title');
   outbound.append(outputTitle, outputActions);
 
-  // Above everything: the app's name centred, Upload Config on the right.
+  // Above everything: the credit on the left, the app's name centred,
+  // Upload Config on the right.
   const appTitle = document.createElement('h1');
   appTitle.className = 'heading-h1 app-title';
   appTitle.textContent = 'Sheet-o-matic';
@@ -258,31 +263,28 @@ function render(): void {
     },
   });
 
-  // Who made it, in the empty foot of the Line Styles column.
+  // Who made it, at the left of the top bar, opposite Upload Config.
   const credit = document.createElement('a');
   credit.className = 'body-sm credit-link';
   credit.href = 'https://www.instagram.com/seths_typos/';
   credit.target = '_blank';
   credit.rel = 'noopener';
   credit.textContent = "One of Seth's Typos";
-  lineStyles.append(credit);
+  topBar.prepend(credit);
 
   // The title, the sheet's controls and the rows, on their own field.
   const metricsBlock = document.createElement('div');
   metricsBlock.className = 'block metrics-block';
   metricsBlock.append(header, rowEditors);
 
-  // Under the rows: Line Styles, Header filling what's left, and Output at
-  // the far right.
+  // Under the rows: Page Setup over Header, sharing the row's height, then
+  // Line Styles with Output in the box beneath it.
+  const side = document.createElement('div');
+  side.className = 'footer-side';
+  side.append(createPageSetupPanel(sheet.page), createHeaderPanel(sheet.header));
   const footer = document.createElement('div');
   footer.className = 'sheet-footer';
-  // Page Setup over Header in the middle columns, a rule between them.
-  footer.append(
-    lineStyles,
-    createPageSetupPanel(sheet.page),
-    createHeaderPanel(sheet.header),
-    outbound,
-  );
+  footer.append(side, lineStyles, outbound);
 
   next.append(topBar, metricsBlock, footer);
 

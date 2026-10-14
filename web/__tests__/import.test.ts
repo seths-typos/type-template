@@ -258,6 +258,12 @@ describe('sheet file', () => {
     expect(() => readSheetFile(file)).toThrow(/rows\[1\]\.units\.capHeight/);
   });
 
+  it('shows metric values when an older file doesn’t say', () => {
+    const file = JSON.parse(writeSheetFile(sheetState()));
+    delete file.page.values;
+    expect(readSheetFile(file).page.values).toBe(true);
+  });
+
   it('refuses a row count out of range and a file from a newer version', () => {
     const file = JSON.parse(writeSheetFile(sheetState()));
     expect(() => readSheetFile({ ...file, rowCount: 7 })).toThrow(/rowCount/);

@@ -1,6 +1,6 @@
 import { DEFAULTS, buildSheet, resolveConfig } from '../src/index.js';
 import type { LineType, Sheet, SheetConfig, SheetInput } from '../src/index.js';
-import type { DrawOptions } from '../src/render/ops.js';
+import type { DrawOptions, LabelText } from '../src/render/ops.js';
 import { emptyHeaderText, type HeaderText } from './header-panel.js';
 import type { Orientation, PagePreset } from '../src/index.js';
 
@@ -10,10 +10,12 @@ export interface PageSetup {
   orientation: Orientation;
   /** pt, the same on all four sides. */
   margin: number;
+  /** Each metric line's value, in font units, set in the left margin. */
+  values: boolean;
 }
 
 export function defaultPageSetup(): PageSetup {
-  return { size: 'letter', orientation: 'landscape', margin: DEFAULTS.page.margins.top };
+  return { size: 'letter', orientation: 'landscape', margin: DEFAULTS.page.margins.top, values: true };
 }
 
 export interface PreviewSheet {
@@ -39,7 +41,9 @@ export const HEADER_HEIGHT = 24;
 
 /**
  * The printed sheet: on `page`, `inputs.length` rows filling it, each
- * row drawn from its own input, with no metric labels.
+ * row drawn from its own input. With `page.values` on, each row's lines are
+ * labelled in the left margin with `values` — its own, as rows can differ;
+ * otherwise they go unlabelled.
  *
  * The engine takes one set of metrics for the whole sheet, so this builds a
  * sheet per row and keeps only that row from each. That works because in
@@ -56,6 +60,7 @@ export function previewSheet(
   inputs: SheetInput[],
   headerText: HeaderText = emptyHeaderText(),
   page: PageSetup = defaultPageSetup(),
+  values: LabelText[] = [],
 ): PreviewSheet {
   const rowCount = inputs.length;
   if (rowCount === 0) throw new Error('A sheet needs at least one row.');
@@ -92,12 +97,13 @@ export function previewSheet(
       Object.entries(first.lines).map(([type, style]) => [type, { ...style, visible: true }]),
     ) as SheetConfig['lines'],
     slant: { ...first.slant, style: { ...first.slant.style, visible: true } },
+    labels: { ...first.labels, enabled: page.values },
   };
 
   return {
     sheet: { ...buildSheet(first), rows: built.map((b) => b.row) },
     config,
-    options: { header: HEADER_TEXT },
+    options: { header: HEADER_TEXT, labelText: values },
     fontFamily: HEADER_FONT,
     page: { ...page },
   };

@@ -1,5 +1,6 @@
 import { ConfigError, DEFAULT_FONT_UNITS, fontUnitsToPercent, resolveConfig } from '../src/index.js';
 import type { FontUnitMetrics, MetricLine, SheetInput } from '../src/index.js';
+import type { LabelText } from '../src/render/ops.js';
 import { toLineStyle, type LineStyles } from './line-styles.js';
 import { metricOrderErrors } from './metric-order.js';
 
@@ -119,4 +120,20 @@ const ANGLE_RANGE = 'Use an angle between −90° and 90°.';
 function describe(message: string): string {
   const rule = message.replace(/, got .*$/, '');
   return `${rule[0]!.toUpperCase()}${rule.slice(1)}.`;
+}
+
+/**
+ * Each metric line's value as the sheet labels it: the font units typed,
+ * and 0 for the baseline. Hyphen-minus, not the minus sign: the PDF's
+ * standard Helvetica can't encode U+2212.
+ */
+export function rowValues(state: RowState): LabelText {
+  const text = (value: number | null) => (value === null ? undefined : String(value));
+  return {
+    ascender: text(state.units.ascender),
+    capHeight: text(state.units.capHeight),
+    xHeight: text(state.units.xHeight),
+    baseline: '0',
+    descender: text(state.units.descender),
+  };
 }

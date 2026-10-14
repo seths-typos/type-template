@@ -12,7 +12,8 @@ function pageRows(page: PageSetup): [string, string][] {
   return [
     ['Orientation', ORIENTATION_NAMES[page.orientation]],
     ['Paper', PAPER_NAMES[page.size]],
-    ['Margin', `${page.margin} pt`],
+    ['Margins', `${page.margin} pt`],
+    ['Metric values', page.values ? 'Shown' : 'Hidden'],
   ];
 }
 

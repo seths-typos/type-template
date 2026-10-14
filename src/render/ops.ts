@@ -1,6 +1,6 @@
 import { METRIC_LABELS } from '../config/labels.js';
 import type { LineStyle, SheetConfig } from '../config/types.js';
-import type { LineType, Sheet } from '../geometry/types.js';
+import type { LineType, MetricLine, Sheet } from '../geometry/types.js';
 import { parseHexColor, type Rgb } from './color.js';
 
 /**
@@ -62,8 +62,17 @@ export const DEFAULT_HEADER_TEXT_STYLE: HeaderTextStyle = {
   lineHeight: 14.4,
 };
 
+/** What each metric line's label says, by line. Lines left out go unlabelled. */
+export type LabelText = Partial<Record<MetricLine, string>>;
+
 export interface DrawOptions {
   header?: Partial<HeaderTextStyle>;
+  /**
+   * Label text for each row, by row index, in place of the fixed letters —
+   * a front end naming each line's own value, say, which can differ row to
+   * row. A row missing from the list gets no labels.
+   */
+  labelText?: LabelText[];
 }
 
 export function drawOps(sheet: Sheet, config: SheetConfig, options: DrawOptions = {}): DrawOp[] {
@@ -88,7 +97,7 @@ export function drawOps(sheet: Sheet, config: SheetConfig, options: DrawOptions 
     }
   }
 
-  ops.push(...labelOps(sheet, config));
+  ops.push(...labelOps(sheet, config, options.labelText));
   ops.push(...headerOps(sheet, { ...DEFAULT_HEADER_TEXT_STYLE, ...options.header }));
 
   return ops;
@@ -140,9 +149,10 @@ function headerOps(sheet: Sheet, style: HeaderTextStyle): DrawText[] {
  * Metric line labels, set in the left margin and centred on their line.
  *
  * A line nobody draws gets no label, so switching a guide off takes its
- * letter with it.
+ * letter with it. The letters are `METRIC_LABELS` unless `labelText` says
+ * otherwise, row by row.
  */
-function labelOps(sheet: Sheet, config: SheetConfig): DrawText[] {
+function labelOps(sheet: Sheet, config: SheetConfig, labelText?: LabelText[]): DrawText[] {
   const { labels } = config;
 
   if (!labels.enabled) return [];
@@ -150,11 +160,13 @@ function labelOps(sheet: Sheet, config: SheetConfig): DrawText[] {
   const color = parseHexColor(labels.color);
   const ops: DrawText[] = [];
 
-  for (const row of sheet.rows) {
+  sheet.rows.forEach((row, index) => {
+    const texts = labelText ? (labelText[index] ?? {}) : METRIC_LABELS;
+
     for (const line of row.lines) {
       if (line.type === 'slant') continue;
 
-      const text = METRIC_LABELS[line.type];
+      const text = texts[line.type];
 
       if (!text || !config.lines[line.type].visible) continue;
 
@@ -169,7 +181,7 @@ function labelOps(sheet: Sheet, config: SheetConfig): DrawText[] {
         anchor: 'center',
       });
     }
-  }
+  });
 
   return ops;
 }

@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { DEFAULT_FONT_UNITS } from '../../src/index.js';
 import { defaultLineStyles } from '../line-styles.js';
-import { rowInput, type RowState } from '../row-input.js';
-import { previewSheet } from '../sheet-preview.js';
+import { drawOps } from '../../src/render/ops.js';
+import { rowInput, rowValues, type RowState } from '../row-input.js';
+import { defaultPageSetup, previewSheet } from '../sheet-preview.js';
 
 const row = (patch: Partial<RowState> = {}): RowState => ({
   units: { ...DEFAULT_FONT_UNITS },
@@ -20,8 +21,30 @@ describe('previewSheet', () => {
     expect(sheet.page.width).toBeGreaterThan(sheet.page.height);
   });
 
-  it('leaves the metric labels off', () => {
-    expect(previewSheet([input(row())]).config.labels.enabled).toBe(false);
+  it('labels each row\'s lines with its own values, or leaves them off', () => {
+    const tall = row({ units: { ascender: 900, capHeight: 600, xHeight: 300, descender: -300 } });
+    const states = [row(), tall];
+    const values = states.map(rowValues);
+    const shown = previewSheet(states.map(input), undefined, defaultPageSetup(), values);
+    const texts = drawOps(shown.sheet, shown.config, shown.options)
+      .filter((op) => op.kind === 'text')
+      .map((op) => op.text);
+
+    expect(texts).toEqual(['800', '700', '500', '0', '-200', '900', '600', '300', '0', '-300']);
+
+    const hidden = previewSheet(states.map(input), undefined, { ...defaultPageSetup(), values: false }, values);
+    expect(hidden.config.labels.enabled).toBe(false);
+  });
+
+  it('leaves a switched-off line unlabelled', () => {
+    const state = row({
+      visible: { ascender: false, capHeight: true, xHeight: true, baseline: true, descender: true },
+    });
+    const { sheet, config, options } = previewSheet([input(state)], undefined, defaultPageSetup(), [
+      rowValues(state),
+    ]);
+    const texts = drawOps(sheet, config, options).filter((op) => op.kind === 'text');
+    expect(texts.map((op) => op.text)).toEqual(['700', '500', '0', '-200']);
   });
 
   it('gives every row the same band, whatever its metrics', () => {
@@ -76,6 +99,7 @@ describe('previewSheet', () => {
       size: 'a4',
       orientation: 'portrait',
       margin: 36,
+      values: true,
     });
 
     expect(sheet.page.width).toBeCloseTo(595.28, 1);
@@ -93,6 +117,7 @@ describe('previewSheet', () => {
       size: 'letter',
       orientation: 'landscape',
       margin: 54,
+      values: true,
     });
 
     expect(config.page.margins).toEqual({ top: 54, right: 54, bottom: 54, left: 54 });
