@@ -104,6 +104,14 @@ function svg<K extends keyof SVGElementTagNameMap>(
  */
 const PX_PER_PT = 2;
 
+/**
+ * The card's border, px. Drawn in the SVG, last, over the lines' ends: an
+ * outline on the card was painted over the SVG only while the SVG wasn't
+ * on a layer of its own, so a fading-in row showed its lines' ends for a
+ * moment and then lost them.
+ */
+const BORDER = 2;
+
 function stroke(style: LineStyle): Record<string, string | number> {
   return {
     stroke: style.color,
@@ -138,19 +146,34 @@ export function renderRowPreview(
     viewBox: `0 0 ${width} ${CARD.height}`,
   });
 
+  // The lines in a group of their own, so they can fade on and off while
+  // the border stays.
+  const drawn = svg('g', { class: 'row-preview-lines' });
   for (const line of lines) {
-    root.append(
+    drawn.append(
       svg('line', { x1: 0, y1: line.y, x2: width, y2: line.y, ...stroke(line.style) }),
     );
   }
 
   // Slant draws over the metric lines, as in the design.
   for (const { start, end } of slants) {
-    root.append(
+    drawn.append(
       svg('line', { x1: start.x, y1: start.y, x2: end.x, y2: end.y, ...stroke(config.slant.style) }),
     );
   }
 
+  // The border last, over everything, its stroke centred half a border in
+  // so it sits wholly inside the card.
+  const border = svg('rect', {
+    class: 'row-preview-border',
+    x: BORDER / 2,
+    y: BORDER / 2,
+    width: width - BORDER,
+    height: CARD.height - BORDER,
+    'stroke-width': BORDER,
+  });
+
+  root.append(drawn, border);
   card.append(root);
   section.append(title, card);
   return section;

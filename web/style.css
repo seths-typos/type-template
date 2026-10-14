@@ -37,10 +37,13 @@ body {
   border-radius: var(--corner-xs);
   background: var(--color-bg-contrast);
   overflow: hidden;
-  /* An inset outline, not a border: the SVG is drawn to the card's exact
-     size, and a border would shrink the box it has to fit in. */
-  outline: var(--border-thick) solid var(--ink, var(--color-black));
-  outline-offset: calc(-1 * var(--border-thick));
+}
+
+/* The card's border, drawn last in its SVG so it always covers the lines'
+   ends; see BORDER in row-preview.ts. */
+.row-preview-border {
+  fill: none;
+  stroke: var(--ink, var(--color-black));
 }
 
 .row-preview svg {
@@ -580,11 +583,11 @@ body {
    away with a last flicker like a screen going off. Only the lines; the card
    stays put. On mirrors off's fade — same length, easing out where it eases
    in — without the flicker. */
-.row-preview.is-powering-on svg {
+.row-preview.is-powering-on .row-preview-lines {
   animation: screen-on 320ms ease-out;
 }
 
-.row-preview.is-powering-off svg {
+.row-preview.is-powering-off .row-preview-lines {
   animation: screen-off 320ms ease-in forwards;
 }
 
