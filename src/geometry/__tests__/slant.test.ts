@@ -27,11 +27,33 @@ describe('slant lines', () => {
     expect(slantOnly(row!)).toHaveLength(0);
   });
 
-  it('anchors the first line at the inset from the row’s left edge', () => {
+  it('anchors a line at the inset from the row’s left edge', () => {
     const [row] = buildSheet(slantConfig()).rows;
-    const [first] = slantOnly(row!);
+    const anchors = slantOnly(row!).map((line) => baselineAnchor(row!, line));
 
-    expect(baselineAnchor(row!, first!)).toBeCloseTo(row!.left + 72, 10);
+    expect(anchors.some((x) => Math.abs(x - (row!.left + 72)) < 1e-9)).toBe(true);
+  });
+
+  it('fills the row to its left edge, the first line clipped there', () => {
+    const [row] = buildSheet(slantConfig()).rows;
+    const first = slantOnly(row!)[0]!;
+
+    // Anchored left of the inset, by whole spacings.
+    expect(baselineAnchor(row!, first)).toBeCloseTo(row!.left + 72 - 2 * 36, 8);
+    // Its bottom would sit past the left edge, so it is trimmed there.
+    expect(first.end.x).toBeCloseTo(row!.left, 10);
+    expect(first.end.y).toBeLessThan(row!.bottom);
+  });
+
+  it('fills the row for a left lean too', () => {
+    const config = slantConfig();
+    config.slant.angle = -15;
+    const [row] = buildSheet(config).rows;
+    const first = slantOnly(row!)[0]!;
+
+    // Leaning left, it is the top that would run past the left edge.
+    expect(first.start.x).toBeCloseTo(row!.left, 10);
+    expect(first.start.y).toBeGreaterThan(row!.top);
   });
 
   it('spaces anchors along the baseline', () => {
@@ -48,13 +70,14 @@ describe('slant lines', () => {
     const lines = slantOnly(row!);
     const anchors = lines.map((line) => baselineAnchor(row!, line));
 
-    expect(lines).toHaveLength(19);
+    expect(lines).toHaveLength(21);
     expect(anchors.at(-1)!).toBeCloseTo(756, 8);
   });
 
   it('leans right for a positive angle, measured from vertical', () => {
     const [row] = buildSheet(slantConfig()).rows;
-    const [first] = slantOnly(row!);
+    // The line anchored at the inset, 108 with the 36 pt margin.
+    const first = slantOnly(row!).find((line) => Math.abs(baselineAnchor(row!, line) - 108) < 1e-9);
 
     // 15 degrees from vertical over the 75.6 pt from baseline to ascender.
     expect(first!.start.y).toBeCloseTo(row!.top, 10);
@@ -68,9 +91,11 @@ describe('slant lines', () => {
     config.slant.angle = -12;
 
     const [row] = buildSheet(config).rows;
-    const [first] = slantOnly(row!);
+    // One from the middle, whole: the ends are clipped.
+    const lines = slantOnly(row!);
+    const middle = lines[Math.floor(lines.length / 2)]!;
 
-    expect(first!.start.x).toBeLessThan(baselineAnchor(row!, first!));
+    expect(middle.start.x).toBeLessThan(baselineAnchor(row!, middle));
   });
 
   it('draws vertical lines at 0 degrees', () => {

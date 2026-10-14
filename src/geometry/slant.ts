@@ -8,10 +8,11 @@ const MAX_SLANT_LINES = 10_000;
  * Slant lines for one row band.
  *
  * The angle is measured from vertical; positive leans right, the way an
- * italic does. Each line is anchored on the baseline at `inset` from the
- * row's left edge, then every `spacing` pt along it, and is clipped to the
- * row band — ascender line to descender line, left edge to right edge.
- * Lines do not cross row gaps.
+ * italic does. One line is anchored on the baseline at `inset` from the
+ * row's left edge, and the rest every `spacing` pt either side of it, so the
+ * pattern fills the whole row. Each is clipped to the row band — ascender
+ * line to descender line, left edge to right edge — so lines at the ends are
+ * cut short rather than left out. Lines do not cross row gaps.
  */
 export function slantLines(row: Row, slant: SlantConfig): LineSegment[] {
   if (!slant.enabled) return [];
@@ -32,7 +33,14 @@ export function slantLines(row: Row, slant: SlantConfig): LineSegment[] {
 
   const lines: LineSegment[] = [];
 
-  for (let i = 0; i < MAX_SLANT_LINES; i++) {
+  // Start from the leftmost line still reaching into the row: the first
+  // whose rightmost end — its top for a right lean, its bottom for a left —
+  // is past the left edge. Line i is anchored at left + inset + i × spacing,
+  // and its rightmost end lies `reach` to the right of its anchor.
+  const reach = Math.max(xAt(0, row.top), xAt(0, row.bottom));
+  const first = Math.floor(-(slant.inset + reach) / slant.spacing) + 1;
+
+  for (let i = first; i < first + MAX_SLANT_LINES; i++) {
     const anchorX = row.left + slant.inset + i * slant.spacing;
     const topX = xAt(anchorX, row.top);
     const bottomX = xAt(anchorX, row.bottom);
