@@ -2640,13 +2640,12 @@ body {
 /* ── Round actions ────────────────────────────────────── */
 
 /* Upload Config and Output's actions as circles, still three quarters of a
-   column across: a disc of the blue inside a 3px ring of the black. The
-   button is the black, clipped round; ::before is the blue, a ring's width
-   smaller. Under the pointer the blue closes to nothing at the centre, the
-   black filling in from the ring. */
+   column across: a disc of the blue, no ring. The button is the black,
+   clipped round; ::before is the blue over all of it. Under the pointer the
+   blue closes to nothing at the centre, the black filling in from the edge. */
 .sheet-actions.is-inbound .action-button,
 .output-cell .action-button {
-  --border: 3px;
+  --border: 0px;
 
   aspect-ratio: 1;
   border-radius: 50%;
@@ -2670,12 +2669,6 @@ body {
 
 .output-cell .action-button {
   width: 63cqw;
-}
-
-/* The ring twice as thick. */
-.sheet-actions.is-inbound .action-button,
-.output-cell .action-button {
-  --border: 6px;
 }
 
 /* ── Condensed foot ───────────────────────────────────── */
