@@ -68,11 +68,15 @@ export function createHeaderPanel(text: HeaderText): HTMLElement {
     fields.append(label, field);
   }
 
-  // The title, with the note floated to the right of it.
+  // The title on its own; the note heads the fields beside it.
   const top = document.createElement('div');
   top.className = 'header-panel-top';
-  top.append(title, info);
+  top.append(title);
 
-  panel.append(top, fields);
+  const body = document.createElement('div');
+  body.className = 'header-body';
+  body.append(info, fields);
+
+  panel.append(top, body);
   return panel;
 }

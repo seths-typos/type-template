@@ -3136,13 +3136,12 @@ body {
   line-height: 1;
 }
 
-/* Output on the page's columns, so the credit's rule lands on a column's
-   edge at any width. The title and its actions take columns 6 to 10, the
-   actions spread evenly through what the title leaves; too tight for one
-   line, two by two. The credit takes the
-   rest — the gutter after column 10, then columns 11 and 12 — centred, a
-   steel rule down column 10's right edge from Line Styles' rule to the
-   page's foot. */
+/* Output on the page's columns, so the credit's rule lands in the same
+   place on the grid at any width. The title and its actions take columns
+   6 to 10; too tight for one line, the actions go two by two. The credit
+   takes the rest — half the gutter after column 10, then columns 11 and
+   12 — centred, a steel rule down the middle of that gutter from Line
+   Styles' rule to the page's foot. */
 .output-block {
   display: grid;
   grid-template-columns: subgrid;
@@ -3186,11 +3185,12 @@ body {
   position: relative;
   grid-column: 6 / span 2;
   align-self: stretch;
-  /* Back over the gutter, so it starts at column 10's edge. */
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 0 0 0 calc(-1 * var(--grid-gutter));
+  /* Back over half the gutter, so its rule runs down the gutter's middle
+     between columns 10 and 11. */
+  margin: 0 0 0 calc(-1 * var(--grid-gutter) / 2);
   padding: 0;
   text-align: center;
 }
@@ -3205,3 +3205,108 @@ body {
   background: var(--color-steel);
 }
 
+/* ── Spacing from Figma ───────────────────────────────── */
+
+/* Spacing matched to the Figma layout (Type-Template-Maker, node 568:884),
+   each gap one of its spacing tokens. Figma measures from a text's whole
+   line box, not its capitals, so names over controls are left untrimmed
+   here to space the same way. */
+
+/* A row's field starts half its title's height down, so the title centres
+   on the field's top edge from the editor's own top. */
+.editor.frame {
+  --frame-top: round(down, calc(var(--type-heading-h3) / 2), 1px);
+}
+
+/* Page Setup's names whole, a padding-xs over their controls. */
+.page-setup .sheet-control-name {
+  text-box: normal;
+}
+
+/* Header: its title in the first two columns; its note heading the other
+   three on the title's baseline, a margin-md over the fields, which stack
+   a margin-sm apart. */
+.header-panel-top {
+  align-self: baseline;
+}
+
+.header-body {
+  grid-column: 3 / span 3;
+  /* The note on the title's baseline. */
+  align-self: baseline;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacers-margin-md);
+}
+
+.footer-side .header-fields {
+  align-self: stretch;
+  align-content: start;
+  row-gap: var(--spacers-margin-sm);
+}
+
+/* Each field's underline on the foot of its name's line box, its text
+   rising above it: the field is only the name's height, so rows sit a
+   margin-sm apart as names do. */
+.header-field-name {
+  text-box: normal;
+}
+
+.header-field {
+  height: var(--type-ui-sm);
+}
+
+.header-field-input {
+  position: absolute;
+  inset: auto 0 0;
+}
+
+/* Line Styles' columns a margin-sm under its title's text — the band is
+   taller than the text by the difference — and a margin-xs apart. Their
+   heads keep the name half a gutter under the top. */
+.line-styles {
+  --cell-gap: var(--spacers-margin-xs);
+  --cell-top: calc(var(--grid-gutter) / 2);
+}
+
+.line-styles .block-title {
+  margin-bottom: calc(
+    var(--spacers-margin-sm) - (var(--title-band) - var(--type-heading-h2))
+  );
+}
+
+/* Output a padding-md above and below its buttons; the buttons packed
+   after the title, a margin-md from it and a margin-sm apart. */
+.rows {
+  --output-pad: var(--spacers-padding-md);
+}
+
+.output-main {
+  gap: var(--spacers-margin-md);
+}
+
+.output-actions.is-column {
+  justify-content: start;
+  column-gap: var(--spacers-margin-sm);
+}
+
+/* Line Styles' name underlines turn up square at their right end: along
+   the foot of the cell, then straight up its right edge to the top, one
+   rule thick both ways, ending on the column's own edge — a margin-xs
+   short of the next name — the last column's too, rather than out at the
+   window's edge. */
+.line-styles .line-column-rule {
+  clip-path: polygon(
+    0 calc(100% - var(--rule)),
+    calc(100% - var(--rule)) calc(100% - var(--rule)),
+    calc(100% - var(--rule)) 0,
+    100% 0,
+    100% 100%,
+    0 100%
+  );
+}
+
+.line-styles .line-column-rule,
+.line-styles .line-column:last-child .line-column-rule {
+  margin-right: 0;
+}
