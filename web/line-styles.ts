@@ -96,7 +96,7 @@ export function createLineStylesPanel(options: LineStylesPanelOptions): HTMLElem
 
   const title = document.createElement('h2');
   title.className = 'heading-h2 block-title';
-  title.textContent = 'Line Styles';
+  title.textContent = '4. Line Styles';
 
   const columns = document.createElement('div');
   columns.className = 'line-columns';

@@ -160,7 +160,7 @@ function render(): void {
 
   const title = document.createElement('h2');
   title.className = 'heading-h2 sheet-title block-title';
-  title.textContent = 'Row Metrics';
+  title.textContent = '1. Row Metrics';
 
   const sheetControls = document.createElement('div');
   sheetControls.className = 'sheet-controls';
@@ -210,7 +210,7 @@ function render(): void {
 
   const outputTitle = document.createElement('h2');
   outputTitle.id = 'output-title';
-  outputTitle.textContent = 'Output';
+  outputTitle.textContent = '5. Output';
   outputTitle.className = 'heading-h2 block-title output-title';
   // A rule between each action and the next.
   const outputRule = () => {

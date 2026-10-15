@@ -12,7 +12,7 @@ export function createPageSetupPanel(page: PageSetup): HTMLElement {
 
   const title = document.createElement('h2');
   title.className = 'heading-h2 block-title';
-  title.textContent = 'Page Setup';
+  title.textContent = '2. Page Setup';
 
   const controls = document.createElement('div');
   controls.className = 'page-setup-controls';
@@ -20,8 +20,8 @@ export function createPageSetupPanel(page: PageSetup): HTMLElement {
     createChoiceToggle(
       'Orientation',
       [
-        { value: 'portrait', label: 'Portrait' },
         { value: 'landscape', label: 'Landscape' },
+        { value: 'portrait', label: 'Portrait' },
       ],
       page.orientation,
       (orientation) => {

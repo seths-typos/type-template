@@ -29,7 +29,7 @@ export function createHeaderPanel(text: HeaderText): HTMLElement {
 
   const title = document.createElement('h2');
   title.className = 'heading-h2 block-title';
-  title.textContent = 'Header';
+  title.textContent = '3. Header';
 
   const info = document.createElement('p');
   info.className = 'body-md header-panel-info';
