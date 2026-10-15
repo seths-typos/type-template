@@ -42,9 +42,11 @@ const WEIGHT_PT: Record<LineWeight, number> = { 1: 0.5, 2: 1, 3: 1.5 };
 const DASH = [3, 3];
 
 /**
- * The engine's defaults, as near as the panel can say them: x-height red and
- * dashed, the rest grey and solid, all thin. Slant's default grey (#999999)
- * isn't on offer, so it starts as the other lines' grey.
+ * The engine's defaults, as near as the panel can say them — x-height red
+ * and dashed, the rest grey and solid, all thin — but for the baseline,
+ * which the page starts heavier, black and medium, as the line letters sit
+ * on. Slant's default grey (#999999) isn't on offer, so it starts as the
+ * other lines' grey.
  */
 export function defaultLineStyles(): LineStyles {
   const plain = (): LineChoice => ({ weight: 1, dashed: false, color: '#474848' });
@@ -52,7 +54,7 @@ export function defaultLineStyles(): LineStyles {
     ascender: plain(),
     capHeight: plain(),
     xHeight: { weight: 1, dashed: true, color: '#cb0106' },
-    baseline: plain(),
+    baseline: { weight: 2, dashed: false, color: '#132322' },
     descender: plain(),
     slant: plain(),
   };

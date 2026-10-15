@@ -26,13 +26,17 @@ describe('line styles', () => {
     expect(solid.dash).toBeNull();
   });
 
-  it("starts the metric lines at the engine's defaults", () => {
+  it("starts the metric lines but the baseline at the engine's defaults", () => {
     const engine = resolveConfig({}).lines;
     const styles = defaultLineStyles();
-    for (const type of ['ascender', 'capHeight', 'xHeight', 'baseline', 'descender'] as const) {
+    for (const type of ['ascender', 'capHeight', 'xHeight', 'descender'] as const) {
       const { visible: _visible, ...style } = engine[type];
       expect(toLineStyle(styles[type])).toEqual(style);
     }
+  });
+
+  it('starts the baseline black, medium and solid', () => {
+    expect(defaultLineStyles().baseline).toEqual({ weight: 2, dashed: false, color: '#132322' });
   });
 
   it('starts every line on a colour the panel offers', () => {
