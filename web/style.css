@@ -2576,24 +2576,31 @@ body {
 }
 
 .editor .frame-title::before {
+  /* How far the notch starts above the field's top edge. Meeting the edge
+     exactly, the title's layer sits on a fraction of a pixel and the two
+     edges blend into a hairline of blue across the notch. Starting above
+     it, over the page's own colour, leaves no edge to blend. The bevels
+     carry on up at 45°, so they cross the field's edge where they did. */
+  --bleed: var(--spacing-1);
+
   content: '';
   position: absolute;
   /* From the field's top edge: the title's middle is half a frame below
      it, on the frame line's centre. */
-  top: calc(50% - var(--frame) / 2);
+  top: calc(50% - var(--frame) / 2 - var(--bleed));
   /* Its bevels start where an inactive row's line stops — the edges of
      the title's box — and a little further out, an optical allowance so
      the slopes don't read as crowding the title. */
-  left: calc(-1 * var(--spacing-1));
-  right: calc(-1 * var(--spacing-1));
+  left: calc(-1 * (var(--spacing-1) + var(--bleed)));
+  right: calc(-1 * (var(--spacing-1) + var(--bleed)));
   z-index: -1;
-  height: var(--row-notch);
+  height: calc(var(--row-notch) + var(--bleed));
   background: var(--color-bg);
   clip-path: polygon(
     0 0,
     100% 0,
-    calc(100% - var(--row-notch)) 100%,
-    var(--row-notch) 100%
+    calc(100% - var(--row-notch) - var(--bleed)) 100%,
+    calc(var(--row-notch) + var(--bleed)) 100%
   );
 }
 
@@ -3129,32 +3136,61 @@ body {
   line-height: 1;
 }
 
-/* Output's actions a margin-sm apart, and a margin-md after its title, so
-   they end short of column 11 and the credit's box keeps its two
-   columns. */
-.output-actions.is-column {
-  gap: var(--spacers-margin-sm);
-}
-
+/* Output on the page's columns, so the credit's rule lands on a column's
+   edge at any width. The title and its actions take columns 6 to 10, the
+   actions spread evenly through what the title leaves; too tight for one
+   line, two by two. The credit takes the
+   rest — the gutter after column 10, then columns 11 and 12 — centred, a
+   steel rule down column 10's right edge from Line Styles' rule to the
+   page's foot. */
 .output-block {
-  gap: var(--spacers-margin-md);
+  display: grid;
+  grid-template-columns: subgrid;
+  /* The page's gutters, not the gap the flex row had. */
+  gap: normal;
+  align-items: center;
+  container-type: normal;
 }
 
-/* The credit at the end of Output, centred across columns 11 and 12, a
-   steel rule down column 11's edge from Line Styles' rule to the page's
-   foot. Its
-   width is two columns and a gutter, measured from Output's own: seven
-   columns and six gutters, less Output's left padding. */
-.output-block .credit-link {
-  position: relative;
-  align-self: stretch;
+.output-main {
+  container: output-main / inline-size;
+  grid-column: 1 / span 5;
   display: flex;
   align-items: center;
-  box-sizing: border-box;
-  width: calc((100% + var(--spacers-padding-md) - 6 * var(--grid-gutter)) / 7 * 2 + var(--grid-gutter));
-  flex-shrink: 0;
+}
+
+.output-actions.is-column {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(4, auto);
+  /* One space, the same five times: title to the first button, between
+     each, and the last to the credit's rule. */
+  justify-content: space-evenly;
+  gap: var(--spacers-margin-xs) 0;
+}
+
+/* Too narrow for the four on one line with those spaces a margin-sm at
+   the least — two by two, each pair a column's width. */
+@container output-main (width < 520px) {
+  .output-actions.is-column {
+    grid-template-columns: repeat(2, auto);
+    column-gap: var(--spacers-margin-sm);
+  }
+
+  .output-actions.is-column .action-button {
+    width: 100%;
+  }
+}
+
+.output-block .credit-link {
+  position: relative;
+  grid-column: 6 / span 2;
+  align-self: stretch;
+  /* Back over the gutter, so it starts at column 10's edge. */
+  display: flex;
+  align-items: center;
   justify-content: center;
-  margin: 0 0 0 auto;
+  margin: 0 0 0 calc(-1 * var(--grid-gutter));
   padding: 0;
   text-align: center;
 }

@@ -240,7 +240,11 @@ function render(): void {
   const outbound = document.createElement('section');
   outbound.className = 'output-block';
   outbound.setAttribute('aria-labelledby', 'output-title');
-  outbound.append(outputTitle, outputActions);
+  // The title and the actions, across the columns the credit leaves them.
+  const outputMain = document.createElement('div');
+  outputMain.className = 'output-main';
+  outputMain.append(outputTitle, outputActions);
+  outbound.append(outputMain);
 
   // Above everything: the app's name centred, Upload Config on the right.
   const appTitle = document.createElement('h1');
