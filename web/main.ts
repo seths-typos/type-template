@@ -160,7 +160,7 @@ function render(): void {
 
   const title = document.createElement('h2');
   title.className = 'heading-h2 sheet-title block-title';
-  title.textContent = '1. Row Metrics';
+  title.textContent = '1. Metrics';
 
   const sheetControls = document.createElement('div');
   sheetControls.className = 'sheet-controls';
