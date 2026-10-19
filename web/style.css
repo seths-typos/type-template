@@ -3308,46 +3308,114 @@ body {
   margin-right: 0;
 }
 
-/* ── Choice toggles, swapped ──────────────────────────── */
+/* ── Choice toggles: a sliding thumb and a lamp ───────── */
 
-/* The chosen option is the light one, set in the ink, and the others show
-   the shell's ink through, their labels in the contrast colour — the
-   reverse of before, so the choice reads as the one lit up. Focus rings
-   follow each option's own ground. */
-.choice-option {
+/* The shell's ink shows only as its border, the ground inside it. A thumb
+   in the ink slides under the chosen option, out to the border, so the
+   shell's clip gives it the toggle's own cut corner on whichever side it
+   sits. Each label has a lamp before it: a ring in the ink, or on the
+   chosen one a white dot, faintly glowing, its label white too. Every
+   toggle sits on the grey, so the colours are the tokens themselves.
+
+   `.choice >` lifts these over the earlier rules for the options, their
+   cut corners and swapped fills among them. */
+.choice {
+  --toggle-ink: var(--color-black);
+  --toggle-ground: var(--color-bg);
+  --toggle-lit: var(--color-white);
+  --toggle-inner-cut: calc(var(--cut) - var(--rule) * 0.5858);
+  --toggle-ease: 160ms ease;
+
+  position: relative;
+}
+
+/* The ground, inset by the rule, cut parallel to the shell. */
+.choice::before {
+  content: '';
+  position: absolute;
+  inset: var(--rule);
+  background: var(--toggle-ground);
+  clip-path: polygon(
+    0 0,
+    calc(100% - var(--toggle-inner-cut)) 0,
+    100% var(--toggle-inner-cut),
+    100% 100%,
+    var(--toggle-inner-cut) 100%,
+    0 calc(100% - var(--toggle-inner-cut))
+  );
+}
+
+/* The thumb: half the shell, over the first option or the last. */
+.choice::after {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 50%;
+  background: var(--toggle-ink);
+  transition: translate var(--toggle-ease);
+}
+
+.choice:has(.choice-option:last-child input:checked)::after {
+  translate: 100%;
+}
+
+.choice > .choice-option,
+.choice > .choice-option:has(input:checked) {
+  z-index: 1;
+  clip-path: none;
   background: transparent;
-  color: var(--ink-contrast);
+  color: var(--toggle-ink);
+  transition: color var(--toggle-ease);
 }
 
-/* Its label two weights up, semibold, one past a hovered option's medium.
-   Every option keeps the width of its label at that weight, set unseen in
-   ::after, so choosing or hovering moves nothing. */
-.choice-option:has(input:checked) {
-  background: var(--paper);
-  color: var(--ink);
+/* The chosen label semibold, a step past a hovered option's medium. */
+.choice > .choice-option:has(input:checked) {
+  color: var(--toggle-lit);
   font-weight: var(--weight-ui-semibold);
 }
 
+/* Lamp and label on one line, never wrapped apart. The label stays trimmed
+   to its capitals, so the option centres the caps. */
+.choice-option > span {
+  white-space: nowrap;
+}
+
+/* The lamp, inline before the label, raised off the baseline so its middle
+   meets the caps' middle, half the cap height up. */
+.choice-option > span::before {
+  content: '';
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  margin-right: 5px;
+  vertical-align: calc((1cap - 5px) / 2);
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1px var(--toggle-ink);
+  transition: background var(--toggle-ease), box-shadow var(--toggle-ease);
+}
+
+.choice-option:has(input:checked) > span::before {
+  background: var(--toggle-lit);
+  box-shadow:
+    0 0 3px 1px rgb(from var(--toggle-lit) r g b / 0.18),
+    0 0 8px 2px rgb(from var(--toggle-lit) r g b / 0.1);
+}
+
+/* The width held for the lamp as well as the semibold label. */
 .choice-option::after {
+  padding-left: 10px;
   font-weight: var(--weight-ui-semibold);
 }
 
-.is-outlined .choice-option {
-  color: var(--color-white);
-}
-
-.is-outlined .choice-option:has(input:checked) {
-  color: var(--color-black);
-}
-
-.choice-option:has(input:focus-visible) {
+/* A square ring 3px in, in the label's colour. */
+.choice > .choice-option:has(input:focus-visible) {
   box-shadow:
-    inset 0 0 0 3px var(--ink),
-    inset 0 0 0 calc(3px + var(--border-base)) var(--ink-contrast);
+    inset 0 0 0 3px transparent,
+    inset 0 0 0 calc(3px + var(--border-base)) var(--toggle-ink);
 }
 
-.choice-option:has(input:checked:focus-visible) {
+.choice > .choice-option:has(input:checked:focus-visible) {
   box-shadow:
-    inset 0 0 0 3px var(--paper),
-    inset 0 0 0 calc(3px + var(--border-base)) var(--ink);
+    inset 0 0 0 3px transparent,
+    inset 0 0 0 calc(3px + var(--border-base)) var(--toggle-lit);
 }
