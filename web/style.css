@@ -3464,3 +3464,9 @@ body {
 .sheet-preview::backdrop {
   background: rgb(0 0 0 / 0.5);
 }
+
+/* An empty row's preview dark, the preview panel's steel, rather than the
+   sheet's white dimmed to grey: it lights up white as the row turns on. */
+.editor.is-inactive .row-preview {
+  background: var(--color-panel);
+}
