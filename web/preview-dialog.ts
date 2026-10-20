@@ -84,10 +84,14 @@ export function createPreviewDialog(): PreviewDialog {
     );
     const dpr = window.devicePixelRatio || 1;
 
-    canvas.style.width = `${sheet.page.width * fit}px`;
-    canvas.style.height = `${sheet.page.height * fit}px`;
-    canvas.width = Math.round(sheet.page.width * fit * dpr);
-    canvas.height = Math.round(sheet.page.height * fit * dpr);
+    // Whole device pixels, rounded down, and shown at exactly that size.
+    // The paper is filled to the page's scaled size, so a canvas rounded up
+    // would leave its last column part filled, a grey seam against the
+    // outline; one shown a fraction over would stretch that column likewise.
+    canvas.width = Math.floor(sheet.page.width * fit * dpr);
+    canvas.height = Math.floor(sheet.page.height * fit * dpr);
+    canvas.style.width = `${canvas.width / dpr}px`;
+    canvas.style.height = `${canvas.height / dpr}px`;
 
     drawSheetToCanvas(canvas.getContext('2d')!, sheet, config, {
       ...options,
