@@ -49,6 +49,8 @@ A line the font lacks, or has out of the editor's order (an ascender on the cap 
 
 **Italic angle** is degrees from vertical, as Glyphs enters it: 0 is upright, positive leans right, and a typical italic is 8–15. Decided 2026-10-10 over a protractor convention (90 = upright). Valid range is strictly between −90 and 90. Note RoboFont/UFO count the other way (right-leaning is negative), so importing from a UFO would flip the sign.
 
+**Slant spacing follows the angle.** The UX sets each row's `slant.spacing` to 36 pt ÷ cos(angle) (`slantSpacing` in `web/row-input.ts`), so the gap square to the lines stays 36 pt however far they lean: 36 pt upright, about 42 at 30°, 139 at 75°. At a fixed spacing they closed up to a quarter of the gap at 75°. The engine's `slant.spacing` still means distance along the baseline. Decided 2026-10-20.
+
 **Metric order** is enforced by the editor, not the engine: ascender above cap height, x-height strictly between 0 and cap height, descender below 0, all in font units. A metric switched off isn't checked. The rules live in `web/metric-order.ts`; config still accepts any order, since the band adapts.
 
 **Engine implications (not built yet):**

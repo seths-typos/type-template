@@ -1,4 +1,4 @@
-import { ConfigError, DEFAULT_FONT_UNITS, fontUnitsToPercent, resolveConfig } from '../src/index.js';
+import { ConfigError, DEFAULTS, DEFAULT_FONT_UNITS, fontUnitsToPercent, resolveConfig } from '../src/index.js';
 import type { FontUnitMetrics, MetricLine, SheetInput } from '../src/index.js';
 import type { LabelText } from '../src/render/ops.js';
 import { toLineStyle, type LineStyles } from './line-styles.js';
@@ -86,7 +86,12 @@ export function rowInput(
     ...input,
     slant:
       state.slant.enabled && slantTyped
-        ? { enabled: true, angle: state.slant.angle!, style: toLineStyle(styles.slant) }
+        ? {
+            enabled: true,
+            angle: state.slant.angle!,
+            spacing: slantSpacing(state.slant.angle!),
+            style: toLineStyle(styles.slant),
+          }
         : slantOff,
   };
 
@@ -106,6 +111,20 @@ export function rowInput(
     }
     return null;
   }
+}
+
+/**
+ * The slant lines' spacing along the baseline for an italic angle, in pt:
+ * the default spacing ÷ cos(angle). Spacing is measured along the baseline,
+ * but the gap the eye reads is the one square to the lines, which is that
+ * spacing × cos(angle) — so at a fixed spacing the lines close up as they
+ * lean, to a quarter of the gap at 75°. Dividing by the cosine holds the
+ * square gap at the default's 36 pt at every angle: 36 pt upright, about 42
+ * at 30°, 139 at 75°. An angle out of range is left to config to refuse.
+ */
+export function slantSpacing(angle: number): number {
+  const cos = Math.cos((angle * Math.PI) / 180);
+  return cos > 0 ? DEFAULTS.slant.spacing / cos : DEFAULTS.slant.spacing;
 }
 
 /** Config's range is open: ±90° would be a flat line, so 90 is out. */
