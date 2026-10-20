@@ -3470,3 +3470,21 @@ body {
 .editor.is-inactive .row-preview {
   background: var(--color-panel);
 }
+
+/* Upload Config as the preview is: white ink on the panel's dark steel,
+   over a black veil. Its error a lighter red, as the sheet's red is too
+   dark to read on the steel: about 5:1 on it. */
+.upload-dialog {
+  --ink-contrast: var(--color-panel);
+  --paper: var(--color-panel);
+
+  background: var(--paper);
+}
+
+.upload-dialog::backdrop {
+  background: rgb(0 0 0 / 0.5);
+}
+
+.upload-dialog-error {
+  color: #ff7a7a;
+}
