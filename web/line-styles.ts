@@ -1,5 +1,5 @@
 import type { LineStyle, MetricLine } from '../src/index.js';
-import { createChoiceToggle, createStopSlider, nameClass } from './sheet-controls.js';
+import { createChoiceToggle } from './sheet-controls.js';
 
 /** Every line the sheet draws: the five metric lines and the slant lines. */
 export type StyledLine = MetricLine | 'slant';
@@ -75,20 +75,19 @@ export interface LineStylesPanelOptions {
   onChange: () => void;
 }
 
-const WEIGHT_STOPS = [
-  { value: 1, label: 'Thin' },
-  { value: 2, label: 'Medium' },
-  { value: 3, label: 'Thick' },
+const WEIGHTS: { value: `${LineWeight}`; label: string }[] = [
+  { value: '1', label: 'Thin' },
+  { value: '2', label: 'Medium' },
+  { value: '3', label: 'Thick' },
 ];
 
 /**
- * "Line Styles": framed and titled like a row editor, a column for each
- * line. Each column names its line over a rule, then sets its weight, dash
- * and colour, the three controls one width.
+ * "Line Styles": a card for each line, framed like an inactive row editor
+ * with the line's name set into its top edge. Each card sets the line's
+ * weight, dash and colour with three toggles, each named over it.
  *
- * The controls' own names ("Weight", "Stroke", "Colour") would repeat six
- * times over, so they're for screen readers only; each column is a group
- * named by its line.
+ * The weight toggle shows each weight as a bar rather than its word; the
+ * word stays for screen readers. Each card is a group named by its line.
  */
 export function createLineStylesPanel(options: LineStylesPanelOptions): HTMLElement {
   const { styles, onChange } = options;
@@ -108,37 +107,29 @@ export function createLineStylesPanel(options: LineStylesPanelOptions): HTMLElem
     const nameId = `line-styles-${type}`;
 
     const column = document.createElement('div');
-    column.className = 'line-column';
+    column.className = 'line-column frame';
     column.setAttribute('role', 'group');
     column.setAttribute('aria-labelledby', nameId);
 
-    // The column's header: its name, underlined.
+    // The line's name, set into the card's top edge.
     const heading = document.createElement('span');
-    heading.className = 'line-column-name';
+    heading.className = 'heading-h3 frame-title line-column-name';
     heading.id = nameId;
     heading.textContent = name;
 
-    const rule = document.createElement('span');
-    rule.className = 'line-column-rule';
-    rule.setAttribute('aria-hidden', 'true');
-
-    const head = document.createElement('div');
-    head.className = 'heading-h3 line-column-head';
-    head.append(heading, rule);
-
-    const weight = createStopSlider(
+    const weight = createChoiceToggle(
       'Weight',
-      WEIGHT_STOPS,
-      choice.weight,
+      WEIGHTS,
+      `${choice.weight}`,
       (value) => {
-        choice.weight = value as LineWeight;
+        choice.weight = Number(value) as LineWeight;
         onChange();
       },
-      { fluid: true, hideName: true },
     );
+    weight.classList.add('weight-toggle');
 
     const dash = createChoiceToggle(
-      'Stroke',
+      'Style',
       [
         { value: 'solid', label: 'Solid' },
         { value: 'dashed', label: 'Dashed' },
@@ -148,57 +139,27 @@ export function createLineStylesPanel(options: LineStylesPanelOptions): HTMLElem
         choice.dashed = value === 'dashed';
         onChange();
       },
-      { hideName: true },
     );
+
+    const color = createChoiceToggle(
+      'Color',
+      LINE_COLORS.map(({ value, name }) => ({ value, label: name })),
+      choice.color,
+      (value) => {
+        choice.color = value;
+        onChange();
+      },
+    );
+    color.classList.add('color-toggle');
 
     const controls = document.createElement('div');
     controls.className = 'line-column-controls';
-    controls.append(weight, dash, createColorPicker(choice, onChange));
+    controls.append(weight, dash, color);
 
-    column.append(head, controls);
+    column.append(heading, controls);
     columns.append(column);
   }
 
   panel.append(title, columns);
   return panel;
-}
-
-let nextId = 0;
-
-/** Three swatches, as radio buttons named by colour. */
-function createColorPicker(choice: LineChoice, onChange: () => void): HTMLElement {
-  const id = `line-color-${nextId++}`;
-
-  const control = document.createElement('div');
-  control.className = 'sheet-control';
-  control.setAttribute('role', 'radiogroup');
-  control.setAttribute('aria-labelledby', id);
-
-  const label = document.createElement('span');
-  label.className = nameClass({ hideName: true });
-  label.id = id;
-  label.textContent = 'Colour';
-
-  const swatches = document.createElement('div');
-  swatches.className = 'swatches';
-
-  for (const { value, name } of LINE_COLORS) {
-    const radio = document.createElement('input');
-    radio.type = 'radio';
-    radio.className = 'swatch';
-    radio.name = id;
-    radio.value = value;
-    radio.checked = value === choice.color;
-    radio.setAttribute('aria-label', name);
-    radio.style.setProperty('--swatch', value);
-    radio.addEventListener('change', () => {
-      if (!radio.checked) return;
-      choice.color = value;
-      onChange();
-    });
-    swatches.append(radio);
-  }
-
-  control.append(label, swatches);
-  return control;
 }

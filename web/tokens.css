@@ -8,7 +8,11 @@
    - Color: semantic colours, aliasing Core.
    - Responsive: sizes with Large and Small modes. Large is the default;
      Small applies under [data-size="small"]. No breakpoint is chosen yet. */
-@import url('https://fonts.googleapis.com/css2?family=Special+Gothic+Expanded+One&family=Special+Gothic:wght@400;500;600&display=swap');
+/* Special Gothic with both its axes, width 75–125 and weight 400–700:
+   the text at normal width, and Line Styles' card titles as wide as
+   Expanded One (which matches it at width 125, weight 700) a weight
+   lighter. */
+@import url('https://fonts.googleapis.com/css2?family=Special+Gothic+Expanded+One&family=Special+Gothic:wdth,wght@75..125,400..700&display=swap');
 
 /* ── Core ─────────────────────────────────────────────── */
 :root {

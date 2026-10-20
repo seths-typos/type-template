@@ -1273,61 +1273,6 @@ body {
   flex-direction: column;
 }
 
-/* The column's header: its name over a rule, the two sharing one grid
-   cell. The name is trimmed to its capitals, so its box runs cap height to
-   baseline; the rule's box runs from the same cap height down past the
-   baseline by --gap, then the rule's own thickness. */
-.line-column-head {
-  --rule: var(--border-thick);
-  --gap: var(--spacers-margin-xs);
-  /* From the name's cap height to the rule's underside. `cap` is the font's
-     cap height, so this follows the name's size. */
-  --rise: calc(1cap + var(--gap) + var(--rule));
-
-  display: grid;
-  margin-bottom: var(--spacers-margin-sm);
-}
-
-.line-column-name {
-  grid-area: 1 / 1;
-  align-self: start;
-  text-box: trim-both cap alphabetic;
-}
-
-/* The rule along the bottom of the cell, turning up at its right end on
-   the diagonal: a 45° rise that finishes level with the name's cap height,
-   ending square to its own direction.
-
-   One shape, so the turn has no seam. The bend is rounded: its centre line
-   on --bend, the inside edge half a rule tighter and the outside half a
-   rule looser, so the rule keeps its thickness round the turn. Each arc is
-   five points. The square end's two corners sit half a rule either side of
-   the line's end, along the diagonal's normal: rule × √2⁄2 in from the
-   right edge at the top, and down from the top at the right edge. */
-.line-column-rule {
-  --bend: 6px;
-
-  grid-area: 1 / 1;
-  height: var(--rise);
-  background: var(--ink);
-  clip-path: polygon(
-    0 calc(100% - var(--rule)),
-    calc(100% - var(--rise) + var(--rule) * 0.5 - var(--bend) * 0.4142) calc(100% - var(--rule)),
-    calc(100% - var(--rise) + var(--rule) * 0.4025 - var(--bend) * 0.2191) calc(100% - var(--rule) * 0.9904 - var(--bend) * 0.0192),
-    calc(100% - var(--rise) + var(--rule) * 0.3087 - var(--bend) * 0.0315) calc(100% - var(--rule) * 0.9619 - var(--bend) * 0.0761),
-    calc(100% - var(--rise) + var(--rule) * 0.2222 + var(--bend) * 0.1414) calc(100% - var(--rule) * 0.9157 - var(--bend) * 0.1685),
-    calc(100% - var(--rise) + var(--rule) * 0.1464 + var(--bend) * 0.2929) calc(100% - var(--rule) * 0.8536 - var(--bend) * 0.2929),
-    calc(100% - var(--rule) * 0.7071) 0,
-    100% calc(var(--rule) * 0.7071),
-    calc(100% - var(--rise) + var(--rule) * 0.8536 + var(--bend) * 0.2929) calc(100% - var(--rule) * 0.1464 - var(--bend) * 0.2929),
-    calc(100% - var(--rise) + var(--rule) * 0.7778 + var(--bend) * 0.1414) calc(100% - var(--rule) * 0.0843 - var(--bend) * 0.1685),
-    calc(100% - var(--rise) + var(--rule) * 0.6913 - var(--bend) * 0.0315) calc(100% - var(--rule) * 0.0381 - var(--bend) * 0.0761),
-    calc(100% - var(--rise) + var(--rule) * 0.5975 - var(--bend) * 0.2191) calc(100% - var(--rule) * 0.0096 - var(--bend) * 0.0192),
-    calc(100% - var(--rise) + var(--rule) * 0.5 - var(--bend) * 0.4142) 100%,
-    0 100%
-  );
-}
-
 .line-column-controls {
   display: flex;
   flex-direction: column;
@@ -1337,43 +1282,6 @@ body {
 /* Solid / Dashed across the column, its two options sharing it. */
 .line-column .choice-option {
   flex: 1;
-}
-
-/* The swatches spread across the column, tucked in a little from its
-   edges. */
-.swatches {
-  display: flex;
-  justify-content: space-between;
-  gap: var(--spacing-2);
-  padding: 0 var(--spacers-padding-xs);
-}
-
-/* A square of colour in an ink rule, so even a colour close to the
-   block's own stands out. Picked, it carries a white tick. */
-.swatch {
-  appearance: none;
-  box-sizing: border-box;
-  width: 24px;
-  height: 24px;
-  margin: 0;
-  border: var(--border-thick) solid var(--ink);
-  border-radius: var(--corner-xs);
-  background: var(--swatch);
-  cursor: pointer;
-}
-
-/* The tick is drawn over the colour. A data URI can't read a custom
-   property, so its white is --color-white written in. */
-.swatch:checked {
-  background:
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M5 10.5l3.5 3.5L15 7' fill='none' stroke='%23fbfef9' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")
-      center / 100% no-repeat,
-    var(--swatch);
-}
-
-.swatch:focus-visible {
-  outline: var(--border-base) solid var(--ink);
-  outline-offset: 3px;
 }
 
 /* Named for screen readers, not shown. */
@@ -1767,8 +1675,6 @@ body {
    between Line Styles and Header, Header's contents half a gutter past it. */
 .line-styles {
   --cell-gap: var(--grid-gutter);
-  /* From the top rule down to the names' cap height. */
-  --cell-top: calc(var(--cell-gap) / 2);
 
   display: flex;
   flex-direction: column;
@@ -1804,34 +1710,6 @@ body {
 
 .line-column {
   position: relative;
-}
-
-/* The underline now rises from under the name into the top rule, and runs
-   half a gap past the column. It climbs the rule's thickness further, up
-   through the rule, so its square-cut end is buried in it and the two
-   join without a notch: the cut's corners sit rule × √2⁄2 deep, inside
-   the rule's own thickness. */
-.line-styles .line-column-head {
-  --rise: calc(var(--cell-top) + 1cap + var(--gap) + var(--rule) + var(--border-thick));
-}
-
-.line-styles .line-column-rule {
-  margin-top: calc(-1 * var(--border-thick));
-}
-
-.line-styles .line-column-name {
-  margin-top: var(--cell-top);
-}
-
-.line-styles .line-column-rule {
-  margin-right: calc(var(--cell-gap) / -2);
-  background: var(--color-steel);
-}
-
-/* The last column's underline runs the whole gutter to the rule on column
-   8's edge, its rise unchanged, so it still meets the top rule there. */
-.line-styles .line-column:last-child .line-column-rule {
-  margin-right: calc(-1 * var(--grid-gutter));
 }
 
 /* A rule under Row Metrics' title and controls, across the window, spaced
@@ -2177,12 +2055,6 @@ body {
 /* Output's own rule went with its box; each part draws its own. */
 .output-block::before {
   content: none;
-}
-
-/* Swatches without a rule round them: just the colour, and the tick when
-   picked. */
-.swatch {
-  border-color: transparent;
 }
 
 /* The rows centred between the rule above them and the rule below: a
@@ -2691,7 +2563,7 @@ body {
 
 /* Every block's last content sits a padding-md above the rule or the page
    foot beneath it, as Row Metrics' rows do above their rule: Line Styles'
-   swatches above its rule, the credit above the foot, Header's fields
+   cards above its rule, the credit above the foot, Header's fields
    above Page Setup's rule, Page Setup's margin above the foot. The credit
    sits a padding-md under the rule, as the titles do. */
 .line-columns {
@@ -3258,12 +3130,10 @@ body {
   inset: auto 0 0;
 }
 
-/* Line Styles' columns a margin-sm under its title's text — the band is
-   taller than the text by the difference — and a margin-xs apart. Their
-   heads keep the name half a gutter under the top. */
+/* Line Styles' cards a margin-sm under its title's text — the band is
+   taller than the text by the difference — and a margin-sm apart. */
 .line-styles {
-  --cell-gap: var(--spacers-margin-xs);
-  --cell-top: calc(var(--grid-gutter) / 2);
+  --cell-gap: var(--spacers-margin-sm);
 }
 
 .line-styles .block-title {
@@ -3285,27 +3155,6 @@ body {
 .output-actions.is-column {
   justify-content: start;
   column-gap: var(--spacers-margin-sm);
-}
-
-/* Line Styles' name underlines turn up square at their right end: along
-   the foot of the cell, then straight up its right edge to the top, one
-   rule thick both ways, ending on the column's own edge — a margin-xs
-   short of the next name — the last column's too, rather than out at the
-   window's edge. */
-.line-styles .line-column-rule {
-  clip-path: polygon(
-    0 calc(100% - var(--rule)),
-    calc(100% - var(--rule)) calc(100% - var(--rule)),
-    calc(100% - var(--rule)) 0,
-    100% 0,
-    100% 100%,
-    0 100%
-  );
-}
-
-.line-styles .line-column-rule,
-.line-styles .line-column:last-child .line-column-rule {
-  margin-right: 0;
 }
 
 /* ── Choice toggles: a sliding thumb and a lamp ───────── */
@@ -3418,4 +3267,193 @@ body {
   box-shadow:
     inset 0 0 0 3px transparent,
     inset 0 0 0 calc(3px + var(--border-base)) var(--toggle-lit);
+}
+
+/* ── Line Styles: a card for each line ────────────────── */
+
+/* Each line in the frame an inactive row has, smaller to suit the column:
+   its top-right and bottom-left corners cut 12px, the line's name set
+   into its top line on a short lead. 16px above and below the controls,
+   12px at the sides. */
+.line-column.frame {
+  --bevel: var(--spacing-3);
+  --frame-top: round(down, calc(var(--type-heading-h3) / 2), 1px);
+
+  padding:
+    calc(var(--frame-top) + var(--frame) + var(--spacing-4))
+    var(--spacing-3)
+    var(--spacing-4);
+}
+
+/* The line's name a step lighter than a heading. The heading face,
+   Special Gothic Expanded One, is a single style; it matches Special
+   Gothic, a variable face, at its widest (wdth 125) and boldest (wght
+   700). So the step down is that face, as wide, at 600. */
+.line-column .frame-title {
+  left: var(--spacing-2);
+  padding: 0 var(--spacing-1);
+  font-family: "Special Gothic", var(--font-family-heading);
+  font-stretch: 125%;
+  font-weight: 600;
+}
+
+/* Each control's name over it, the controls a margin-sm apart, to keep a
+   name with its control. */
+.line-column-controls {
+  gap: var(--spacers-margin-sm);
+}
+
+/* The options closer, to fit inside the card. */
+.line-column .choice-option {
+  padding-inline: var(--spacing-1);
+}
+
+/* Weight and Colour have three options: the thumb a third of the shell,
+   stepping a third at a time. */
+:is(.weight-toggle, .color-toggle) .choice::after {
+  width: calc(100% / 3);
+}
+
+:is(.weight-toggle, .color-toggle) .choice:has(.choice-option:nth-child(2) input:checked)::after {
+  translate: 100%;
+}
+
+:is(.weight-toggle, .color-toggle) .choice:has(.choice-option:nth-child(3) input:checked)::after {
+  translate: 200%;
+}
+
+/* Each weight a bar at its weight, 1, 2 or 3px, in place of its word and
+   lamp; the word stays for screen readers. */
+.weight-toggle .choice-option:nth-child(1) { --bar: 1px; }
+.weight-toggle .choice-option:nth-child(2) { --bar: 2px; }
+.weight-toggle .choice-option:nth-child(3) { --bar: 3px; }
+
+.weight-toggle .choice-option > span {
+  font-size: 0;
+  text-box: normal;
+}
+
+.weight-toggle .choice-option > span::before {
+  content: '';
+  display: block;
+  width: 20px;
+  height: var(--bar);
+  margin: 0;
+  border-radius: 0;
+  background: currentColor;
+  box-shadow: none;
+  vertical-align: baseline;
+}
+
+/* The bars aren't lamps: the chosen one black on the thumb, unlit. */
+.weight-toggle .choice-option:has(input:checked) > span::before {
+  background: currentColor;
+  box-shadow: none;
+}
+
+.weight-toggle .choice-option::after {
+  display: none;
+}
+
+/* Colour's three words in three equal thirds, under the thumb's thirds,
+   with no padding to spare. A third is too narrow for a lamp and a word,
+   so the words go without: the thumb marks the choice, as on Weight. */
+.color-toggle .choice-option {
+  flex: 1 1 0;
+  min-width: 0;
+  padding: 0;
+}
+
+.color-toggle .choice-option > span::before {
+  display: none;
+}
+
+.color-toggle .choice-option::after {
+  padding-left: 0;
+}
+
+/* Title to cards the same in Metrics as in Line Styles: 32px, a margin-md,
+   from a title's baseline to its cards' top line. Metrics was 42px, its
+   header's bottom padding and the block's row gap adding up past it, so
+   its row gap gives up the 10px. */
+.metrics-block {
+  row-gap: calc(var(--spacers-padding-md) - 4px - 10px);
+}
+
+/* Output's buttons at the right of their space, so the last ends as far
+   from the credit's rule as the title starts from Output's left rule: a
+   padding-md, 24px, both sides. */
+.output-actions.is-column {
+  justify-content: end;
+}
+
+/* ── Black, white, red and green ──────────────────────── */
+
+/* The page black and its ink white: text, rules, outlines and the
+   controls' fills. An active row's field red, Line Styles' card outlines
+   and the lit lamps green, a button yellow under the pointer, and the
+   preview's panel a dark steel. --color-black is the ink's token, blue in
+   Figma, so it is the ink that turns white here. */
+:root {
+  --color-bg: #000;
+  --color-black: var(--color-white);
+  --color-row: #d5001a;
+  /* About 6:1 on black. */
+  --color-card: #1f9e72;
+  --color-hover: #fdda7c;
+  /* The rules' steel, darkened: a step off the black page. */
+  --color-panel: #262b33;
+}
+
+/* What sat white on a blue fill sits black on a white one. */
+.choice {
+  --toggle-lit: #000;
+}
+
+/* The chosen option's lamp lit green, glowing green. */
+.choice-option:has(input:checked) > span::before {
+  background: var(--color-card);
+  box-shadow:
+    0 0 3px 1px rgb(from var(--color-card) r g b / 0.18),
+    0 0 8px 2px rgb(from var(--color-card) r g b / 0.1);
+}
+
+/* An active row a field of red, its text on white fills in the red, its
+   title white on the black notch. */
+.editor:not(.is-inactive) {
+  --ink-contrast: var(--color-row);
+  --paper: var(--color-row);
+}
+
+.editor:not(.is-inactive) .frame-title {
+  color: var(--color-white);
+}
+
+.line-column.frame::before {
+  background: var(--color-card);
+}
+
+/* A lead button's fill is the ink, white: its label black on it. Every
+   button fills yellow under the pointer, its label black. */
+.action-button:not(.is-secondary) {
+  --label: #000;
+}
+
+.action-button,
+.action-button.is-secondary {
+  --fill-hover: var(--color-hover);
+  --label-hover: #000;
+}
+
+/* The preview's panel a dark steel, so it shows sliding in over the black
+   page, the sheet the brightest thing on it. What sits on it stays white. */
+.sheet-preview {
+  --paper: var(--color-panel);
+  --ink-contrast: var(--color-panel);
+}
+
+/* The veil over the page while it's open dims rather than whitens: black,
+   not the ink, which is white. */
+.sheet-preview::backdrop {
+  background: rgb(0 0 0 / 0.5);
 }

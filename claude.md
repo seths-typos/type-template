@@ -43,7 +43,7 @@ A line the font lacks, or has out of the editor's order (an ascender on the cap 
 
 **Page Setup** is the user's: orientation (portrait or landscape), paper (Letter or A4), one margin in points for all four sides, and whether metric values are shown. It defaults to Letter, landscape, 36 pt — the engine's own defaults. A margin that leaves the rows no room is caught when the sheet is made, and the preview says so. Decided 2026-10-13, replacing the fixed landscape of 2026-10-10.
 
-**Art direction** is the "panel" direction from the `ad-exp-2` branch (2026-10-13): a grey ground, blue ink, steel rules dividing a 12-column grid, filled blue rows. `ad-exp-1` keeps the teal direction it grew from.
+**Art direction** is the "panel" direction from the `ad-exp-2` branch (2026-10-13): a grey ground, blue ink, steel rules dividing a 12-column grid, filled blue rows. `ad-exp-1` keeps the teal direction it grew from. Recoloured 2026-10-20: a black ground and white ink, active rows filled red (#d5001a), Line Styles' cards outlined and the toggles' lit lamps in green (#1f9e72), buttons yellow (#fdda7c) on hover, the preview's panel a dark steel (#262b33). The overrides sit at the end of `web/style.css`; `tokens.css` keeps Figma's values.
 
 **Header text** is optional, three slots set across the top of the printed page: left, centre and right, each free text in 10 pt Arial (the PDF sets Helvetica, Arial's metric twin; pdf-lib's standard fonts need no embedding). The header block is reserved only when a slot has text, 24 pt below the top margin, taken from the rows' height. Restored 2026-10-12 after being dropped on 2026-10-10.
 
