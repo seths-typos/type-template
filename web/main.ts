@@ -170,7 +170,7 @@ function render(): void {
       applyRowCount(true);
     }),
     createChoiceToggle<RowMetrics>(
-      'Values across rows',
+      'Metrics across rows',
       [
         { value: 'same', label: 'Same' },
         { value: 'different', label: 'Different' },
